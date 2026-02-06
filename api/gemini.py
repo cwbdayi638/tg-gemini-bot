@@ -410,9 +410,15 @@ def function5_fallback(text: str) -> str:
     
     # Default fallback
     else:
-        return ("Thank you for your message! I'm a specialized assistant focused on specific tasks. "
-                "I can help with **advanced math**, **unit conversions**, **weather info**, **time/date queries**, **language detection**, and **friendly chat**. "
-                "Try asking me something like 'sqrt(144)', '10 km to miles', or 'What time is it?' 😊")
+        return ("🤖 **Welcome! I'm your lightning-fast rule-based assistant!**\n\n"
+                "**Ready to help with:**\n"
+                "🧮 **Math** - `sqrt(144)`, `sin(45)`, `log(100)`\n"
+                "🔄 **Units** - `10 km to miles`, `32 F to C`\n"
+                "🌤️ **Weather** - `what's the weather?`, `forecast for tomorrow`\n"
+                "⏰ **Time** - `what time is it?`, `7 days from now`\n"
+                "🌍 **Languages** - Send text in any language for detection\n"
+                "💬 **Chat** - Greetings and friendly conversation\n\n"
+                "**Just type your request!** No special commands needed. 🚀")
 
 # --- Gemini Function Calling Declarations ---
 
