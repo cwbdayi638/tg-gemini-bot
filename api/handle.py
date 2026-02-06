@@ -67,7 +67,7 @@ def handle_message(update_data):
         else:
             history_id = update.chat_id
         chat = chat_manager.get_chat(history_id)
-        anwser = chat.send_message(update.text)
+        anwser = chat.send_message(update.text).text
         extra_text = (
             f"\n\n{prompt_new_info}" if chat.history_length >= prompt_new_threshold*2 else ""
         )
