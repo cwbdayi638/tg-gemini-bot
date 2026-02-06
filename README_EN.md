@@ -62,6 +62,27 @@ Integrated real-time earthquake data from Taiwan Central Weather Administration 
 - United States Geological Survey (USGS) Earthquake API
 - Google Gemini 1.5 Flash (AI features)
 
+### 📰 News Services
+
+Get real-time news from multiple sources via RSS feeds:
+
+**News Commands:**
+- `/news` - General news from multiple sources
+- `/news_tech` - Technology news (Hacker News)
+- `/news_taiwan` - Taiwan news (CNA)
+- `/news_global` - Global news (BBC)
+
+**Features:**
+- Real-time RSS feeds
+- Multi-source news aggregation
+- Automatically formatted display
+- Includes news title, time, and link
+
+**Data Sources:**
+- Hacker News - Technology news
+- Central News Agency (CNA) - Taiwan news
+- BBC News - Global news
+
 ### 🧮 Advanced Mathematical Capabilities
 
 The bot now handles complex mathematical expressions with scientific functions:

@@ -21,3 +21,4 @@ zipp==3.17.0
 pandas>=2.0.0
 matplotlib>=3.7.0
 gradio_client>=2.0.0
+feedparser>=6.0.0

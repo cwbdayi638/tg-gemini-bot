@@ -12,6 +12,7 @@ try:
     from .usgs_service import fetch_global_last24h_text, fetch_taiwan_df_this_year
     from .plotting_service import create_and_save_map
     from .ai_service import generate_ai_text
+    from .news_service import fetch_tech_news, fetch_taiwan_news, fetch_global_news, fetch_general_news
     SERVICES_AVAILABLE = True
 except ImportError as e:
     print(f"Warning: Some services not available: {e}")
@@ -31,7 +32,14 @@ def help():
             "/eq_map - Link to earthquake map service\n"
             "/eq_ai <question> - Ask AI about earthquakes"
         )
-        return base_help + earthquake_commands
+        news_commands = (
+            "\n\nNews Services:\n"
+            "/news - General news from multiple sources\n"
+            "/news_tech - Technology news (Hacker News)\n"
+            "/news_taiwan - Taiwan news (CNA)\n"
+            "/news_global - Global news (BBC)"
+        )
+        return base_help + earthquake_commands + news_commands
     return base_help
 
 
@@ -134,6 +142,32 @@ def process_earthquake_ai(question: str):
     if not question:
         return "Please provide a question, e.g.: /eq_ai What's the highest mountain in Taiwan?"
     return generate_ai_text(question)
+
+def get_news(limit: int = 5):
+    """Get general news from multiple sources."""
+    if not SERVICES_AVAILABLE:
+        return "News service not available."
+    return fetch_general_news(limit)
+
+def get_tech_news(limit: int = 5):
+    """Get technology news."""
+    if not SERVICES_AVAILABLE:
+        return "News service not available."
+    return fetch_tech_news(limit)
+
+def get_taiwan_news(limit: int = 5):
+    """Get Taiwan news."""
+    if not SERVICES_AVAILABLE:
+        return "News service not available."
+    return fetch_taiwan_news(limit)
+
+def get_global_news(limit: int = 5):
+    """Get global news."""
+    if not SERVICES_AVAILABLE:
+        return "News service not available."
+    return fetch_global_news(limit)
+
+def speed_test(id):
     """ This command seems useless, but it must be included in every robot I make. """
     send_message(id, "开始测速")
     sleep(5)
@@ -195,6 +229,19 @@ def excute_command(from_id, command, from_type, chat_id):
         # Extract question from command
         question = command[5:].strip()  # Remove "eq_ai" prefix
         return process_earthquake_ai(question)
+
+    # News service commands
+    elif command.startswith("news_tech"):
+        return get_tech_news()
+    
+    elif command.startswith("news_taiwan"):
+        return get_taiwan_news()
+    
+    elif command.startswith("news_global"):
+        return get_global_news()
+    
+    elif command.startswith("news"):
+        return get_news()
 
     elif command in ["get_allowed_users", "get_allowed_groups", "get_api_key"]:
         if not is_admin(from_id):
