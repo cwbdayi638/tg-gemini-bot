@@ -41,12 +41,12 @@ def function1_math(text: str) -> str:
     # Handle scientific functions
     scientific_patterns = {
         r'sqrt\s*\(?\s*(\d+\.?\d*)\s*\)?': lambda x: math.sqrt(float(x)),
-        r'sin\s*\(?\s*(\d+\.?\d*)\s*\)?': lambda x: math.sin(math.radians(float(x))),
-        r'cos\s*\(?\s*(\d+\.?\d*)\s*\)?': lambda x: math.cos(math.radians(float(x))),
-        r'tan\s*\(?\s*(\d+\.?\d*)\s*\)?': lambda x: math.tan(math.radians(float(x))),
+        r'sin\s*\(?\s*(-?\d+\.?\d*)\s*\)?': lambda x: math.sin(math.radians(float(x))),
+        r'cos\s*\(?\s*(-?\d+\.?\d*)\s*\)?': lambda x: math.cos(math.radians(float(x))),
+        r'tan\s*\(?\s*(-?\d+\.?\d*)\s*\)?': lambda x: math.tan(math.radians(float(x))),
         r'log\s*\(?\s*(\d+\.?\d*)\s*\)?': lambda x: math.log10(float(x)),
         r'ln\s*\(?\s*(\d+\.?\d*)\s*\)?': lambda x: math.log(float(x)),
-        r'exp\s*\(?\s*(\d+\.?\d*)\s*\)?': lambda x: math.exp(float(x)),
+        r'exp\s*\(?\s*(-?\d+\.?\d*)\s*\)?': lambda x: math.exp(float(x)),
         r'abs\s*\(?\s*(-?\d+\.?\d*)\s*\)?': lambda x: abs(float(x)),
         r'factorial\s*\(?\s*(\d+)\s*\)?': lambda x: math.factorial(int(x)),
     }
@@ -66,9 +66,13 @@ def function1_math(text: str) -> str:
                     else:
                         result = round(result, 6)
                 
+                # Extract function name properly
                 func_name = pattern.split(r'\s')[0]
                 return f"The result of `{func_name}({value})` is **{result}**."
-            except Exception as e:
+            except (ValueError, ZeroDivisionError, OverflowError):
+                # Skip invalid operations (e.g., sqrt of negative, log of non-positive)
+                continue
+            except Exception:
                 continue
     
     # Extract mathematical expression - support parentheses, decimals, and exponents
