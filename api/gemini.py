@@ -99,7 +99,12 @@ class AntigravityProvider(LLMProvider):
         
         self.endpoint = ANTIGRAVITY_ENDPOINT or default_endpoint
         if ANTIGRAVITY_ENDPOINT:
-            print(f"DEBUG: Using configured ANTIGRAVITY_ENDPOINT: {self.endpoint}")
+            if "v1beta" in ANTIGRAVITY_ENDPOINT or "generativelanguage" in ANTIGRAVITY_ENDPOINT:
+                print(f"WARNING: Configured ANTIGRAVITY_ENDPOINT '{ANTIGRAVITY_ENDPOINT}' appears to be invalid (v1beta/generativelanguage). Ignoring and using default Vertex AI endpoint.")
+                self.endpoint = default_endpoint
+                print(f"DEBUG: Using default Vertex AI Endpoint: {self.endpoint}")
+            else:
+                print(f"DEBUG: Using configured ANTIGRAVITY_ENDPOINT: {self.endpoint}")
         else:
             print(f"DEBUG: Using default Vertex AI Endpoint: {self.endpoint}")
 
