@@ -67,6 +67,8 @@ class GoogleGeminiProvider(LLMProvider):
 
 # Antigravity Provider Implementation (Placeholder)
 # Antigravity Provider Implementation
+from .token_utils import TokenManager
+
 class AntigravityChatSession:
     def __init__(self, provider, history=None):
         self.provider = provider
@@ -76,18 +78,7 @@ class AntigravityChatSession:
         # Add user message to history
         self.history.append({"role": "user", "parts": [{"text": prompt}]})
         
-        # Generate response using the provider, passing the full history
-        # Note: The actual API call in generate_content might need to be adjusted 
-        # to accept history if we want multi-turn chat. 
-        # For now, we'll implement a simple one-shot or pass context if supported.
-        # Assuming generate_content can take a list of messages or we construct the prompt.
-        # But LLMProvider.generate_content takes `prompt: str`.
-        # We might need a specific method for chat or format the prompt.
-        
-        # Better approach: AntigravityProvider.generate_content calls the API.
-        # For chat, we simply pass the full history to the API if it supports it.
-        # However, to keep it simple and consistent with the interface:
-        
+        # Generate response using the provider
         response_text = self.provider.generate_content_interaction(self.history)
         
         # Add model response to history
@@ -96,53 +87,29 @@ class AntigravityChatSession:
         return MockResponse(response_text)
 
 class AntigravityProvider(LLMProvider):
-    # Constants from OpenClaw (Antigravity) reference
-    CLIENT_ID = "1071006060591-tmhssin2h21lcre235vtolojh4g403ep.apps.googleusercontent.com"
-    CLIENT_SECRET = "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" # Decoded from reference
-    TOKEN_URL = "https://oauth2.googleapis.com/token"
-    # Default endpoint from reference (Cloud Code Assist)
-    DEFAULT_ENDPOINT = "https://cloudcode-pa.googleapis.com/v1internal:loadCodeAssist" 
-    # Actually, the generating endpoint in reference for Gemini seems to be standard or via cloudcode-pa
-    # Reference: src/media-understanding/providers/google/video.ts -> `${baseUrl}/models/${model}:generateContent`
-    # We will use the configured ANTIGRAVITY_ENDPOINT or a safe default compatible with Gemini API
+    # Vertex AI Configuration
+    PROJECT_ID = "cloudaicompanion" 
+    REGION = "us-central1"
+    MODEL = "gemini-1.5-pro" # Can be updated to gemini-3-pro-preview if needed
     
     def __init__(self):
         self.api_key = ANTIGRAVITY_KEY # This is expected to be the REFRESH TOKEN
-        self.endpoint = ANTIGRAVITY_ENDPOINT or "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent"
-        self.access_token = None
-        self.token_expiry = 0
-
-    def _get_access_token(self):
-        import time
-        import requests
+        # Construct Vertex AI Endpoint
+        default_endpoint = f"https://{self.REGION}-aiplatform.googleapis.com/v1/projects/{self.PROJECT_ID}/locations/{self.REGION}/publishers/google/models/{self.MODEL}:generateContent"
         
-        if self.access_token and time.time() < self.token_expiry:
-            return self.access_token
-
-        if not self.api_key:
-             return None # Can't refresh without a refresh token
-
-        try:
-            response = requests.post(self.TOKEN_URL, data={
-                "client_id": self.CLIENT_ID,
-                "client_secret": self.CLIENT_SECRET,
-                "refresh_token": self.api_key,
-                "grant_type": "refresh_token"
-            })
-            response.raise_for_status()
-            data = response.json()
-            self.access_token = data["access_token"]
-            self.token_expiry = time.time() + data.get("expires_in", 3600) - 60 # Buffer
-            return self.access_token
-        except Exception as e:
-            print(f"Error refreshing Antigravity token: {e}")
-            return None
+        self.endpoint = ANTIGRAVITY_ENDPOINT or default_endpoint
+        self.token_manager = TokenManager(self.api_key) if self.api_key else None
 
     def _call_api(self, payload):
         import requests
-        token = self._get_access_token()
-        if not token:
-            return "Error: Could not authenticate with Antigravity (Missing or Invalid Refresh Token)."
+        
+        if not self.token_manager:
+            return "Error: Antigravity Provider requires ANTIGRAVITY_KEY (Refresh Token) to be set."
+
+        try:
+            token = self.token_manager.get_access_token()
+        except Exception as e:
+            return f"Authentication Error: {e}"
         
         headers = {
             "Authorization": f"Bearer {token}",
@@ -150,9 +117,11 @@ class AntigravityProvider(LLMProvider):
         }
         
         try:
-            # We assume the endpoint expects a Gemini-like payload: { "contents": [...] }
             response = requests.post(self.endpoint, headers=headers, json=payload)
-            response.raise_for_status()
+            
+            if response.status_code != 200:
+                return f"Antigravity API Error ({response.status_code}): {response.text}"
+                
             data = response.json()
             
             # Parse response (Gemini structure)
@@ -162,7 +131,7 @@ class AntigravityProvider(LLMProvider):
                     return parts[0].get("text", "")
             return "Empty response from Antigravity."
         except Exception as e:
-            return f"{gemini_err_info}\nAntigravity API Error: {e}"
+            return f"{gemini_err_info}\nAntigravity API Exception: {e}"
 
     def start_chat(self, history=None):
         return AntigravityChatSession(self, history)
@@ -178,7 +147,6 @@ class AntigravityProvider(LLMProvider):
     
     def generate_content_interaction(self, messages: list) -> str:
         # Helper for chat session to send full history
-        # messages are expected to be in Gemini format: {"role": "...", "parts": [...]}
         payload = {
             "contents": messages
         }
@@ -186,7 +154,6 @@ class AntigravityProvider(LLMProvider):
 
     def generate_content_with_image(self, prompt: str, image_bytes: BytesIO) -> str:
         import base64
-        # Convert image to base64
         image_data = base64.b64encode(image_bytes.getvalue()).decode('utf-8')
         
         payload = {
@@ -196,7 +163,7 @@ class AntigravityProvider(LLMProvider):
                     {"text": prompt},
                     {
                         "inline_data": {
-                            "mime_type": "image/jpeg", # Assuming JPEG or matching byte stream
+                            "mime_type": "image/jpeg", 
                             "data": image_data
                         }
                     }
@@ -206,7 +173,7 @@ class AntigravityProvider(LLMProvider):
         return self._call_api(payload)
 
     def list_models(self):
-        print("Antigravity Models: (Managed via Endpoint Configuration)")
+        print(f"Antigravity (Vertex AI) Provider: Project={self.PROJECT_ID}, Model={self.MODEL}")
 
 
 class MockChatSession:
