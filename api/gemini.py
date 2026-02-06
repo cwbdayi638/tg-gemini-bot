@@ -88,30 +88,87 @@ class AntigravityChatSession:
 
 class AntigravityProvider(LLMProvider):
     # Vertex AI Configuration
-    PROJECT_ID = "cloudaicompanion" 
+    # We will discover the project ID from the API
+    DEFAULT_PROJECT_ID = "cloudaicompanion" 
     REGION = "us-central1"
-    MODEL = "gemini-1.5-pro" # Can be updated to gemini-3-pro-preview if needed
+    MODEL = "gemini-1.5-pro"
     
     def __init__(self):
         self.api_key = ANTIGRAVITY_KEY # This is expected to be the REFRESH TOKEN
-        # Construct Vertex AI Endpoint
-        default_endpoint = f"https://{self.REGION}-aiplatform.googleapis.com/v1/projects/{self.PROJECT_ID}/locations/{self.REGION}/publishers/google/models/{self.MODEL}:generateContent"
+        self.region = self.REGION
+        self.model = self.MODEL
         
-        self.endpoint = ANTIGRAVITY_ENDPOINT or default_endpoint
-        if ANTIGRAVITY_ENDPOINT:
-            if "v1beta" in ANTIGRAVITY_ENDPOINT or "generativelanguage" in ANTIGRAVITY_ENDPOINT:
-                print(f"WARNING: Configured ANTIGRAVITY_ENDPOINT '{ANTIGRAVITY_ENDPOINT}' appears to be invalid (v1beta/generativelanguage). Ignoring and using default Vertex AI endpoint.")
-                self.endpoint = default_endpoint
-                print(f"DEBUG: Using default Vertex AI Endpoint: {self.endpoint}")
-            else:
-                print(f"DEBUG: Using configured ANTIGRAVITY_ENDPOINT: {self.endpoint}")
-        else:
-            print(f"DEBUG: Using default Vertex AI Endpoint: {self.endpoint}")
-
+        self.project_id = self.DEFAULT_PROJECT_ID
         self.token_manager = TokenManager(self.api_key) if self.api_key else None
+        self.endpoint = ANTIGRAVITY_ENDPOINT # May be None initially
+        self._discovered = False
+
+    def _discover_project(self):
+        """Discovers the correct project ID using loadCodeAssist."""
+        import requests
+        if self._discovered:
+            return
+            
+        if not self.token_manager:
+            return
+
+        try:
+            token = self.token_manager.get_access_token()
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+                "X-Goog-Api-Client": "google-cloud-sdk vscode_cloudshelleditor/0.1",
+                "User-Agent": "antigravity"
+            }
+            payload = {
+                "metadata": {
+                    "ideType": "ANTIGRAVITY",
+                    "platform": "PLATFORM_UNSPECIFIED",
+                    "pluginType": "GEMINI"
+                }
+            }
+            
+            # Use v1internal:loadCodeAssist to discover the project ID
+            resp = requests.post(
+                "https://cloudcode-pa.googleapis.com/v1internal:loadCodeAssist",
+                headers=headers,
+                json=payload
+            )
+            
+            if resp.status_code == 200:
+                data = resp.json()
+                project = data.get("cloudaicompanionProject")
+                if project:
+                    if isinstance(project, str):
+                        self.project_id = project
+                    else:
+                        self.project_id = project.get("id", self.DEFAULT_PROJECT_ID)
+                    
+                    print(f"DEBUG: Discovered Antigravity Project ID: {self.project_id}")
+            else:
+                print(f"DEBUG: Project discovery failed (Status {resp.status_code}). Using default: {self.project_id}")
+                
+        except Exception as e:
+            print(f"DEBUG: Exception during project discovery: {e}")
+        
+        # After discovery (or failure), finalize the endpoint
+        if not self.endpoint:
+             # Ensure project_id is formatted correctly (e.g., remove 'projects/' prefix if redundant)
+             # But Vertex AI URLs usually take the format projects/{project_id}
+             # loadCodeAssist usually returns "projects/xxx"
+             pid = self.project_id
+             if pid.startswith("projects/"):
+                 pid = pid[len("projects/"):]
+                 
+             self.endpoint = f"https://{self.region}-aiplatform.googleapis.com/v1/projects/{pid}/locations/{self.region}/publishers/google/models/{self.model}:generateContent"
+             print(f"DEBUG: Resolved Vertex AI Endpoint: {self.endpoint}")
+
+        self._discovered = True
 
     def _call_api(self, payload):
         import requests
+        
+        self._discover_project() # Ensure discovery is run
         
         if not self.token_manager:
             return "Error: Antigravity Provider requires ANTIGRAVITY_KEY (Refresh Token) to be set."
