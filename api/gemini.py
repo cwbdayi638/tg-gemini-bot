@@ -5,6 +5,21 @@ from .config import new_chat_info, prompt_new_info, gemini_err_info
 
 # --- Rule Functions ---
 
+def function0_help(text: str) -> str:
+    """Function 0: Overall help and capability overview"""
+    keywords = ["help", "guide", "menu", "capabilities", "what can you do", "/help", "instruction"]
+    if any(k in text.lower() for k in keywords):
+        return (
+            "🤖 **Rule-Based Bot Capabilities**\n\n"
+            "I'm a fast, rule-based assistant! Here's what I can do:\n\n"
+            "1️⃣ **Advanced Math**: Just send an expression like `(5 + 5) * 2` or `2^10`.\n"
+            "2️⃣ **Weather**: Ask `What's the weather?` or `Forecast for tomorrow`.\n"
+            "3️⃣ **Time & Date**: Ask `What time is it?` or `What's today's date?`.\n"
+            "4️⃣ **Friendly Chat**: Say `Hi`, `How are you?`, or `Thank you`.\n\n"
+            "💡 *Tip: I'm very fast because I don't use a large language model!*"
+        )
+    return None
+
 def function1_math(text: str) -> str:
     """Function 1: Advanced math calculations"""
     # Look for math keywords or expressions
@@ -194,7 +209,9 @@ class ChatConversation:
 
     def send_message(self, text: str) -> MockResponse:
         # Prioritized rule checking
-        response = function1_math(text)
+        response = function0_help(text)
+        if not response:
+            response = function1_math(text)
         if not response:
             response = function2_weather(text)
         if not response:
@@ -218,8 +235,11 @@ def generate_text_with_image(prompt: str, image_bytes: BytesIO) -> str:
     """Compatibility function for image messages"""
     # Simple rule-based response for images
     base_response = "I have received your image. "
-    response = function1_math(prompt) or function2_weather(prompt) or \
-               function3_time(prompt) or function4_greeting(prompt) or \
+    response = function0_help(prompt) or \
+               function1_math(prompt) or \
+               function2_weather(prompt) or \
+               function3_time(prompt) or \
+               function4_greeting(prompt) or \
                function5_fallback(prompt)
     return base_response + response
 
