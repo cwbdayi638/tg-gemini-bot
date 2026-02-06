@@ -30,6 +30,11 @@ USGS_API_BASE_URL = "https://earthquake.usgs.gov/fdsnws/event/1/query"
 # Current year for display
 CURRENT_YEAR = datetime.now().year
 
+# News API endpoints (RSS feeds)
+NEWS_TECH_RSS = "https://news.ycombinator.com/rss"
+NEWS_TAIWAN_RSS = "https://www.cna.com.tw/rss/news.xml"
+NEWS_GLOBAL_RSS = "http://feeds.bbci.co.uk/news/rss.xml"
+
 
 """ Optional """
 
