@@ -16,6 +16,9 @@ except ImportError:
 # Get API key from environment
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "")
 
+# Configuration
+GEMINI_MODEL_NAME = "gemini-1.5-flash"  # Default model for function calling
+
 # --- Rule Functions ---
 
 def function0_help(text: str) -> str:
@@ -629,7 +632,7 @@ class ChatConversation:
                 
                 # Initialize model with function declarations
                 self.model = genai.GenerativeModel(
-                    model_name='gemini-1.5-flash',
+                    model_name=GEMINI_MODEL_NAME,
                     generation_config=generation_config,
                     safety_settings=safety_settings,
                     tools=[{"function_declarations": function_declarations}]
@@ -731,7 +734,7 @@ def generate_text_with_image(prompt: str, image_bytes: BytesIO) -> str:
     if GEMINI_AVAILABLE and GOOGLE_API_KEY:
         try:
             genai.configure(api_key=GOOGLE_API_KEY)
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel(GEMINI_MODEL_NAME)
             
             # Open image from bytes
             from PIL import Image
@@ -770,8 +773,11 @@ def list_models():
     else:
         print("Gemini API not available. Using rule-based engine.")
 
-# Provider replacement (if needed by other files)
-class GeminiProvider:
+# Provider class for handle.py compatibility
+# Supports both rule-based and Gemini function calling modes
+class HybridProvider:
+    """Hybrid provider supporting both rule-based and Gemini AI modes"""
+    
     def start_chat(self, history=None):
         return ChatConversation()
     
@@ -786,7 +792,7 @@ class GeminiProvider:
         list_models()
 
 # Global PROVIDER for handle.py compatibility
-PROVIDER = GeminiProvider()
+PROVIDER = HybridProvider()
 
 def get_provider():
     return PROVIDER
