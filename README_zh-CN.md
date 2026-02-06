@@ -16,6 +16,16 @@ tg-gemini-bot 可让您直接在个人 Telegram 机器人上使用 Google Gemini
 - 这是一个全前端项目，只需单击一下即可在 Vercel 上启动并运行。
 - 支持Gemini连续通话。 （由于Vercel的限制，对话可能无法保存很长时间）
 - 支持 Gemini 文本、图像界面和电报 Markdown。
+- 📰 **新闻服务** - 通过 RSS 订阅获取实时新闻（技术、台湾、全球）
+
+### 📰 新闻服务
+
+**新闻命令：**
+- `/news` - 从多个来源获取一般新闻
+- `/news_tech` - 科技新闻（Hacker News）
+- `/news_taiwan` - 台湾新闻（中央社）
+- `/news_global` - 全球新闻（BBC）
+
 
 ## 准备工作
 
