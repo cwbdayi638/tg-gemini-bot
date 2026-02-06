@@ -37,6 +37,31 @@ The bot exposes 5 specialized functions to Gemini:
 
 This bot has been significantly upgraded with powerful rule-based functions that provide instant responses to a wide variety of tasks.
 
+### 🌍 Earthquake Information Services
+
+Integrated real-time earthquake data from Taiwan Central Weather Administration (CWA) and USGS:
+
+**Real-time Earthquake Information:**
+- `/eq_latest` - Latest significant earthquake report (with image)
+- `/eq_alert` - CWA earthquake early warnings
+- `/eq_significant` - CWA significant earthquakes in past 7 days
+
+**Global Earthquake Monitoring:**
+- `/eq_global` - Global significant earthquakes in past 24 hours (M≥5.0)
+- `/eq_taiwan` - Taiwan region significant earthquakes this year
+- `/eq_map` - Link to external earthquake query service
+
+**AI Smart Assistant:**
+- `/eq_ai <question>` - Query earthquake data using AI
+  - Example: `/eq_ai Were there any earthquakes in Hualien yesterday?`
+  - Example: `/eq_ai What earthquakes above magnitude 6 occurred in April 2024?`
+  - AI can automatically call earthquake database tools and provide intelligent analysis
+
+**Data Sources:**
+- Taiwan Central Weather Administration Open Data Platform
+- United States Geological Survey (USGS) Earthquake API
+- Google Gemini 1.5 Flash (AI features)
+
 ### 🧮 Advanced Mathematical Capabilities
 
 The bot now handles complex mathematical expressions with scientific functions:
@@ -187,6 +212,19 @@ Prepare the following and configure them as environment variables in Vercel or y
   Enable Gemini API with function calling capabilities. Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey).
   - Without this key: Bot uses fast rule-based mode
   - With this key: Bot uses intelligent Gemini function calling
+
+- **CWA_API_KEY** (Optional - For Earthquake Services)
+  
+  Taiwan Central Weather Administration API key for accessing significant earthquake data.
+  - Get your API key from [CWA Open Data Platform](https://opendata.cwa.gov.tw/)
+  - Required for `/eq_significant` and `/eq_latest` commands
+  - Earthquake alerts and global data work without this key
+
+- **MCP_SERVER_URL** (Optional - For AI Earthquake Search)
+  
+  MCP server URL for advanced earthquake database search through AI.
+  - Default: `https://cwadayi-mcp-2.hf.space`
+  - Required only for `/eq_ai` command with historical earthquake queries
 
 - **ALLOWED_USERS** (Optional)
   

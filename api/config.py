@@ -1,5 +1,7 @@
 ﻿import os
+import tempfile
 from re import split
+from datetime import datetime
 
 """ Required """
 
@@ -9,6 +11,24 @@ BOT_TOKEN = os.environ.get("BOT_TOKEN")
 
 # Google Gemini API Key (optional - enables function calling capabilities)
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "")
+
+# CWA (Central Weather Administration) API Key for Taiwan earthquake data
+CWA_API_KEY = os.environ.get("CWA_API_KEY", "")
+
+# MCP Server URL for earthquake search tool
+MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "https://cwadayi-mcp-2.hf.space")
+
+# Static directory for temporary files (e.g., generated maps)
+STATIC_DIR = os.getenv("STATIC_DIR", os.path.join(tempfile.gettempdir(), "static"))
+os.makedirs(STATIC_DIR, exist_ok=True)
+
+# API Endpoints
+CWA_ALARM_API = "https://app-2.cwa.gov.tw/api/v1/earthquake/alarm/list"
+CWA_SIGNIFICANT_API = "https://opendata.cwa.gov.tw/api/v1/rest/datastore/E-A0015-001"
+USGS_API_BASE_URL = "https://earthquake.usgs.gov/fdsnws/event/1/query"
+
+# Current year for display
+CURRENT_YEAR = datetime.now().year
 
 
 """ Optional """
