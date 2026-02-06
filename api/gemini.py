@@ -26,7 +26,7 @@ def function0_help(text: str) -> str:
 def function1_math(text: str) -> str:
     """Function 1: Advanced math calculations with scientific functions"""
     # Look for math keywords or expressions
-    math_keywords = ["calculate", "compute", "what is", "what's", "solve", "=", "+", "-", "*", "/", "^", "**", 
+    math_keywords = ["calculate", "compute", "what is", "what's", "solve", "=", "+", "-", "*", "/", "^", "**", "x",
                      "sqrt", "sin", "cos", "tan", "log", "ln", "exp", "abs", "factorial"]
     
     # Check if text contains math-related content
@@ -76,8 +76,8 @@ def function1_math(text: str) -> str:
                 continue
     
     # Extract mathematical expression - support parentheses, decimals, and exponents
-    # Pattern matches: numbers (int/float), operators (+,-,*,/,**,^,%), and parentheses
-    pattern = r"([\d\.\s\+\-\*\/\%\(\)\^]+)"
+    # Pattern matches: numbers (int/float), operators (+,-,*,/,**,^,x,%), and parentheses
+    pattern = r"([\d\.\s\+\-\*\/\%\(\)\^\x]+)"
     matches = re.findall(pattern, text)
     
     for expression in matches:
@@ -88,8 +88,8 @@ def function1_math(text: str) -> str:
         if len(expression) < 3 or expression.isspace():
             continue
             
-        # Replace ^ with ** for Python exponentiation
-        expression = expression.replace('^', '**')
+        # Replace x with * for multiplication and ^ with ** for Python exponentiation
+        expression = expression.replace('x', '*').replace('^', '**')
         
         # Validate: only allow safe characters
         if not all(c in "0123456789+-*/.% ()" for c in expression):
