@@ -6,7 +6,9 @@ from re import split
 """ Required """
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
-# LLM Provider settings removed (Rule-based engine active)
+
+# Google Gemini API Key (optional - enables function calling capabilities)
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "")
 
 
 """ Optional """

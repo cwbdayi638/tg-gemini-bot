@@ -1,8 +1,20 @@
+import os
 import re
 import math
 from datetime import datetime, timedelta
 from io import BytesIO
-from .config import new_chat_info, prompt_new_info, gemini_err_info
+from typing import Optional, Dict, Any
+from .config import new_chat_info, prompt_new_info, gemini_err_info, generation_config, safety_settings
+
+# Try to import the Google Generative AI SDK for function calling support
+try:
+    import google.generativeai as genai
+    GEMINI_AVAILABLE = True
+except ImportError:
+    GEMINI_AVAILABLE = False
+
+# Get API key from environment
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "")
 
 # --- Rule Functions ---
 
@@ -399,6 +411,194 @@ def function5_fallback(text: str) -> str:
                 "I can help with **advanced math**, **unit conversions**, **weather info**, **time/date queries**, **language detection**, and **friendly chat**. "
                 "Try asking me something like 'sqrt(144)', '10 km to miles', or 'What time is it?' 😊")
 
+# --- Gemini Function Calling Declarations ---
+
+# Define function declarations for Gemini API function calling
+function_declarations = [
+    {
+        "name": "calculate_math",
+        "description": "Perform advanced mathematical calculations including basic operations, scientific functions like sqrt, sin, cos, tan, log, ln, exp, abs, and factorial. Supports expressions with parentheses and decimals.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "expression": {
+                    "type": "string",
+                    "description": "The mathematical expression to evaluate, e.g., 'sqrt(144)', 'sin(45)', '(5 + 5) * 2', 'log(100)'"
+                }
+            },
+            "required": ["expression"]
+        }
+    },
+    {
+        "name": "convert_units",
+        "description": "Convert between different units including distance (km/miles/meters/feet), weight (kg/lbs), and temperature (Celsius/Fahrenheit).",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "value": {
+                    "type": "number",
+                    "description": "The numeric value to convert"
+                },
+                "from_unit": {
+                    "type": "string",
+                    "description": "The unit to convert from, e.g., 'km', 'miles', 'kg', 'lbs', 'celsius', 'fahrenheit', 'meters', 'feet'"
+                },
+                "to_unit": {
+                    "type": "string",
+                    "description": "The unit to convert to"
+                }
+            },
+            "required": ["value", "from_unit", "to_unit"]
+        }
+    },
+    {
+        "name": "get_weather",
+        "description": "Get weather information for a location. Can provide current weather, forecasts, temperature, humidity, wind conditions.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "location": {
+                    "type": "string",
+                    "description": "The location to get weather for, defaults to 'your area' if not specified"
+                },
+                "query_type": {
+                    "type": "string",
+                    "enum": ["current", "tomorrow", "week", "rain", "temperature", "humidity", "wind"],
+                    "description": "Type of weather information to retrieve"
+                }
+            },
+            "required": ["query_type"]
+        }
+    },
+    {
+        "name": "get_time_date",
+        "description": "Get current time, date, or perform date calculations. Can show current time/date, calculate future/past dates, convert timezones.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query_type": {
+                    "type": "string",
+                    "enum": ["current_time", "current_date", "full_datetime", "future_date", "past_date", "timezone", "day_of_week", "tomorrow", "yesterday"],
+                    "description": "Type of time/date query"
+                },
+                "days_offset": {
+                    "type": "integer",
+                    "description": "Number of days to add or subtract (for future_date/past_date)"
+                },
+                "timezone_offset": {
+                    "type": "integer",
+                    "description": "Timezone offset in hours from UTC (for timezone queries)"
+                }
+            },
+            "required": ["query_type"]
+        }
+    },
+    {
+        "name": "detect_language",
+        "description": "Detect the language(s) present in text. Supports Chinese, Russian, Japanese, Korean, Arabic, Thai, and more.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "description": "The text to analyze for language detection"
+                }
+            },
+            "required": ["text"]
+        }
+    }
+]
+
+# Function execution helpers
+def execute_function_call(function_name: str, function_args: Dict[str, Any]) -> Dict[str, Any]:
+    """Execute function calls from Gemini and return structured results"""
+    try:
+        if function_name == "calculate_math":
+            expression = function_args.get("expression", "")
+            # Use existing function1_math logic
+            result = function1_math(f"calculate {expression}")
+            if result:
+                return {"success": True, "result": result}
+            return {"success": False, "error": "Could not evaluate expression"}
+        
+        elif function_name == "convert_units":
+            value = function_args.get("value", 0)
+            from_unit = function_args.get("from_unit", "")
+            to_unit = function_args.get("to_unit", "")
+            # Use existing function6_unit_conversion logic
+            result = function6_unit_conversion(f"{value} {from_unit} to {to_unit}")
+            if result:
+                return {"success": True, "result": result}
+            return {"success": False, "error": "Could not convert units"}
+        
+        elif function_name == "get_weather":
+            location = function_args.get("location", "your area")
+            query_type = function_args.get("query_type", "current")
+            # Use existing function2_weather logic
+            if query_type == "tomorrow":
+                query = f"weather tomorrow in {location}"
+            elif query_type == "week":
+                query = f"weather this week in {location}"
+            elif query_type == "rain":
+                query = f"will it rain in {location}"
+            elif query_type == "temperature":
+                query = f"temperature in {location}"
+            elif query_type == "humidity":
+                query = f"humidity in {location}"
+            elif query_type == "wind":
+                query = f"wind in {location}"
+            else:
+                query = f"weather in {location}"
+            
+            result = function2_weather(query)
+            if result:
+                return {"success": True, "result": result}
+            return {"success": False, "error": "Could not get weather info"}
+        
+        elif function_name == "get_time_date":
+            query_type = function_args.get("query_type", "full_datetime")
+            days_offset = function_args.get("days_offset")
+            timezone_offset = function_args.get("timezone_offset")
+            
+            # Use existing function3_time logic
+            if query_type == "current_time":
+                query = "what time is it"
+            elif query_type == "current_date":
+                query = "what is the date"
+            elif query_type == "tomorrow":
+                query = "what is tomorrow's date"
+            elif query_type == "yesterday":
+                query = "what was yesterday's date"
+            elif query_type == "day_of_week":
+                query = "what day is it"
+            elif query_type == "future_date" and days_offset:
+                query = f"{days_offset} days from now"
+            elif query_type == "past_date" and days_offset:
+                query = f"{days_offset} days ago"
+            elif query_type == "timezone" and timezone_offset is not None:
+                query = f"time in UTC{timezone_offset:+d}"
+            else:
+                query = "what time and date is it"
+            
+            result = function3_time(query)
+            if result:
+                return {"success": True, "result": result}
+            return {"success": False, "error": "Could not get time/date info"}
+        
+        elif function_name == "detect_language":
+            text = function_args.get("text", "")
+            # Use existing function7_language_detection logic
+            result = function7_language_detection(f"detect language: {text}")
+            if result:
+                return {"success": True, "result": result}
+            return {"success": False, "error": "Could not detect language"}
+        
+        else:
+            return {"success": False, "error": f"Unknown function: {function_name}"}
+    
+    except Exception as e:
+        return {"success": False, "error": f"Error executing {function_name}: {str(e)}"}
+
 # --- Compatibility Layer ---
 
 class MockResponse:
@@ -406,10 +606,99 @@ class MockResponse:
         self.text = text
 
 class ChatConversation:
-    def __init__(self):
+    def __init__(self, use_function_calling: bool = None):
+        """Initialize chat conversation with optional Gemini API function calling support
+        
+        Args:
+            use_function_calling: If True, use Gemini API. If False, use rule-based.
+                                If None (default), auto-detect based on API key availability.
+        """
         self.history = []
+        
+        # Auto-detect if not specified
+        if use_function_calling is None:
+            use_function_calling = GEMINI_AVAILABLE and bool(GOOGLE_API_KEY)
+        
+        self.use_function_calling = use_function_calling
+        self.gemini_chat = None
+        self.model = None
+        
+        if self.use_function_calling:
+            try:
+                genai.configure(api_key=GOOGLE_API_KEY)
+                
+                # Initialize model with function declarations
+                self.model = genai.GenerativeModel(
+                    model_name='gemini-1.5-flash',
+                    generation_config=generation_config,
+                    safety_settings=safety_settings,
+                    tools=[{"function_declarations": function_declarations}]
+                )
+                
+                self.gemini_chat = self.model.start_chat(history=[])
+                print("✓ Gemini API with function calling initialized")
+            except Exception as e:
+                print(f"Warning: Failed to initialize Gemini API: {e}. Falling back to rule-based mode.")
+                self.use_function_calling = False
 
     def send_message(self, text: str) -> MockResponse:
+        """Send a message and get response, with optional Gemini function calling"""
+        if self.use_function_calling and self.gemini_chat:
+            return self._send_with_gemini(text)
+        else:
+            return self._send_with_rules(text)
+    
+    def _send_with_gemini(self, text: str) -> MockResponse:
+        """Send message using Gemini API with function calling"""
+        try:
+            response = self.gemini_chat.send_message(text)
+            
+            # Check if Gemini wants to call functions
+            function_calls = []
+            for part in response.parts:
+                if hasattr(part, 'function_call') and part.function_call:
+                    function_calls.append(part.function_call)
+            
+            # If function calls are present, execute them
+            if function_calls:
+                function_responses = []
+                
+                for function_call in function_calls:
+                    function_name = function_call.name
+                    function_args = dict(function_call.args)
+                    
+                    # Execute the function
+                    result = execute_function_call(function_name, function_args)
+                    
+                    # Create function response for Gemini
+                    function_responses.append(
+                        genai.protos.Part(
+                            function_response=genai.protos.FunctionResponse(
+                                name=function_name,
+                                response={"result": result}
+                            )
+                        )
+                    )
+                
+                # Send function results back to Gemini to generate final response
+                response = self.gemini_chat.send_message(function_responses)
+            
+            # Extract text from response
+            response_text = response.text if hasattr(response, 'text') else str(response)
+            
+            # Track history
+            self.history.append({"role": "user", "parts": [{"text": text}]})
+            self.history.append({"role": "model", "parts": [{"text": response_text}]})
+            
+            return MockResponse(response_text)
+            
+        except Exception as e:
+            print(f"Error in Gemini API call: {e}. Falling back to rule-based mode.")
+            # Fallback to rule-based on error
+            return self._send_with_rules(text)
+    
+    def _send_with_rules(self, text: str) -> MockResponse:
+        """Send message using rule-based functions (fallback)"""
         # Prioritized rule checking
         response = function0_help(text)
         if not response:
@@ -438,8 +727,22 @@ class ChatConversation:
         return len(self.history)
 
 def generate_text_with_image(prompt: str, image_bytes: BytesIO) -> str:
-    """Compatibility function for image messages"""
-    # Simple rule-based response for images
+    """Generate text with image using Gemini or fallback to rule-based"""
+    if GEMINI_AVAILABLE and GOOGLE_API_KEY:
+        try:
+            genai.configure(api_key=GOOGLE_API_KEY)
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            
+            # Open image from bytes
+            from PIL import Image
+            image = Image.open(image_bytes)
+            
+            response = model.generate_content([prompt, image])
+            return response.text
+        except Exception as e:
+            print(f"Error in Gemini image generation: {e}. Using fallback.")
+    
+    # Fallback: Simple rule-based response for images
     base_response = "I have received your image. "
     response = function0_help(prompt) or \
                function1_math(prompt) or \
@@ -452,11 +755,23 @@ def generate_text_with_image(prompt: str, image_bytes: BytesIO) -> str:
     return base_response + response
 
 def list_models():
-    """Compatibility function for listing models"""
-    print("Listing models: [Rule-Based Engine Active]")
+    """List available models"""
+    if GEMINI_AVAILABLE and GOOGLE_API_KEY:
+        try:
+            genai.configure(api_key=GOOGLE_API_KEY)
+            models = genai.list_models()
+            print("Available Gemini models:")
+            for model in models:
+                print(f"  - {model.name}")
+                if hasattr(model, 'supported_generation_methods'):
+                    print(f"    Methods: {', '.join(model.supported_generation_methods)}")
+        except Exception as e:
+            print(f"Error listing models: {e}")
+    else:
+        print("Gemini API not available. Using rule-based engine.")
 
 # Provider replacement (if needed by other files)
-class RuleBasedProvider:
+class GeminiProvider:
     def start_chat(self, history=None):
         return ChatConversation()
     
@@ -471,7 +786,7 @@ class RuleBasedProvider:
         list_models()
 
 # Global PROVIDER for handle.py compatibility
-PROVIDER = RuleBasedProvider()
+PROVIDER = GeminiProvider()
 
 def get_provider():
     return PROVIDER
