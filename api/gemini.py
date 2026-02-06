@@ -98,6 +98,11 @@ class AntigravityProvider(LLMProvider):
         default_endpoint = f"https://{self.REGION}-aiplatform.googleapis.com/v1/projects/{self.PROJECT_ID}/locations/{self.REGION}/publishers/google/models/{self.MODEL}:generateContent"
         
         self.endpoint = ANTIGRAVITY_ENDPOINT or default_endpoint
+        if ANTIGRAVITY_ENDPOINT:
+            print(f"DEBUG: Using configured ANTIGRAVITY_ENDPOINT: {self.endpoint}")
+        else:
+            print(f"DEBUG: Using default Vertex AI Endpoint: {self.endpoint}")
+
         self.token_manager = TokenManager(self.api_key) if self.api_key else None
 
     def _call_api(self, payload):
