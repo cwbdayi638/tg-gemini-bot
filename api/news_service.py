@@ -1,4 +1,5 @@
 # news_service.py - News fetching and display service
+import re
 import requests
 import feedparser
 from datetime import datetime, timezone
@@ -9,7 +10,7 @@ def _format_time(time_str: str) -> str:
     try:
         dt = datetime.strptime(time_str, "%a, %d %b %Y %H:%M:%S %z")
         return dt.strftime("%Y-%m-%d %H:%M")
-    except:
+    except Exception:
         return time_str
 
 def fetch_rss_news(url: str, limit: int = 5, source_name: str = "News") -> str:
@@ -29,7 +30,7 @@ def fetch_rss_news(url: str, limit: int = 5, source_name: str = "News") -> str:
             if pub_date:
                 try:
                     time_formatted = _format_time(pub_date)
-                except:
+                except Exception:
                     time_formatted = pub_date
             else:
                 time_formatted = "Unknown time"
@@ -37,7 +38,6 @@ def fetch_rss_news(url: str, limit: int = 5, source_name: str = "News") -> str:
             summary = entry.get('summary', '')
             # Clean HTML tags from summary if present
             if summary:
-                import re
                 summary = re.sub('<[^<]+?>', '', summary)
                 # Truncate summary
                 if len(summary) > 150:
@@ -88,7 +88,7 @@ def fetch_general_news(limit: int = 5) -> str:
             result = fetch_func(limit)
             if not result.startswith("❌"):
                 return result
-        except:
+        except Exception:
             continue
     
     return "❌ Unable to fetch news from any source at this time.\n\nNote: News feeds may require network access that is not available in this environment."
