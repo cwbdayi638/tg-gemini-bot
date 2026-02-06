@@ -2,7 +2,36 @@
 
 [English](README_EN.md) | [繁體中文](README.md) | [简体中文](README_zh-CN.md)
 
-**tg-gemini-bot** is a lightning-fast, rule-based Telegram assistant. Originally designed for Google Gemini, it has been refactored into a high-performance rule engine that responds instantly to common tasks without the latency or cost of large language models (LLMs).
+**tg-gemini-bot** is a powerful Telegram assistant with dual operating modes: an ultra-fast rule-based engine for instant responses, and optional Gemini API integration with advanced function calling capabilities for intelligent, context-aware interactions.
+
+## 🎯 Operating Modes
+
+### 🚀 Rule-Based Mode (Default)
+Lightning-fast responses using local rule engine - no API key required, zero latency, maximum privacy.
+
+### 🤖 Gemini Function Calling Mode (Optional)
+Intelligent responses powered by Google's Gemini 1.5 with function calling capabilities. The AI decides when to invoke functions for optimal results.
+
+**To enable:** Set `GOOGLE_API_KEY` environment variable.
+
+## 🆕 What's New: Function Calling Capabilities
+
+This bot now supports **Gemini API Function Calling**, a powerful feature that allows the AI to intelligently invoke specialized functions when needed. This means:
+
+✨ **Intelligent Function Selection** - Gemini automatically chooses the right function for your query  
+✨ **Natural Language Understanding** - Ask questions naturally, no specific syntax required  
+✨ **Context-Aware Responses** - Combines multiple functions for complex queries  
+✨ **Graceful Fallback** - Automatically switches to rule-based mode if API is unavailable  
+
+### Function Declarations
+
+The bot exposes 5 specialized functions to Gemini:
+
+1. **`calculate_math`** - Advanced mathematical calculations (sqrt, sin, cos, tan, log, etc.)
+2. **`convert_units`** - Unit conversions (distance, weight, temperature)
+3. **`get_weather`** - Weather information with location detection
+4. **`get_time_date`** - Time/date queries and calculations
+5. **`detect_language`** - Multi-language detection
 
 ## 🚀 Advanced Features Overview
 
@@ -132,14 +161,18 @@ Context-aware greetings with time-of-day intelligence:
 
 ## 🎯 Key Features
 
-- **⚡ Lightning Speed**: Instant responses using local rule logic
-- **🔒 Privacy First**: No data sent to external AI providers
+- **🤖 Dual Operating Modes**: Choose between ultra-fast rule-based or intelligent Gemini function calling
+- **⚡ Lightning Speed**: Instant responses using local rule logic (rule-based mode)
+- **🧠 Smart AI Integration**: Optional Gemini 1.5 with function calling for context-aware responses
+- **🔧 Function Declarations**: 5 specialized functions for math, conversions, weather, time, and language
+- **🔒 Privacy First**: Rule-based mode sends no data externally; Gemini mode optional
 - **🎨 Rich Functionality**: 7+ advanced rule functions
 - **🌐 Multilingual**: Support for multiple languages
 - **📊 Smart Detection**: Pattern matching for intelligent responses
 - **🛠️ Flask-Based**: Lightweight and easy to extend
 - **☁️ Vercel Ready**: Deploy to Vercel with one click
 - **🐳 Docker Support**: Containerized for easy deployment anywhere
+- **🔄 Graceful Fallback**: Automatically switches modes based on availability
 
 ## 📋 Prerequisites
 
@@ -148,6 +181,12 @@ Prepare the following and configure them as environment variables in Vercel or y
 - **BOT_TOKEN** (Required)
   
   Create your own Telegram bot via [@BotFather](https://t.me/BotFather) and obtain the token.
+
+- **GOOGLE_API_KEY** (Optional - New!)
+  
+  Enable Gemini API with function calling capabilities. Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey).
+  - Without this key: Bot uses fast rule-based mode
+  - With this key: Bot uses intelligent Gemini function calling
 
 - **ALLOWED_USERS** (Optional)
   
@@ -162,15 +201,24 @@ Prepare the following and configure them as environment variables in Vercel or y
 ### Deploy to Vercel
 
 1. Click the deploy button to clone and deploy
-2. Configure your `BOT_TOKEN` environment variable
-3. Visit `https://api.telegram.org/bot<bot-token>/setWebhook?url=<vercel-domain>` to connect your bot
+2. Configure your `BOT_TOKEN` environment variable (required)
+3. Optionally configure `GOOGLE_API_KEY` to enable Gemini function calling
+4. Visit `https://api.telegram.org/bot<bot-token>/setWebhook?url=<vercel-domain>` to connect your bot
 
 ### Deploy with Docker
 
 ```bash
 docker build -t tg-gemini-bot .
+
+# Rule-based mode (fast, no API key needed)
 docker run -d -p 5000:5000 \
   -e BOT_TOKEN="your_bot_token" \
+  tg-gemini-bot
+
+# Gemini mode (with function calling)
+docker run -d -p 5000:5000 \
+  -e BOT_TOKEN="your_bot_token" \
+  -e GOOGLE_API_KEY="your_google_api_key" \
   tg-gemini-bot
 ```
 
@@ -180,8 +228,9 @@ docker run -d -p 5000:5000 \
 # Install dependencies
 pip install -r requirements.txt
 
-# Set environment variable
+# Set environment variables
 export BOT_TOKEN="your_bot_token"
+export GOOGLE_API_KEY="your_google_api_key"  # Optional
 
 # Run the application
 python -m flask run
@@ -192,6 +241,7 @@ python -m flask run
 | Variable | Required | Description |
 |----------|----------|-------------|
 | BOT_TOKEN | Yes | Your Telegram bot token from BotFather |
+| GOOGLE_API_KEY | No | Google Gemini API key for function calling (optional) |
 | ALLOWED_USERS | No | Allowed usernames or IDs (supports regex) |
 | ALLOWED_GROUPS | No | Allowed group IDs or usernames |
 | ADMIN_ID | No | Telegram ID for admin commands |
