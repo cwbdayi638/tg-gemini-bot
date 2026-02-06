@@ -4,8 +4,6 @@
 
 **tg-gemini-bot** is a lightning-fast, rule-based Telegram assistant. Originally designed for Google Gemini, it has been refactored into a high-performance rule engine that responds instantly to common tasks without the latency or cost of large language models (LLMs).
 
-![screen](./screenshots/screen.png)
-
 ## 🚀 Advanced Features Overview
 
 This bot has been significantly upgraded with powerful rule-based functions that provide instant responses to a wide variety of tasks.
