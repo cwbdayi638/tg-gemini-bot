@@ -3,8 +3,15 @@ from re import split
 
 """ Required """
 
+""" Required """
+
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 GOOGLE_API_KEY = split(r'[ ,;，；]+', os.environ.get("GOOGLE_API_KEY"))
+
+# Provider selection: "google" or "antigravity"
+LLM_PROVIDER = os.environ.get("LLM_PROVIDER", "google")
+ANTIGRAVITY_KEY = os.environ.get("ANTIGRAVITY_KEY")
+ANTIGRAVITY_ENDPOINT = os.environ.get("ANTIGRAVITY_ENDPOINT")
 
 """ Optional """
 
