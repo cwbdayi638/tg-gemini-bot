@@ -1,321 +1,118 @@
+import re
+from datetime import datetime
 from io import BytesIO
-import abc
-import google.generativeai as genai
-import PIL.Image
+from .config import new_chat_info, prompt_new_info, gemini_err_info
 
-from .config import GOOGLE_API_KEY, generation_config, safety_settings, gemini_err_info, new_chat_info, LLM_PROVIDER, ANTIGRAVITY_KEY, ANTIGRAVITY_ENDPOINT
+# --- Rule Functions ---
 
-# Abstract Base Class for LLM Providers
-class LLMProvider(abc.ABC):
-    @abc.abstractmethod
-    def start_chat(self, history=None):
-        pass
-    
-    @abc.abstractmethod
-    def generate_content(self, prompt: str) -> str:
-        pass
-
-    @abc.abstractmethod
-    def generate_content_with_image(self, prompt: str, image_bytes: BytesIO) -> str:
-        pass
-    
-    @abc.abstractmethod
-    def list_models(self):
-        pass
-
-# Google Gemini Provider Implementation
-class GoogleGeminiProvider(LLMProvider):
-    def __init__(self):
-        if GOOGLE_API_KEY:
-            genai.configure(api_key=GOOGLE_API_KEY[0])
-        self.model_usual = genai.GenerativeModel(
-            model_name="gemini-3-pro-preview",
-            generation_config=generation_config,
-            safety_settings=safety_settings)
-        self.model_vision = genai.GenerativeModel(
-            model_name="gemini-3-pro-preview",
-            generation_config=generation_config,
-            safety_settings=safety_settings)
-
-    def start_chat(self, history=None):
-        if history is None:
-            history = []
-        return self.model_usual.start_chat(history=history)
-
-    def generate_content(self, prompt: str) -> str:
+def function1_math(text: str) -> str:
+    """Function 1: Simple math calculations"""
+    # Look for expressions like 123 + 456
+    pattern = r"(\d+\s*[\+\-\*\/\%]\s*\d+)"
+    match = re.search(pattern, text)
+    if match:
         try:
-            response = self.model_usual.generate_content(prompt)
-            result = response.text
-        except Exception as e:
-            result = f"{gemini_err_info}\n{repr(e)}"
-        return result
+            expression = match.group(1)
+            # Safe evaluation for basic math
+            # We strictly limit characters to digits and basic operators
+            if all(c in "0123456789+-*/% " for c in expression):
+                # Using a simple eval for 2-operand math
+                result = eval(expression)
+                return f"The result of {expression} is {result}."
+        except Exception:
+            pass
+    return None
 
-    def generate_content_with_image(self, prompt: str, image_bytes: BytesIO) -> str:
-        img = PIL.Image.open(image_bytes)
-        try:
-            response = self.model_vision.generate_content([prompt, img])
-            result = response.text
-        except Exception as e:
-            result = f"{gemini_err_info}\n{repr(e)}"
-        return result
+def function2_weather(text: str) -> str:
+    """Function 2: The weather condition"""
+    keywords = ["weather", "temperature", "forecast", "rain", "sunny", "cloudy"]
+    if any(k in text.lower() for k in keywords):
+        return "The weather condition is currently pleasant with a moderate temperature. It's a great day for outdoor activities!"
+    return None
 
-    def list_models(self):
-        for m in genai.list_models():
-            print(m)
-            if "generateContent" in m.supported_generation_methods:
-                print(m.name)
+def function3_time(text: str) -> str:
+    """Function 3: Current time and date"""
+    keywords = ["time", "date", "today", "now", "calendar"]
+    if any(k in text.lower() for k in keywords):
+        now = datetime.now()
+        date_str = now.strftime("%A, %B %d, %Y")
+        time_str = now.strftime("%I:%M %p")
+        return f"Current date is {date_str} and the time is {time_str}."
+    return None
 
-# Antigravity Provider Implementation (Placeholder)
-# Antigravity Provider Implementation
-from .token_utils import TokenManager
+def function4_greeting(text: str) -> str:
+    """Function 4: Greeting with manner"""
+    greetings = ["hi", "hello", "hey", "good morning", "good afternoon", "good evening", "how are you"]
+    if any(text.lower().startswith(g) for g in greetings) or text.lower().strip() in greetings:
+        return "Greetings! I hope you are having a wonderful day. How can I assist you with your inquiries?"
+    return None
 
-class AntigravityChatSession:
-    def __init__(self, provider, history=None):
-        self.provider = provider
-        self.history = history or []
+def function5_fallback(text: str) -> str:
+    """Function 5: Anything else"""
+    return "Thank you for your question. I will search the answer ....."
 
-    def send_message(self, prompt: str):
-        # Add user message to history
-        self.history.append({"role": "user", "parts": [{"text": prompt}]})
-        
-        # Generate response using the provider
-        response_text = self.provider.generate_content_interaction(self.history)
-        
-        # Add model response to history
-        self.history.append({"role": "model", "parts": [{"text": response_text}]})
-        
-        return MockResponse(response_text)
-
-class AntigravityProvider(LLMProvider):
-    # Vertex AI Configuration
-    # We will discover the project ID from the API
-    DEFAULT_PROJECT_ID = "cloudaicompanion" 
-    REGION = "us-central1"
-    MODEL = "gemini-1.5-pro"
-    
-    def __init__(self):
-        self.api_key = ANTIGRAVITY_KEY # This is expected to be the REFRESH TOKEN
-        self.region = self.REGION
-        self.model = self.MODEL
-        
-        self.project_id = self.DEFAULT_PROJECT_ID
-        self.token_manager = TokenManager(self.api_key) if self.api_key else None
-        self.endpoint = ANTIGRAVITY_ENDPOINT # May be None initially
-        self._discovered = False
-
-    def _discover_project(self):
-        """Discovers the correct project ID using loadCodeAssist."""
-        import requests
-        if self._discovered:
-            return
-            
-        if not self.token_manager:
-            return
-
-        try:
-            token = self.token_manager.get_access_token()
-            headers = {
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json",
-                "X-Goog-Api-Client": "google-cloud-sdk vscode_cloudshelleditor/0.1",
-                "User-Agent": "antigravity"
-            }
-            payload = {
-                "metadata": {
-                    "ideType": "ANTIGRAVITY",
-                    "platform": "PLATFORM_UNSPECIFIED",
-                    "pluginType": "GEMINI"
-                }
-            }
-            
-            # Use v1internal:loadCodeAssist to discover the project ID
-            resp = requests.post(
-                "https://cloudcode-pa.googleapis.com/v1internal:loadCodeAssist",
-                headers=headers,
-                json=payload
-            )
-            
-            if resp.status_code == 200:
-                data = resp.json()
-                project = data.get("cloudaicompanionProject")
-                if project:
-                    if isinstance(project, str):
-                        self.project_id = project
-                    else:
-                        self.project_id = project.get("id", self.DEFAULT_PROJECT_ID)
-                    
-                    print(f"DEBUG: Discovered Antigravity Project ID: {self.project_id}")
-            else:
-                print(f"DEBUG: Project discovery failed (Status {resp.status_code}). Using default: {self.project_id}")
-                
-        except Exception as e:
-            print(f"DEBUG: Exception during project discovery: {e}")
-        
-        # After discovery (or failure), finalize the endpoint
-        if not self.endpoint:
-             # Ensure project_id is formatted correctly (e.g., remove 'projects/' prefix if redundant)
-             # But Vertex AI URLs usually take the format projects/{project_id}
-             # loadCodeAssist usually returns "projects/xxx"
-             pid = self.project_id
-             if pid.startswith("projects/"):
-                 pid = pid[len("projects/"):]
-                 
-             self.endpoint = f"https://{self.region}-aiplatform.googleapis.com/v1/projects/{pid}/locations/{self.region}/publishers/google/models/{self.model}:generateContent"
-             print(f"DEBUG: Resolved Vertex AI Endpoint: {self.endpoint}")
-
-        self._discovered = True
-
-    def _call_api(self, payload):
-        import requests
-        
-        self._discover_project() # Ensure discovery is run
-        
-        if not self.token_manager:
-            return "Error: Antigravity Provider requires ANTIGRAVITY_KEY (Refresh Token) to be set."
-
-        try:
-            token = self.token_manager.get_access_token()
-        except Exception as e:
-            return f"Authentication Error: {e}"
-        
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json"
-        }
-        
-        try:
-            response = requests.post(self.endpoint, headers=headers, json=payload)
-            
-            if response.status_code != 200:
-                return f"Antigravity API Error ({response.status_code}): {response.text}"
-                
-            data = response.json()
-            
-            # Parse response (Gemini structure)
-            if "candidates" in data and len(data["candidates"]) > 0:
-                parts = data["candidates"][0].get("content", {}).get("parts", [])
-                if parts:
-                    return parts[0].get("text", "")
-            return "Empty response from Antigravity."
-        except Exception as e:
-            return f"{gemini_err_info}\nAntigravity API Exception: {e}"
-
-    def start_chat(self, history=None):
-        return AntigravityChatSession(self, history)
-
-    def generate_content(self, prompt: str) -> str:
-        payload = {
-            "contents": [{
-                "role": "user",
-                "parts": [{"text": prompt}]
-            }]
-        }
-        return self._call_api(payload)
-    
-    def generate_content_interaction(self, messages: list) -> str:
-        # Helper for chat session to send full history
-        payload = {
-            "contents": messages
-        }
-        return self._call_api(payload)
-
-    def generate_content_with_image(self, prompt: str, image_bytes: BytesIO) -> str:
-        import base64
-        image_data = base64.b64encode(image_bytes.getvalue()).decode('utf-8')
-        
-        payload = {
-            "contents": [{
-                "role": "user",
-                "parts": [
-                    {"text": prompt},
-                    {
-                        "inline_data": {
-                            "mime_type": "image/jpeg", 
-                            "data": image_data
-                        }
-                    }
-                ]
-            }]
-        }
-        return self._call_api(payload)
-
-    def list_models(self):
-        print(f"Antigravity (Vertex AI) Provider: Project={self.PROJECT_ID}, Model={self.MODEL}")
-
-
-class MockChatSession:
-    # Kept for fallback or other providers if needed
-    def __init__(self, provider, history=None):
-        self.provider = provider
-        self.history = history or []
-
-    def send_message(self, prompt):
-        self.history.append({"role": "user", "parts": [prompt]})
-        response = self.provider.generate_content(prompt)
-        self.history.append({"role": "model", "parts": [response]})
-        return MockResponse(response)
+# --- Compatibility Layer ---
 
 class MockResponse:
-    def __init__(self, text):
+    def __init__(self, text: str):
         self.text = text
 
-
-# Factory to get the configured provider
-def get_provider() -> LLMProvider:
-    if LLM_PROVIDER == 'antigravity':
-        return AntigravityProvider()
-    return GoogleGeminiProvider()
-
-# Initialize the global provider
-PROVIDER = get_provider()
-
-# Expose functions to maintain compatibility with existing calls, but route them to the provider
-def list_models() -> None:
-    """list all models"""
-    PROVIDER.list_models()
-
-""" This function is deprecated """
-def generate_content(prompt: str) -> str:
-    """generate text from prompt"""
-    return PROVIDER.generate_content(prompt)
-
-def generate_text_with_image(prompt: str, image_bytes: BytesIO) -> str:
-    """generate text from prompt and image"""
-    return PROVIDER.generate_content_with_image(prompt, image_bytes)
-
-
 class ChatConversation:
-    """
-    Kicks off an ongoing chat. If the input is /new,
-    it triggers the start of a fresh conversation.
-    """
+    def __init__(self):
+        self.history = []
 
-    def __init__(self) -> None:
-        self.chat = PROVIDER.start_chat(history=[])
-
-    def send_message(self, prompt: str) -> str:
-        """send message"""
-        if prompt.startswith("/new"):
-            self.__init__()
-            result = new_chat_info
-        else:
-            try:
-                # Assuming the chat object returned by start_chat has a send_message method
-                # that returns an object with a .text attribute (like Gemini's)
-                response = self.chat.send_message(prompt)
-                result = response.text
-            except Exception as e:
-                result = f"{gemini_err_info}\n{repr(e)}"
-        return result
-
-    @property
-    def history(self):
-        return self.chat.history
+    def send_message(self, text: str) -> MockResponse:
+        # Prioritized rule checking
+        response = function1_math(text)
+        if not response:
+            response = function2_weather(text)
+        if not response:
+            response = function3_time(text)
+        if not response:
+            response = function4_greeting(text)
+        if not response:
+            response = function5_fallback(text)
+        
+        # Track history for consistency with bot expectations (though no context is used)
+        self.history.append({"role": "user", "parts": [{"text": text}]})
+        self.history.append({"role": "model", "parts": [{"text": response}]})
+        
+        return MockResponse(response)
 
     @property
     def history_length(self):
-        return len(self.chat.history)
+        return len(self.history)
 
+def generate_text_with_image(prompt: str, image_bytes: BytesIO) -> str:
+    """Compatibility function for image messages"""
+    # Simple rule-based response for images
+    base_response = "I have received your image. "
+    response = function1_math(prompt) or function2_weather(prompt) or \
+               function3_time(prompt) or function4_greeting(prompt) or \
+               function5_fallback(prompt)
+    return base_response + response
 
-if __name__ == "__main__":
-    print(list_models())
+def list_models():
+    """Compatibility function for listing models"""
+    print("Listing models: [Rule-Based Engine Active]")
+
+# Provider replacement (if needed by other files)
+class RuleBasedProvider:
+    def start_chat(self, history=None):
+        return ChatConversation()
+    
+    def generate_content(self, prompt: str) -> str:
+        chat = ChatConversation()
+        return chat.send_message(prompt).text
+    
+    def generate_content_with_image(self, prompt: str, image_bytes: BytesIO) -> str:
+        return generate_text_with_image(prompt, image_bytes)
+    
+    def list_models(self):
+        list_models()
+
+# Global PROVIDER for handle.py compatibility
+PROVIDER = RuleBasedProvider()
+
+def get_provider():
+    return PROVIDER

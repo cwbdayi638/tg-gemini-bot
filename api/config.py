@@ -6,12 +6,8 @@ from re import split
 """ Required """
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
-GOOGLE_API_KEY = split(r'[ ,;，；]+', os.environ.get("GOOGLE_API_KEY"))
+# LLM Provider settings removed (Rule-based engine active)
 
-# Provider selection: "google" or "antigravity"
-LLM_PROVIDER = os.environ.get("LLM_PROVIDER", "google")
-ANTIGRAVITY_KEY = os.environ.get("ANTIGRAVITY_KEY")
-ANTIGRAVITY_ENDPOINT = os.environ.get("ANTIGRAVITY_ENDPOINT")
 
 """ Optional """
 
@@ -37,14 +33,14 @@ defaut_photo_caption = "describe this picture"
 
 """ Below is some text related to the user """
 help_text = "You can send me text or pictures. When sending pictures, please include the text in the same message.\nTo use the group please @bot or reply to any message sent by the bot"
-command_list = "/new Start a new chat\n/get_my_info Get personal information\n/get_group_info Get group information (group only)\n/get_allowed_users Get the list of users that are allowed to use the bot (admin only)\n/get_allowed_groups Get the list of groups that are allowed to use the bot (admin only)\n/list_models list_models (admin only)\n/get_api_key Get the list of gemini's apikeys. It is currently useless. Multiple keys may be added to automatically switch in the future.(admin only)\n/help Get help\n/5g_test :)"
+command_list = "/new Start a new chat\n/get_my_info Get personal information\n/get_group_info Get group information (group only)\n/get_allowed_users Get the list of users that are allowed to use the bot (admin only)\n/get_allowed_groups Get the list of groups that are allowed to use the bot (admin only)\n/list_models list available features (admin only)\n/help Get help"
 admin_auch_info = "You are not the administrator or your administrator ID is set incorrectly!!!"
 debug_mode_info = "Debug mode is not enabled!"
 command_format_error_info = "Command format error"
 command_invalid_error_info = "Invalid command, use /help for help"
 user_no_permission_info = "You are not allowed to use this bot."
 group_no_permission_info = "This group does not have permission to use this robot."
-gemini_err_info = f"Something went wrong!\nThe content you entered may be inappropriate, please modify it and try again"
+gemini_err_info = f"Something went wrong while processing your request. Please try again later."
 new_chat_info = "We're having a fresh chat."
 prompt_new_info = "Type /new to kick off a new chat."
 unable_to_recognize_content_sent = "The content you sent is not recognized!"
