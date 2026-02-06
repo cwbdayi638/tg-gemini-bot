@@ -4,8 +4,6 @@
 
 **tg-gemini-bot** 是一個極速、基於規則的 Telegram 助手。最初是為 Google Gemini 設計的，現在已重構為高效能的規則引擎，能夠立即回應常見任務，無需大型語言模型 (LLM) 的延遲或成本。
 
-![screen](./screenshots/screen.png)
-
 ## 🚀 進階功能概覽
 
 此機器人已透過強大的規則函數進行重大升級，可對各種任務提供即時回應。
