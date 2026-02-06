@@ -77,7 +77,7 @@ def function1_math(text: str) -> str:
     
     # Extract mathematical expression - support parentheses, decimals, and exponents
     # Pattern matches: numbers (int/float), operators (+,-,*,/,**,^,x,%), and parentheses
-    pattern = r"([\d\.\s\+\-\*\/\%\(\)\^\x]+)"
+    pattern = r"([\d\.\s\+\-\*\/\%\(\)\^x]+)"
     matches = re.findall(pattern, text)
     
     for expression in matches:
