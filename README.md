@@ -8,6 +8,31 @@
 
 此機器人已透過強大的規則函數進行重大升級，可對各種任務提供即時回應。
 
+### 🌍 地震資訊服務
+
+整合台灣中央氣象署 (CWA) 和美國地質調查局 (USGS) 的即時地震資訊：
+
+**即時地震資訊：**
+- `/eq_latest` - 最新顯著地震報告（含地震報告圖片）
+- `/eq_alert` - CWA 地震速報與預警
+- `/eq_significant` - CWA 過去 7 天顯著有感地震列表
+
+**全球地震監控：**
+- `/eq_global` - 全球近 24 小時顯著地震（規模 5.0 以上）
+- `/eq_taiwan` - 台灣區域今年顯著地震列表
+- `/eq_map` - 外部地震查詢服務連結
+
+**AI 智慧助理：**
+- `/eq_ai <問題>` - 使用 AI 查詢地震資料
+  - 範例：`/eq_ai 昨天花蓮有地震嗎？`
+  - 範例：`/eq_ai 2024年4月規模6以上的地震有哪些？`
+  - AI 可以自動呼叫地震資料庫工具並提供智慧分析
+
+**資料來源：**
+- 台灣中央氣象署開放資料平台
+- 美國地質調查局 (USGS) 地震 API
+- Google Gemini 1.5 Flash (AI 功能)
+
 ### 🧮 進階數學功能
 
 機器人現在可以處理複雜的數學表達式與科學函數：
@@ -134,9 +159,28 @@
 
 準備好這些內容，然後將其作為環境變量填寫在 Vercel 或您的 Docker 環境中。
 
-- **BOT_TOKEN**
+- **BOT_TOKEN** (必填)
 
   透過 [@BotFather](https://t.me/BotFather) 建立您自己的 Telegram 機器人並獲取 Token。
+
+- **GOOGLE_API_KEY** (可選 - 啟用 AI 功能)
+
+  啟用 Gemini API 功能呼叫能力。從 [Google AI Studio](https://makersuite.google.com/app/apikey) 取得您的 API 金鑰。
+  - 沒有此金鑰：機器人使用快速規則模式
+  - 有此金鑰：機器人使用智慧 Gemini 功能呼叫
+
+- **CWA_API_KEY** (可選 - 地震服務)
+
+  台灣中央氣象署 API 金鑰，用於存取顯著地震資料。
+  - 從 [CWA 開放資料平台](https://opendata.cwa.gov.tw/) 取得您的 API 金鑰
+  - `/eq_significant` 和 `/eq_latest` 指令需要此金鑰
+  - 地震預警和全球資料無需此金鑰即可運作
+
+- **MCP_SERVER_URL** (可選 - AI 地震搜尋)
+
+  MCP 伺服器 URL，用於透過 AI 進行進階地震資料庫搜尋。
+  - 預設值：`https://cwadayi-mcp-2.hf.space`
+  - 僅 `/eq_ai` 指令查詢歷史地震時需要
 
 - **ALLOWED_USERS / ALLOWED_GROUPS** (可選)
 
