@@ -6,8 +6,15 @@ from gradio_client import Client
 
 from .config import GOOGLE_API_KEY, MCP_SERVER_URL
 
+# Constant for API key validation
+PLACEHOLDER_API_KEY = "YOUR_GEMINI_API_KEY"
+
+def is_valid_api_key(key: str) -> bool:
+    """Check if the API key is valid (not empty and not placeholder)."""
+    return bool(key) and PLACEHOLDER_API_KEY not in key
+
 # Configure Gemini API key (one-time setup)
-if GOOGLE_API_KEY and "YOUR_GEMINI_API_KEY" not in GOOGLE_API_KEY:
+if is_valid_api_key(GOOGLE_API_KEY):
     genai.configure(api_key=GOOGLE_API_KEY)
 
 # Tool function for earthquake search
@@ -65,7 +72,7 @@ available_tools = {"call_earthquake_search_tool": call_mcp_earthquake_search}
 
 # Create Gemini model
 model = None
-if GOOGLE_API_KEY and "YOUR_GEMINI_API_KEY" not in GOOGLE_API_KEY:
+if is_valid_api_key(GOOGLE_API_KEY):
     try:
         system_instruction = (
             "You are a helpful AI assistant. "

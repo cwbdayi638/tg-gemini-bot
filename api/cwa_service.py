@@ -7,6 +7,10 @@ from .config import CWA_API_KEY, CWA_ALARM_API, CWA_SIGNIFICANT_API
 
 TAIPEI_TZ = timezone(timedelta(hours=8))
 
+def _escape_braces(s: str) -> str:
+    """Escape curly braces for string formatting."""
+    return str(s).replace('{', '{{').replace('}', '}}')
+
 def _to_float(x):
     """Safely convert a value to float."""
     if x is None: return None
@@ -52,12 +56,12 @@ def fetch_cwa_alarm_list(limit: int = 5) -> str:
         mag = _to_float(it.get("magnitudeValue"))
         depth = _to_float(it.get("depth"))
         tw_str, _ = _parse_cwa_time(it.get("originTime", ""))
-        identifier = str(it.get('identifier', '—')).replace('{', '{{').replace('}', '}}')
-        msg_type = str(it.get('msgType', '—')).replace('{', '{{').replace('}', '}}')
-        msg_no = str(it.get('msgNo', '—')).replace('{', '{{').replace('}', '}}')
+        identifier = _escape_braces(it.get('identifier', '—'))
+        msg_type = _escape_braces(it.get('msgType', '—'))
+        msg_no = _escape_braces(it.get('msgNo', '—'))
         location_desc_list = it.get('locationDesc')
         areas_str = ", ".join(str(area) for area in location_desc_list) if isinstance(location_desc_list, list) and location_desc_list else "—"
-        areas = areas_str.replace('{', '{{').replace('}', '}}')
+        areas = _escape_braces(areas_str)
         mag_str = f"{mag:.1f}" if mag is not None else "—"
         depth_str = f"{depth:.0f}" if depth is not None else "—"
         lines.append(
