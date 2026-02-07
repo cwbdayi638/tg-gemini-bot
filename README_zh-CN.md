@@ -8,7 +8,7 @@
 
 - **🌍 地震信息服务**：整合台湾中央气象署 (CWA) 和美国地质调查局 (USGS) 的实时地震数据
 - **📰 新闻服务**：通过 RSS 订阅源获取科技、台湾和全球新闻
-- **🤖 AI 对话**：使用 Google Gemini 1.5 进行智能对话（可选）
+- **🤖 AI 对话**：使用 Hugging Face Transformers 进行本地 AI 对话（无需 API 密钥）
 - **📸 图片分析**：使用 AI 分析和描述图片内容（需要 API 密钥）
 
 ## 🚀 功能详情
@@ -35,7 +35,7 @@
 **数据来源：**
 - 台湾中央气象署开放数据平台
 - 美国地质调查局 (USGS) 地震 API
-- Google Gemini 1.5 Flash (AI 功能)
+- Hugging Face Transformers (本地 AI 模型，无需 API 密钥)
 
 ### 📰 新闻服务
 
@@ -63,14 +63,13 @@
 
 ### 🤖 AI 对话功能
 
-当设置 `GOOGLE_API_KEY` 环境变量后，机器人可以：
-- 进行自然语言对话
+机器人现在使用 Hugging Face Transformers 本地模型，**无需 API 密钥**即可运行：
+- 进行自然语言对话（使用 DialoGPT 模型）
+- 智能地震查询（自动理解日期、规模等条件）
 - 回答各种问题
-- 提供智能建议和分析
+- 提供信息和建议
 
-### 📸 图片分析
-
-发送图片给机器人，它会使用 AI 分析图片内容并提供描述（需要设置 API 密钥）。
+**注意：** 首次使用时，模型会自动下载，可能需要一些时间和网络流量。模型大小约为数百 MB。
 
 ## 📋 基本指令
 
@@ -92,7 +91,6 @@
 
 | 变量 | 必填 | 描述 |
 | --- | --- | --- |
-| GOOGLE_API_KEY | ❌ 否 | Google Gemini API 密钥，用于 AI 对话和图片分析功能。从 [Google AI Studio](https://makersuite.google.com/app/apikey) 获取 |
 | CWA_API_KEY | ❌ 否 | 台湾中央气象署 API 密钥，用于访问显著地震数据。从 [CWA 开放数据平台](https://opendata.cwa.gov.tw/) 获取 |
 | MCP_SERVER_URL | ❌ 否 | MCP 服务器 URL，用于高级地震数据库搜索（默认：`https://cwadayi-mcp-2.hf.space`） |
 | MCP_WEB_SEARCH_URL | ❌ 否 | MCP 网页搜索服务器 URL，用于增强新闻和网页搜索功能（使用 [open-webSearch](https://github.com/Aas-ee/open-webSearch)，例如：`http://localhost:3000`） |
@@ -132,7 +130,7 @@
    ```bash
    docker run -d \
      -e BOT_TOKEN="您的机器人Token" \
-     -e GOOGLE_API_KEY="您的Gemini API密钥" \
+     
      -e CWA_API_KEY="您的CWA API密钥" \
      -p 8080:8080 \
      tg-gemini-bot
@@ -211,18 +209,21 @@ Report: [链接]
 - **身份验证支持**：可选的用户/群组限制
 - **管理员指令**：特定指令仅限管理员使用
 - **调试模式**：可选的日志记录功能
-- **安全设置**：Gemini API 安全设置
 
 ## 📝 注意事项
 
-1. **API 密钥**：
-   - 没有 `GOOGLE_API_KEY`：机器人仍可运行，但无法进行 AI 对话和图片分析
+1. **AI 功能**：
+   - 机器人使用 Hugging Face Transformers 本地模型，**不需要 Google API 密钥**
+   - 首次启动时会自动下载模型（约数百 MB），请确保有足够的磁盘空间和网络流量
+   - AI 对话功能会在本地运行，速度取决于服务器硬件配置
+
+2. **API 密钥**：
    - 没有 `CWA_API_KEY`：部分地震信息功能可能受限
 
-2. **群组使用**：
+3. **群组使用**：
    - 在群组中使用时，请 @机器人 或回复机器人的消息
 
-3. **对话历史**：
+4. **对话历史**：
    - 使用 `/new` 指令可以清除对话历史，开始新的对话
 
 ## 📄 授权

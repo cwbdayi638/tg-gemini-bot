@@ -8,8 +8,8 @@
 
 - **🌍 地震資訊服務**：整合台灣中央氣象署 (CWA) 和美國地質調查局 (USGS) 的即時地震資料
 - **📰 新聞服務**：透過 RSS 訂閱源獲取科技、台灣和全球新聞
-- **🤖 AI 對話**：使用 Google Gemini 1.5 進行智慧對話（可選）
-- **📸 圖片分析**：使用 AI 分析和描述圖片內容（需要 API 金鑰）
+- **🤖 AI 對話**：使用 Hugging Face Transformers 進行本地 AI 對話（無需 API 金鑰）
+- **🔍 智慧地震查詢**：使用 AI 理解自然語言問題並查詢地震資料
 
 ## 🚀 功能詳情
 
@@ -35,7 +35,7 @@
 **資料來源：**
 - 台灣中央氣象署開放資料平台
 - 美國地質調查局 (USGS) 地震 API
-- Google Gemini 1.5 Flash (AI 功能)
+- Hugging Face Transformers (本地 AI 模型，無需 API 金鑰)
 
 ### 📰 新聞服務
 
@@ -63,14 +63,13 @@
 
 ### 🤖 AI 對話功能
 
-當設定 `GOOGLE_API_KEY` 環境變數後，機器人可以：
-- 進行自然語言對話
+機器人現在使用 Hugging Face Transformers 本地模型，**無需 API 金鑰**即可運行：
+- 進行自然語言對話（使用 DialoGPT 模型）
+- 智慧地震查詢（自動理解日期、規模等條件）
 - 回答各種問題
-- 提供智慧建議和分析
+- 提供資訊和建議
 
-### 📸 圖片分析
-
-發送圖片給機器人，它會使用 AI 分析圖片內容並提供描述（需要設定 API 金鑰）。
+**注意：** 首次使用時，模型會自動下載，可能需要一些時間和網路流量。模型大小約為數百 MB。
 
 ## 📋 基本指令
 
@@ -92,7 +91,6 @@
 
 | 變數 | 必填 | 描述 |
 | --- | --- | --- |
-| GOOGLE_API_KEY | ❌ 否 | Google Gemini API 金鑰，用於 AI 對話和圖片分析功能。從 [Google AI Studio](https://makersuite.google.com/app/apikey) 取得 |
 | CWA_API_KEY | ❌ 否 | 台灣中央氣象署 API 金鑰，用於存取顯著地震資料。從 [CWA 開放資料平台](https://opendata.cwa.gov.tw/) 取得 |
 | MCP_SERVER_URL | ❌ 否 | MCP 伺服器 URL，用於進階地震資料庫搜尋（預設：`https://cwadayi-mcp-2.hf.space`） |
 | MCP_WEB_SEARCH_URL | ❌ 否 | MCP 網頁搜尋伺服器 URL，用於增強新聞和網頁搜尋功能（使用 [open-webSearch](https://github.com/Aas-ee/open-webSearch)，例如：`http://localhost:3000`） |
@@ -132,7 +130,6 @@
    ```bash
    docker run -d \
      -e BOT_TOKEN="您的機器人Token" \
-     -e GOOGLE_API_KEY="您的Gemini API金鑰" \
      -e CWA_API_KEY="您的CWA API金鑰" \
      -p 8080:8080 \
      tg-gemini-bot
@@ -194,16 +191,20 @@ Report: [連結]
 ...
 ```
 
-### AI 對話（需要 API 金鑰）
+### AI 對話（無需 API 金鑰）
 ```
 用戶：你好，請介紹一下台灣的地震情況
 機器人：台灣位於環太平洋地震帶上，是地震活動頻繁的地區...
 ```
 
-### 圖片分析（需要 API 金鑰）
+### 智慧地震查詢
 ```
-用戶：[發送圖片並附上文字「描述這張圖片」]
-機器人：這張圖片顯示了...
+用戶：/eq_ai 昨天花蓮有地震嗎？
+機器人：🌍 Earthquake Search Results (2024-02-05 to 2024-02-05, M≥4.5):
+Found 1 earthquake(s):
+1. Time: 2024-02-05 15:30:00
+   Location: 花蓮縣近海
+   Magnitude: M5.2 | Depth: 12 km
 ```
 
 ## 🔐 安全功能
@@ -215,14 +216,18 @@ Report: [連結]
 
 ## 📝 注意事項
 
-1. **API 金鑰**：
-   - 沒有 `GOOGLE_API_KEY`：機器人仍可運行，但無法進行 AI 對話和圖片分析
+1. **AI 功能**：
+   - 機器人使用 Hugging Face Transformers 本地模型，**不需要 Google API 金鑰**
+   - 首次啟動時會自動下載模型（約數百 MB），請確保有足夠的磁碟空間和網路流量
+   - AI 對話功能會在本地運行，速度取決於伺服器硬體配置
+
+2. **API 金鑰**：
    - 沒有 `CWA_API_KEY`：部分地震資訊功能可能受限
 
-2. **群組使用**：
+3. **群組使用**：
    - 在群組中使用時，請 @機器人 或回覆機器人的訊息
 
-3. **對話歷史**：
+4. **對話歷史**：
    - 使用 `/new` 指令可以清除對話歷史，開始新的對話
 
 ## 📄 授權

@@ -8,8 +8,8 @@
 
 - **🌍 Earthquake Information Services**: Integrated real-time earthquake data from Taiwan Central Weather Administration (CWA) and USGS
 - **📰 News Services**: Get technology, Taiwan, and global news through RSS feeds
-- **🤖 AI Conversations**: Intelligent conversations powered by Google Gemini 1.5 (Optional)
-- **📸 Image Analysis**: AI-powered image analysis and description (requires API key)
+- **🤖 AI Conversations**: Local AI conversations using Hugging Face Transformers (no API key required)
+- **🔍 Smart Earthquake Query**: AI understands natural language questions and queries earthquake data
 
 ## 🚀 Feature Details
 
@@ -35,7 +35,7 @@ Integrated real-time earthquake data from Taiwan Central Weather Administration 
 **Data Sources:**
 - Taiwan Central Weather Administration Open Data Platform
 - United States Geological Survey (USGS) Earthquake API
-- Google Gemini 1.5 Flash (AI features)
+- Hugging Face Transformers (local AI models, no API key required)
 
 ### 📰 News Services
 
@@ -63,14 +63,13 @@ Get real-time news from multiple sources via RSS feeds:
 
 ### 🤖 AI Conversation Features
 
-When `GOOGLE_API_KEY` environment variable is configured, the bot can:
-- Engage in natural language conversations
+The bot now uses Hugging Face Transformers local models, **no API key required**:
+- Natural language conversations (using DialoGPT model)
+- Smart earthquake queries (automatically understands dates, magnitudes, etc.)
 - Answer various questions
-- Provide intelligent suggestions and analysis
+- Provide information and suggestions
 
-### 📸 Image Analysis
-
-Send images to the bot and it will analyze and describe the content using AI (requires API key configuration).
+**Note:** On first use, models will be downloaded automatically, which may take some time and network bandwidth. Model size is approximately a few hundred MB.
 
 ## 📋 Basic Commands
 
@@ -92,7 +91,6 @@ Send images to the bot and it will analyze and describe the content using AI (re
 
 | Variable | Required | Description |
 | --- | --- | --- |
-| GOOGLE_API_KEY | ❌ No | Google Gemini API key for AI conversations and image analysis. Get from [Google AI Studio](https://makersuite.google.com/app/apikey) |
 | CWA_API_KEY | ❌ No | Taiwan Central Weather Administration API key for significant earthquake data. Get from [CWA Open Data Platform](https://opendata.cwa.gov.tw/) |
 | MCP_SERVER_URL | ❌ No | MCP server URL for advanced earthquake database search (default: `https://cwadayi-mcp-2.hf.space`) |
 | MCP_WEB_SEARCH_URL | ❌ No | MCP web search server URL for enhanced news and web search features (using [open-webSearch](https://github.com/Aas-ee/open-webSearch), e.g., `http://localhost:3000`) |
@@ -132,7 +130,6 @@ Send images to the bot and it will analyze and describe the content using AI (re
    ```bash
    docker run -d \
      -e BOT_TOKEN="your-bot-token" \
-     -e GOOGLE_API_KEY="your-gemini-api-key" \
      -e CWA_API_KEY="your-cwa-api-key" \
      -p 8080:8080 \
      tg-gemini-bot
@@ -194,16 +191,20 @@ Bot: 📰 Technology News (Hacker News)
 ...
 ```
 
-### AI Conversation (requires API key)
+### AI Conversation (no API key required)
 ```
 User: Hello, tell me about earthquakes in Taiwan
 Bot: Taiwan is located on the Pacific Ring of Fire, which makes it one of the most seismically active regions...
 ```
 
-### Image Analysis (requires API key)
+### Smart Earthquake Query
 ```
-User: [Send an image with caption "Describe this image"]
-Bot: This image shows...
+User: /eq_ai Were there any earthquakes in Hualien yesterday?
+Bot: 🌍 Earthquake Search Results (2024-02-05 to 2024-02-05, M≥4.5):
+Found 1 earthquake(s):
+1. Time: 2024-02-05 15:30:00
+   Location: Hualien County Offshore
+   Magnitude: M5.2 | Depth: 12 km
 ```
 
 ## 🔐 Security Features
@@ -211,18 +212,21 @@ Bot: This image shows...
 - **Authentication Support**: Optional user/group restrictions
 - **Admin Commands**: Specific commands restricted to administrators
 - **Debug Mode**: Optional logging functionality
-- **Safety Settings**: Gemini API safety configurations
 
 ## 📝 Notes
 
-1. **API Keys**:
-   - Without `GOOGLE_API_KEY`: Bot still works but cannot perform AI conversations and image analysis
+1. **AI Features**:
+   - Bot uses Hugging Face Transformers local models, **no Google API key required**
+   - Models will be downloaded automatically on first startup (approximately a few hundred MB), ensure sufficient disk space and network bandwidth
+   - AI conversation features run locally, speed depends on server hardware configuration
+
+2. **API Keys**:
    - Without `CWA_API_KEY`: Some earthquake information features may be limited
 
-2. **Group Usage**:
+3. **Group Usage**:
    - When using in groups, @mention the bot or reply to its messages
 
-3. **Conversation History**:
+4. **Conversation History**:
    - Use `/new` command to clear conversation history and start fresh
 
 ## 📄 License
