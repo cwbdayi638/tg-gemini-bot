@@ -160,3 +160,53 @@ def fetch_global_news_mcp(limit: int = 5) -> str:
     
     # Fallback to RSS
     return fetch_global_news(limit)
+
+
+# Finance and In-depth News Services
+
+def fetch_cw_news(limit: int = 5) -> str:
+    """Fetch news from CommonWealth Magazine (天下雜誌)."""
+    url = "https://www.cw.com.tw/rss/"
+    result = fetch_rss_news(url, limit, "CommonWealth Magazine")
+    return f"📰 CommonWealth Magazine (天下雜誌)\n{'=' * 40}\n\n{result}"
+
+
+def fetch_gvm_news(limit: int = 5) -> str:
+    """Fetch news from Global Views Monthly (遠見雜誌)."""
+    url = "https://www.gvm.com.tw/rss/"
+    result = fetch_rss_news(url, limit, "Global Views Monthly")
+    return f"📰 Global Views Monthly (遠見雜誌)\n{'=' * 40}\n\n{result}"
+
+
+def fetch_udn_finance_news(limit: int = 5) -> str:
+    """Fetch news from Economic Daily News (經濟日報)."""
+    url = "https://money.udn.com/rss/"
+    result = fetch_rss_news(url, limit, "Economic Daily News")
+    return f"💰 Economic Daily News (經濟日報)\n{'=' * 40}\n\n{result}"
+
+
+def fetch_bbc_chinese_news(limit: int = 5) -> str:
+    """Fetch news from BBC Chinese (BBC中文網)."""
+    url = "https://www.bbc.com/ws/news/rss/"
+    result = fetch_rss_news(url, limit, "BBC Chinese")
+    return f"🌐 BBC Chinese (BBC中文網)\n{'=' * 40}\n\n{result}"
+
+
+def fetch_finance_news(limit: int = 5) -> str:
+    """Fetch finance news from multiple sources."""
+    # Try to fetch from multiple finance sources
+    sources = [
+        ("CommonWealth", fetch_cw_news),
+        ("Global Views", fetch_gvm_news),
+        ("Economic Daily", fetch_udn_finance_news)
+    ]
+    
+    for source_name, fetch_func in sources:
+        try:
+            result = fetch_func(limit)
+            if not result.startswith("❌"):
+                return result
+        except Exception:
+            continue
+    
+    return "❌ Unable to fetch finance news from any source at this time.\n\nNote: News feeds may require network access that is not available in this environment."

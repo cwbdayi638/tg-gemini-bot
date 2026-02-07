@@ -14,7 +14,8 @@ try:
     from .ai_service import generate_ai_text
     from .news_service import (
         fetch_tech_news, fetch_taiwan_news, fetch_global_news, fetch_general_news,
-        fetch_tech_news_mcp, fetch_taiwan_news_mcp, fetch_global_news_mcp
+        fetch_tech_news_mcp, fetch_taiwan_news_mcp, fetch_global_news_mcp,
+        fetch_cw_news, fetch_gvm_news, fetch_udn_finance_news, fetch_bbc_chinese_news, fetch_finance_news
     )
     SERVICES_AVAILABLE = True
 except ImportError as e:
@@ -60,7 +61,12 @@ def help():
             "/news - General news from multiple sources\n"
             "/news_tech - Technology news (Hacker News)\n"
             "/news_taiwan - Taiwan news (CNA)\n"
-            "/news_global - Global news (BBC)"
+            "/news_global - Global news (BBC)\n"
+            "/news_finance - Finance news from multiple sources\n"
+            "/news_cw - CommonWealth Magazine (天下雜誌)\n"
+            "/news_gvm - Global Views Monthly (遠見雜誌)\n"
+            "/news_udn - Economic Daily News (經濟日報)\n"
+            "/news_bbc_chinese - BBC Chinese (BBC中文網)"
         )
         help_message = help_message + earthquake_commands + news_commands
     
@@ -210,6 +216,41 @@ def get_global_news(limit: int = 5):
         return fetch_global_news_mcp(limit)
     return fetch_global_news(limit)
 
+
+def get_finance_news(limit: int = 5):
+    """Get finance news from multiple sources."""
+    if not SERVICES_AVAILABLE:
+        return "News service not available."
+    return fetch_finance_news(limit)
+
+
+def get_cw_news(limit: int = 5):
+    """Get CommonWealth Magazine news."""
+    if not SERVICES_AVAILABLE:
+        return "News service not available."
+    return fetch_cw_news(limit)
+
+
+def get_gvm_news(limit: int = 5):
+    """Get Global Views Monthly news."""
+    if not SERVICES_AVAILABLE:
+        return "News service not available."
+    return fetch_gvm_news(limit)
+
+
+def get_udn_finance_news(limit: int = 5):
+    """Get Economic Daily News."""
+    if not SERVICES_AVAILABLE:
+        return "News service not available."
+    return fetch_udn_finance_news(limit)
+
+
+def get_bbc_chinese_news(limit: int = 5):
+    """Get BBC Chinese news."""
+    if not SERVICES_AVAILABLE:
+        return "News service not available."
+    return fetch_bbc_chinese_news(limit)
+
 def perform_web_search(query: str):
     """Perform web search."""
     if not query or not query.strip():
@@ -307,6 +348,21 @@ def excute_command(from_id, command, from_type, chat_id):
     
     elif command.startswith("news_global"):
         return get_global_news()
+    
+    elif command.startswith("news_finance"):
+        return get_finance_news()
+    
+    elif command.startswith("news_cw"):
+        return get_cw_news()
+    
+    elif command.startswith("news_gvm"):
+        return get_gvm_news()
+    
+    elif command.startswith("news_udn"):
+        return get_udn_finance_news()
+    
+    elif command.startswith("news_bbc_chinese"):
+        return get_bbc_chinese_news()
     
     elif command.startswith("news"):
         return get_news()
