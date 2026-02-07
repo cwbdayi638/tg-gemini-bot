@@ -17,6 +17,7 @@ sys.modules['copilot'] = type(sys)('copilot')
 
 # Mock the printLog module
 class MockLog:
+    @staticmethod
     def send_log(msg):
         print(f"LOG: {msg}")
 

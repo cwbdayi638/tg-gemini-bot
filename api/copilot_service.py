@@ -248,11 +248,15 @@ def _run_async_in_sync(coro):
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
         return loop.run_until_complete(coro)
-    except RuntimeError:
+    except RuntimeError as e:
         # If there's no event loop in this thread, create one
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        return loop.run_until_complete(coro)
+        # This catches the specific case: "There is no current event loop in thread"
+        if "no current event loop" in str(e).lower() or "no running event loop" in str(e).lower():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            return loop.run_until_complete(coro)
+        # Re-raise if it's a different RuntimeError (e.g., loop already running)
+        raise
 
 
 def copilot_chat_sync(chat_id: str, prompt: str, model: str = "gpt-4o") -> str:
