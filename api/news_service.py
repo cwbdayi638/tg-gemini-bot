@@ -86,17 +86,8 @@ def fetch_global_news(limit: int = 5) -> str:
     return f"🌍 Global News (BBC)\n{'=' * 40}\n\n{result}"
 
 def fetch_general_news(limit: int = 5) -> str:
-    """Fetch general news from multiple sources."""
-    # Try MCP web search first if available
-    if MCP_SEARCH_AVAILABLE:
-        try:
-            result = mcp_news_search("latest news", limit=limit, engines=DEFAULT_MCP_SEARCH_ENGINES)
-            if result and not result.startswith("❌"):
-                return result
-        except Exception as e:
-            print(f"MCP news search failed, falling back to RSS: {e}")
-    
-    # Fallback to RSS feeds
+    """Fetch general news from multiple sources using RSS feeds only."""
+    # Use RSS feeds only
     sources = [
         ("Tech", fetch_tech_news),
         ("Global", fetch_global_news),
