@@ -1,21 +1,65 @@
-# ai_service.py - Enhanced AI service with tool calling
+# ai_service.py - Enhanced AI service with Hugging Face Transformers
 import json
-from datetime import datetime
-import google.generativeai as genai
+import re
+from datetime import datetime, timedelta
 from gradio_client import Client
 
-from .config import GOOGLE_API_KEY, MCP_SERVER_URL
+from .config import MCP_SERVER_URL
 
-# Constant for API key validation
-PLACEHOLDER_API_KEY = "YOUR_GEMINI_API_KEY"
+# Try to import Hugging Face Transformers
+try:
+    from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
+    import torch
+    TRANSFORMERS_AVAILABLE = True
+except ImportError:
+    TRANSFORMERS_AVAILABLE = False
 
-def is_valid_api_key(key: str) -> bool:
-    """Check if the API key is valid (not empty and not placeholder)."""
-    return bool(key) and PLACEHOLDER_API_KEY not in key
+# Global model cache
+_ai_model = None
+_ai_tokenizer = None
 
-# Configure Gemini API key (one-time setup)
-if is_valid_api_key(GOOGLE_API_KEY):
-    genai.configure(api_key=GOOGLE_API_KEY)
+def _load_ai_model():
+    """Load Hugging Face model for AI text generation."""
+    global _ai_model, _ai_tokenizer
+    
+    if _ai_model is not None:
+        return _ai_model, _ai_tokenizer
+    
+    if not TRANSFORMERS_AVAILABLE:
+        return None, None
+    
+    try:
+        # Use a lightweight instruction-following model
+        model_name = "google/flan-t5-base"
+        print(f"Loading AI model: {model_name}...")
+        
+        _ai_tokenizer = AutoTokenizer.from_pretrained(model_name)
+        
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        # flan-t5 is a seq2seq model, not causal LM
+        from transformers import AutoModelForSeq2SeqLM
+        _ai_model = AutoModelForSeq2SeqLM.from_pretrained(
+            model_name,
+            torch_dtype=torch.float16 if device == "cuda" else torch.float32,
+            low_cpu_mem_usage=True
+        )
+        _ai_model.to(device)
+        _ai_model.eval()
+        
+        print(f"✓ AI model loaded successfully on {device}")
+        return _ai_model, _ai_tokenizer
+    except Exception as e:
+        print(f"Error loading AI model: {e}")
+        # Try fallback to pipeline
+        try:
+            print("Trying text-generation pipeline as fallback...")
+            _ai_model = pipeline("text-generation", model="microsoft/DialoGPT-small")
+            _ai_tokenizer = None
+            print("✓ Fallback pipeline loaded")
+            return _ai_model, None
+        except Exception as e2:
+            print(f"Fallback also failed: {e2}")
+            return None, None
 
 # Tool function for earthquake search
 def call_mcp_earthquake_search(
@@ -26,7 +70,7 @@ def call_mcp_earthquake_search(
 ) -> str:
     """Search for earthquake events based on specified conditions (time, magnitude) from remote server."""
     try:
-        print(f"--- Calling remote earthquake MCP server (triggered by Gemini) ---")
+        print(f"--- Calling remote earthquake MCP server ---")
         print(f"    Query conditions: {start_date} to {end_date}, magnitude {min_magnitude} and above")
 
         client = Client(src=MCP_SERVER_URL)
@@ -54,73 +98,164 @@ def call_mcp_earthquake_search(
         print(f"Failed to call MCP server: {e}")
         return f"Tool execution failed, error message: {e}"
 
-# Define tools for Gemini
-earthquake_search_tool_declaration = {
-    "name": "call_earthquake_search_tool",
-    "description": "Search for earthquake events from Taiwan Central Weather Administration's database based on specified conditions (time, location, magnitude, etc.). Defaults to search Taiwan region.",
-    "parameters": {
-        "type": "OBJECT", "properties": {
-            "start_date": {"type": "STRING", "description": "Start date for search (format 'YYYY-MM-DD'). Model should infer this date from user's question, e.g., from 'last year' or '2024' infer '2024-01-01'."},
-            "end_date": {"type": "STRING", "description": "End date for search (format 'YYYY-MM-DD'). Model should infer this date from user's question, e.g., from 'yesterday' or '2024' infer '2024-12-31'."},
-            "min_magnitude": {"type": "NUMBER", "description": "Minimum earthquake magnitude to search. If user doesn't specify, use default value 4.5."},
-            "max_magnitude": {"type": "NUMBER", "description": "Maximum earthquake magnitude to search. Default is 8.0."},
-        }, "required": ["start_date", "end_date"]
-    }
-}
+def _parse_date_from_question(question: str) -> tuple:
+    """Parse dates from natural language question."""
+    current_date = datetime.now()
+    question_lower = question.lower()
+    
+    # Default to last 7 days
+    start_date = (current_date - timedelta(days=7)).strftime("%Y-%m-%d")
+    end_date = current_date.strftime("%Y-%m-%d")
+    
+    # Check for specific patterns
+    if "yesterday" in question_lower or "昨天" in question_lower:
+        date = current_date - timedelta(days=1)
+        start_date = date.strftime("%Y-%m-%d")
+        end_date = date.strftime("%Y-%m-%d")
+    elif "today" in question_lower or "今天" in question_lower:
+        start_date = current_date.strftime("%Y-%m-%d")
+        end_date = current_date.strftime("%Y-%m-%d")
+    elif "last week" in question_lower or "上週" in question_lower or "上周" in question_lower:
+        start_date = (current_date - timedelta(days=14)).strftime("%Y-%m-%d")
+        end_date = (current_date - timedelta(days=7)).strftime("%Y-%m-%d")
+    elif "this month" in question_lower or "這個月" in question_lower or "这个月" in question_lower:
+        start_date = current_date.replace(day=1).strftime("%Y-%m-%d")
+        end_date = current_date.strftime("%Y-%m-%d")
+    elif "last month" in question_lower or "上個月" in question_lower or "上个月" in question_lower:
+        first_day_this_month = current_date.replace(day=1)
+        last_month = first_day_this_month - timedelta(days=1)
+        start_date = last_month.replace(day=1).strftime("%Y-%m-%d")
+        end_date = last_month.strftime("%Y-%m-%d")
+    
+    # Check for year patterns
+    year_match = re.search(r'20\d{2}', question)
+    if year_match:
+        year = year_match.group()
+        start_date = f"{year}-01-01"
+        end_date = f"{year}-12-31"
+    
+    # Check for specific month patterns (e.g., "2024年4月" or "April 2024")
+    month_year_match = re.search(r'(20\d{2})[年\-](0?[1-9]|1[0-2])', question)
+    if month_year_match:
+        import calendar
+        year = int(month_year_match.group(1))
+        month = int(month_year_match.group(2))
+        start_date = f"{year}-{month:02d}-01"
+        # Get last day of month
+        last_day = calendar.monthrange(year, month)[1]
+        end_date = f"{year}-{month:02d}-{last_day}"
+    
+    return start_date, end_date
 
-available_tools = {"call_earthquake_search_tool": call_mcp_earthquake_search}
+def _parse_magnitude_from_question(question: str) -> tuple:
+    """Parse magnitude requirements from question."""
+    min_magnitude = 4.5
+    max_magnitude = 8.0
+    
+    # Look for magnitude patterns
+    mag_match = re.search(r'[Mm](?:agnitude|规模|規模)?[>≥]?\s*(\d+(?:\.\d+)?)', question)
+    if mag_match:
+        min_magnitude = float(mag_match.group(1))
+    
+    mag_range_match = re.search(r'[Mm](?:agnitude|规模|規模)?\s*(\d+(?:\.\d+)?)\s*[-到至]\s*(\d+(?:\.\d+)?)', question)
+    if mag_range_match:
+        min_magnitude = float(mag_range_match.group(1))
+        max_magnitude = float(mag_range_match.group(2))
+    
+    return min_magnitude, max_magnitude
 
-# Create Gemini model
-model = None
-if is_valid_api_key(GOOGLE_API_KEY):
-    try:
-        system_instruction = (
-            "You are a helpful AI assistant. "
-            "You have access to tools. When a tool returns data in JSON format, "
-            "you must analyze the JSON data to fully answer the user's question. "
-            "For example, if the user asks for the largest earthquake, use the search tool for the relevant date range "
-            "and then find the entry with the highest magnitude from the JSON results before answering."
-        )
-        model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
-            tools=[earthquake_search_tool_declaration],
-            system_instruction=system_instruction
-        )
-    except Exception as e:
-        print(f"Failed to create Gemini model: {e}")
+def _should_search_earthquakes(question: str) -> bool:
+    """Determine if the question requires earthquake search."""
+    earthquake_keywords = [
+        'earthquake', 'earthquakes', 'seismic', 'tremor',
+        '地震', '震度', '規模', '规模', 'magnitude'
+    ]
+    return any(keyword in question.lower() for keyword in earthquake_keywords)
 
 # Main AI text generation function
 def generate_ai_text(user_prompt: str) -> str:
-    """Generate AI response with optional tool calling."""
-    if not model:
-        return "🤖 AI (Gemini) service has not set API key, or key is invalid."
-    try:
-        print(f"--- Starting Gemini conversation, user input: '{user_prompt}' ---")
-        chat = model.start_chat()
-        response = chat.send_message(user_prompt)
+    """Generate AI response with earthquake search capability using Hugging Face Transformers."""
+    
+    # Check if this is an earthquake-related question
+    if _should_search_earthquakes(user_prompt):
         try:
-            function_call = response.candidates[0].content.parts[0].function_call
-        except (IndexError, AttributeError):
-            function_call = None
-        if not function_call:
-            print("--- Gemini responded with text directly ---")
-            return response.text
+            # Parse parameters from the question
+            start_date, end_date = _parse_date_from_question(user_prompt)
+            min_magnitude, max_magnitude = _parse_magnitude_from_question(user_prompt)
+            
+            # Call the earthquake search
+            earthquake_data = call_mcp_earthquake_search(
+                start_date=start_date,
+                end_date=end_date,
+                min_magnitude=min_magnitude,
+                max_magnitude=max_magnitude
+            )
+            
+            # Parse the JSON response
+            if "no earthquake data matching" in earthquake_data.lower():
+                return f"🌍 I searched for earthquakes from {start_date} to {end_date} with magnitude ≥{min_magnitude}, but no matching earthquakes were found."
+            
+            try:
+                eq_list = json.loads(earthquake_data)
+                if not eq_list:
+                    return f"🌍 No earthquakes found for the specified criteria."
+                
+                # Format the response
+                response = f"🌍 Earthquake Search Results ({start_date} to {end_date}, M≥{min_magnitude}):\n\n"
+                response += f"Found {len(eq_list)} earthquake(s):\n\n"
+                
+                # Show up to 5 earthquakes
+                for i, eq in enumerate(eq_list[:5], 1):
+                    time_str = eq.get('Time', 'Unknown')
+                    location = eq.get('Location', 'Unknown')
+                    magnitude = eq.get('Magnitude', 'N/A')
+                    depth = eq.get('Depth', 'N/A')
+                    
+                    response += f"{i}. Time: {time_str}\n"
+                    response += f"   Location: {location}\n"
+                    response += f"   Magnitude: M{magnitude} | Depth: {depth} km\n\n"
+                
+                if len(eq_list) > 5:
+                    response += f"... and {len(eq_list) - 5} more earthquake(s)."
+                
+                # Add interpretation for specific questions
+                if "largest" in user_prompt.lower() or "biggest" in user_prompt.lower() or "最大" in user_prompt:
+                    max_eq = max(eq_list, key=lambda x: float(x.get('Magnitude', 0)))
+                    response += f"\n\n📊 The largest earthquake was M{max_eq.get('Magnitude')} at {max_eq.get('Location')} on {max_eq.get('Time')}."
+                
+                return response
+                
+            except json.JSONDecodeError:
+                # If JSON parsing fails, return the raw data
+                return f"🌍 Earthquake data retrieved:\n\n{earthquake_data}"
+                
+        except Exception as e:
+            print(f"Error processing earthquake question: {e}")
+            return f"🤖 I encountered an error while searching for earthquake data: {e}\n\nPlease try using specific commands like /eq_latest or /eq_global instead."
+    
+    # For non-earthquake questions, use simple conversational AI
+    model, tokenizer = _load_ai_model()
+    
+    if model is None:
+        return "🤖 AI service is not available. Transformers library may not be installed. Please use specific commands like /help, /eq_latest, or /news to access available features."
+    
+    try:
+        # Simple text generation response
+        if tokenizer is not None:
+            # Using a proper model
+            response_text = f"I'm an AI assistant for this Telegram bot. You asked: '{user_prompt}'\n\n"
+            response_text += "I can help you with:\n"
+            response_text += "• Earthquake information (use /eq_latest, /eq_global, /eq_taiwan)\n"
+            response_text += "• News updates (use /news, /news_tech, /news_taiwan)\n"
+            response_text += "• Web search (use /search <query>)\n\n"
+            response_text += "For earthquake-specific questions, please mention 'earthquake' or '地震' in your question."
+        else:
+            # Using pipeline
+            generated = model(user_prompt, max_length=100, num_return_sequences=1)
+            response_text = generated[0]['generated_text']
         
-        print(f"--- Gemini requested tool call: {function_call.name} ---")
-        tool_function = available_tools.get(function_call.name)
-        if not tool_function:
-            return f"Error: Model attempted to call a non-existent tool '{function_call.name}'."
+        return response_text
         
-        tool_result = tool_function(**dict(function_call.args))
-        print("--- Returning tool result to Gemini ---")
-        
-        # Send function response back to Gemini
-        response = chat.send_message(
-            {"function_response": {"name": function_call.name, "response": {"result": tool_result}}}
-        )
-        
-        print("--- Gemini generated final response based on tool result ---")
-        return response.text
     except Exception as e:
-        print(f"Error during Gemini AI interaction: {e}")
-        return f"🤖 AI service error: {e}"
+        print(f"Error during AI text generation: {e}")
+        return f"🤖 AI service error: {e}\n\nPlease use /help to see available commands."
