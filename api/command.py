@@ -193,27 +193,21 @@ def get_tech_news(limit: int = 5):
     """Get technology news."""
     if not SERVICES_AVAILABLE:
         return "News service not available."
-    # Use MCP-enhanced version if available
-    if MCP_WEB_SEARCH_AVAILABLE:
-        return fetch_tech_news_mcp(limit)
+    # Use RSS-only version
     return fetch_tech_news(limit)
 
 def get_taiwan_news(limit: int = 5):
     """Get Taiwan news."""
     if not SERVICES_AVAILABLE:
         return "News service not available."
-    # Use MCP-enhanced version if available
-    if MCP_WEB_SEARCH_AVAILABLE:
-        return fetch_taiwan_news_mcp(limit)
+    # Use RSS-only version
     return fetch_taiwan_news(limit)
 
 def get_global_news(limit: int = 5):
     """Get global news."""
     if not SERVICES_AVAILABLE:
         return "News service not available."
-    # Use MCP-enhanced version if available
-    if MCP_WEB_SEARCH_AVAILABLE:
-        return fetch_global_news_mcp(limit)
+    # Use RSS-only version
     return fetch_global_news(limit)
 
 
