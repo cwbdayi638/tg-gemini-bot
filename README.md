@@ -8,9 +8,8 @@
 
 - **🌍 地震資訊服務**：整合台灣中央氣象署 (CWA) 和美國地質調查局 (USGS) 的即時地震資料
 - **📰 新聞服務**：透過 RSS 訂閱源獲取科技、台灣和全球新聞
-- **🤖 AI 對話**：使用 Hugging Face Transformers 進行本地 AI 對話（無需 API 金鑰）
 - **💬 GitHub Copilot AI**：整合 GitHub Copilot SDK，提供進階 AI 程式設計協助和對話功能
-- **🔍 智慧地震查詢**：使用 AI 理解自然語言問題並查詢地震資料
+- **🔍 智慧地震查詢**：使用自然語言查詢地震資料
 
 ## 🚀 功能詳情
 
@@ -36,7 +35,6 @@
 **資料來源：**
 - 台灣中央氣象署開放資料平台
 - 美國地質調查局 (USGS) 地震 API
-- Hugging Face Transformers (本地 AI 模型，無需 API 金鑰)
 
 ### 📰 新聞服務
 
@@ -61,16 +59,6 @@
 - 遠見雜誌 (Global Views Monthly) - 財經與深度
 - 經濟日報 (Economic Daily News) - 財經新聞
 - BBC中文網 (BBC Chinese) - 國際新聞
-
-### 🤖 AI 對話功能
-
-機器人現在使用 Hugging Face Transformers 本地模型，**無需 API 金鑰**即可運行：
-- 進行自然語言對話（使用 DialoGPT 模型）
-- 智慧地震查詢（自動理解日期、規模等條件）
-- 回答各種問題
-- 提供資訊和建議
-
-**注意：** 首次使用時，模型會自動下載，可能需要一些時間和網路流量。模型大小約為數百 MB。
 
 ### 💬 GitHub Copilot AI
 
@@ -240,10 +228,9 @@ Found 1 earthquake(s):
 
 ## 📝 注意事項
 
-1. **AI 功能**：
-   - 機器人使用 Hugging Face Transformers 本地模型，**不需要 Google API 金鑰**
-   - 首次啟動時會自動下載模型（約數百 MB），請確保有足夠的磁碟空間和網路流量
-   - AI 對話功能會在本地運行，速度取決於伺服器硬體配置
+1. **GitHub Copilot AI 功能**：
+   - 機器人可以整合 GitHub Copilot SDK 進行進階 AI 對話
+   - 需要配置 GitHub 帳號和授權才能使用 Copilot 功能
 
 2. **API 金鑰**：
    - 沒有 `CWA_API_KEY`：部分地震資訊功能可能受限
