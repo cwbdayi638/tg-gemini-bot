@@ -2,12 +2,11 @@
 
 [English](README_EN.md) | [繁體中文](README.md) | [简体中文](README_zh-CN.md)
 
-**tg-gemini-bot** is a powerful Telegram bot assistant that integrates real-time earthquake information, news services, and AI conversation capabilities.
+**tg-gemini-bot** is a powerful Telegram bot assistant that integrates real-time earthquake information and AI conversation capabilities.
 
 ## 🎯 Main Features
 
 - **🌍 Earthquake Information Services**: Integrated real-time earthquake data from Taiwan Central Weather Administration (CWA) and USGS
-- **📰 News Services**: Get technology, Taiwan, and global news through RSS feeds
 - **💬 GitHub Copilot AI**: Integrated GitHub Copilot SDK for advanced AI programming assistance and conversations
 - **🔍 Smart Earthquake Query**: Use natural language to query earthquake data
 
@@ -35,30 +34,6 @@ Integrated real-time earthquake data from Taiwan Central Weather Administration 
 **Data Sources:**
 - Taiwan Central Weather Administration Open Data Platform
 - United States Geological Survey (USGS) Earthquake API
-
-### 📰 News Services
-
-Get real-time news from multiple sources via RSS feeds:
-
-**News Commands:**
-- `/news` - General news from multiple sources
-- `/news_tech` - Technology news (Hacker News)
-- `/news_taiwan` - Taiwan news (CNA)
-- `/news_global` - Global news (BBC)
-- `/news_finance` - Finance news (from multiple sources)
-- `/news_cw` - CommonWealth Magazine (天下雜誌)
-- `/news_gvm` - Global Views Monthly (遠見雜誌)
-- `/news_udn` - Economic Daily News (經濟日報)
-- `/news_bbc_chinese` - BBC Chinese (BBC中文網)
-
-**Data Sources:**
-- Hacker News - Technology news
-- Central News Agency (CNA) - Taiwan news
-- BBC News - Global news
-- CommonWealth Magazine (天下雜誌) - Finance & In-depth
-- Global Views Monthly (遠見雜誌) - Finance & In-depth
-- Economic Daily News (經濟日報) - Finance news
-- BBC Chinese (BBC中文網) - International news
 
 ### 💬 GitHub Copilot AI
 
@@ -105,7 +80,7 @@ The bot now integrates GitHub Copilot SDK, providing advanced AI assistance feat
 | --- | --- | --- |
 | CWA_API_KEY | ❌ No | Taiwan Central Weather Administration API key for significant earthquake data. Get from [CWA Open Data Platform](https://opendata.cwa.gov.tw/) |
 | MCP_SERVER_URL | ❌ No | MCP server URL for advanced earthquake database search (default: `https://cwadayi-mcp-2.hf.space`) |
-| MCP_WEB_SEARCH_URL | ❌ No | MCP web search server URL for enhanced news and web search features (using [open-webSearch](https://github.com/Aas-ee/open-webSearch), e.g., `http://localhost:3000`) |
+| MCP_WEB_SEARCH_URL | ❌ No | MCP web search server URL for enhanced web search features (using [open-webSearch](https://github.com/Aas-ee/open-webSearch), e.g., `http://localhost:3000`) |
 | ALLOWED_USERS | ❌ No | Allowed usernames or IDs (supports regex, separate multiple values with space or comma) |
 | ALLOWED_GROUPS | ❌ No | Allowed group IDs or usernames (separate multiple values with space or comma) |
 | ADMIN_ID | ❌ No | Telegram ID for admin commands |
@@ -152,7 +127,7 @@ The bot now integrates GitHub Copilot SDK, providing advanced AI assistance feat
 
 ### MCP Web Search Server Setup (Optional)
 
-To enable enhanced news and web search features, you can set up the [open-webSearch](https://github.com/Aas-ee/open-webSearch) MCP server:
+To enable enhanced web search features, you can set up the [open-webSearch](https://github.com/Aas-ee/open-webSearch) MCP server:
 
 1. **Quick start with NPX** (easiest):
    ```bash
@@ -178,8 +153,6 @@ To enable enhanced news and web search features, you can set up the [open-webSea
    MCP_WEB_SEARCH_URL=http://localhost:3000
    ```
 
-**Note**: If `MCP_WEB_SEARCH_URL` is not set, news features will still work using traditional RSS feeds.
-
 ## 💡 Usage Examples
 
 ### Query Earthquake Information
@@ -191,26 +164,6 @@ Time: 2024-02-06 15:30:00
 Location: Near Hualien Coast
 Magnitude: M5.8 | Depth: 15 km
 Report: [link]
-```
-
-### Query News
-```
-User: /news_tech
-Bot: 📰 Technology News (Hacker News)
-----------------------------------
-1. New AI Model Released...
-2. Tech Company Announces...
-...
-```
-
-### Smart Earthquake Queries
-```
-User: /eq_ai Were there any earthquakes in Hualien yesterday?
-Bot: 🌍 Earthquake Search Results (2024-01-15 to 2024-01-15, M≥4.5):
-
-Found 2 earthquake(s):
-
-1. Time: 2024-01-15 08:23:45...
 ```
 
 ### Smart Earthquake Query

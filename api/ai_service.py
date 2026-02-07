@@ -183,7 +183,6 @@ def generate_ai_text(user_prompt: str) -> str:
         f"🤖 I'm an assistant for this Telegram bot. You asked: '{user_prompt}'\n\n"
         "I can help you with:\n"
         "• Earthquake information (use /eq_latest, /eq_global, /eq_taiwan)\n"
-        "• News updates (use /news, /news_tech, /news_taiwan)\n"
         "• Web search (use /search <query>)\n\n"
         "For earthquake-specific questions, please mention 'earthquake' or '地震' in your question."
     )
