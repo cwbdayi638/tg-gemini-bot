@@ -9,6 +9,7 @@
 - **🌍 Earthquake Information Services**: Integrated real-time earthquake data from Taiwan Central Weather Administration (CWA) and USGS
 - **📰 News Services**: Get technology, Taiwan, and global news through RSS feeds
 - **🤖 AI Conversations**: Local AI conversations using Hugging Face Transformers (no API key required)
+- **💬 GitHub Copilot AI**: Integrated GitHub Copilot SDK for advanced AI programming assistance and conversations
 - **🔍 Smart Earthquake Query**: AI understands natural language questions and queries earthquake data
 
 ## 🚀 Feature Details
@@ -70,6 +71,29 @@ The bot now uses Hugging Face Transformers local models, **no API key required**
 - Provide information and suggestions
 
 **Note:** On first use, models will be downloaded automatically, which may take some time and network bandwidth. Model size is approximately a few hundred MB.
+
+### 💬 GitHub Copilot AI
+
+The bot now integrates GitHub Copilot SDK, providing advanced AI assistance features:
+
+**Key Features:**
+- Programming questions and code examples
+- Debugging help and error explanations
+- Algorithm and best practice recommendations
+- Technical concept explanations
+- Multiple programming language support
+
+**Copilot Commands:**
+- `/copilot <message>` - Chat with GitHub Copilot AI
+- `/copilot_new` - Start a new conversation (clear history)
+- `/copilot_help` - Get help about Copilot features
+
+**Usage Examples:**
+- `/copilot How do I reverse a string in Python?`
+- `/copilot Explain what is a REST API`
+- `/copilot Write a function to find prime numbers`
+
+**Note:** Using GitHub Copilot SDK requires a valid GitHub Copilot subscription or BYOK (Bring Your Own Key) setup. Conversation history is maintained separately for each chat.
 
 ## 📋 Basic Commands
 

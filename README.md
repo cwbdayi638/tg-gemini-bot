@@ -9,6 +9,7 @@
 - **🌍 地震資訊服務**：整合台灣中央氣象署 (CWA) 和美國地質調查局 (USGS) 的即時地震資料
 - **📰 新聞服務**：透過 RSS 訂閱源獲取科技、台灣和全球新聞
 - **🤖 AI 對話**：使用 Hugging Face Transformers 進行本地 AI 對話（無需 API 金鑰）
+- **💬 GitHub Copilot AI**：整合 GitHub Copilot SDK，提供進階 AI 程式設計協助和對話功能
 - **🔍 智慧地震查詢**：使用 AI 理解自然語言問題並查詢地震資料
 
 ## 🚀 功能詳情
@@ -70,6 +71,29 @@
 - 提供資訊和建議
 
 **注意：** 首次使用時，模型會自動下載，可能需要一些時間和網路流量。模型大小約為數百 MB。
+
+### 💬 GitHub Copilot AI
+
+機器人現在整合了 GitHub Copilot SDK，提供進階 AI 協助功能：
+
+**功能特點：**
+- 程式設計問題解答和程式碼範例
+- 除錯協助和錯誤說明
+- 演算法和最佳實踐建議
+- 技術概念解釋
+- 多種程式語言支援
+
+**Copilot 指令：**
+- `/copilot <訊息>` - 與 GitHub Copilot AI 對話
+- `/copilot_new` - 開始新對話（清除歷史記錄）
+- `/copilot_help` - 取得 Copilot 功能說明
+
+**使用範例：**
+- `/copilot 如何在 Python 中反轉字串？`
+- `/copilot 解釋什麼是 REST API`
+- `/copilot 寫一個找質數的函數`
+
+**注意：** 使用 GitHub Copilot SDK 需要有效的 GitHub Copilot 訂閱或 BYOK（自帶金鑰）設定。每個聊天室的對話記錄會分別保存。
 
 ## 📋 基本指令
 

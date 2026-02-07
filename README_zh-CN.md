@@ -9,6 +9,7 @@
 - **🌍 地震信息服务**：整合台湾中央气象署 (CWA) 和美国地质调查局 (USGS) 的实时地震数据
 - **📰 新闻服务**：通过 RSS 订阅源获取科技、台湾和全球新闻
 - **🤖 AI 对话**：使用 Hugging Face Transformers 进行本地 AI 对话（无需 API 密钥）
+- **💬 GitHub Copilot AI**：整合 GitHub Copilot SDK，提供高级 AI 编程协助和对话功能
 - **📸 图片分析**：使用 AI 分析和描述图片内容（需要 API 密钥）
 
 ## 🚀 功能详情
@@ -70,6 +71,29 @@
 - 提供信息和建议
 
 **注意：** 首次使用时，模型会自动下载，可能需要一些时间和网络流量。模型大小约为数百 MB。
+
+### 💬 GitHub Copilot AI
+
+机器人现在整合了 GitHub Copilot SDK，提供高级 AI 协助功能：
+
+**功能特点：**
+- 编程问题解答和代码示例
+- 调试协助和错误说明
+- 算法和最佳实践建议
+- 技术概念解释
+- 多种编程语言支持
+
+**Copilot 指令：**
+- `/copilot <消息>` - 与 GitHub Copilot AI 对话
+- `/copilot_new` - 开始新对话（清除历史记录）
+- `/copilot_help` - 获取 Copilot 功能说明
+
+**使用示例：**
+- `/copilot 如何在 Python 中反转字符串？`
+- `/copilot 解释什么是 REST API`
+- `/copilot 写一个找质数的函数`
+
+**注意：** 使用 GitHub Copilot SDK 需要有效的 GitHub Copilot 订阅或 BYOK（自带密钥）设置。每个聊天室的对话记录会分别保存。
 
 ## 📋 基本指令
 
