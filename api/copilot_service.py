@@ -4,6 +4,8 @@ Provides AI-powered conversation capabilities using GitHub Copilot.
 """
 import asyncio
 import os
+import stat
+from pathlib import Path
 from typing import Optional
 from .printLog import send_log
 
@@ -15,6 +17,38 @@ try:
 except ImportError:
     COPILOT_AVAILABLE = False
     print("Warning: GitHub Copilot SDK not available. Install with: pip install github-copilot-sdk")
+
+
+def _fix_copilot_binary_permissions():
+    """
+    Fix permissions for the Copilot CLI binary bundled with the SDK.
+    The github-copilot-sdk package includes a binary that may not have execute permissions.
+    This function ensures the binary is executable before attempting to use it.
+    """
+    if not COPILOT_AVAILABLE:
+        return False
+    
+    try:
+        import copilot
+        copilot_pkg_dir = Path(copilot.__file__).parent
+        copilot_binary = copilot_pkg_dir / "bin" / "copilot"
+        
+        if copilot_binary.exists():
+            current_permissions = copilot_binary.stat().st_mode
+            # Check if executable bit is not set for user
+            if not (current_permissions & stat.S_IXUSR):
+                # Add execute permissions for user, group, and others
+                new_permissions = current_permissions | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+                copilot_binary.chmod(new_permissions)
+                send_log(f"✅ Fixed Copilot binary permissions: {copilot_binary}")
+                return True
+            return True  # Already executable
+        else:
+            send_log(f"⚠️  Copilot binary not found at expected location: {copilot_binary}")
+            return False
+    except Exception as e:
+        send_log(f"⚠️  Could not fix Copilot binary permissions: {e}")
+        return False
 
 
 class CopilotService:
@@ -34,6 +68,9 @@ class CopilotService:
             return
         
         try:
+            # Fix binary permissions before initializing
+            _fix_copilot_binary_permissions()
+            
             # Create and start the Copilot client
             self.client = CopilotClient({
                 "log_level": "info",
@@ -43,6 +80,14 @@ class CopilotService:
             await self.client.start()
             self._initialized = True
             send_log("✅ Copilot SDK initialized successfully")
+        except PermissionError as e:
+            error_msg = (
+                f"❌ Permission error with Copilot binary: {e}\n"
+                "This may happen if the github-copilot-sdk binary doesn't have execute permissions.\n"
+                "Try running: pip install --force-reinstall github-copilot-sdk"
+            )
+            send_log(error_msg)
+            raise RuntimeError(error_msg) from e
         except Exception as e:
             send_log(f"❌ Failed to initialize Copilot SDK: {e}")
             raise
@@ -125,9 +170,24 @@ class CopilotService:
             else:
                 return "❌ No response received from Copilot"
                 
+        except PermissionError as e:
+            send_log(f"❌ Copilot permission error: {e}")
+            return (
+                "❌ Error: Permission denied when accessing Copilot binary.\n"
+                "The fix has been applied. Please try the command again.\n"
+                "If the issue persists, contact the bot administrator."
+            )
         except Exception as e:
             send_log(f"❌ Copilot chat error: {e}")
-            return f"❌ Error communicating with Copilot: {str(e)}"
+            # Check if it's a permission-related error in the message
+            error_str = str(e)
+            if "Permission denied" in error_str or "Errno 13" in error_str:
+                return (
+                    "❌ Error: Permission denied when accessing Copilot binary.\n"
+                    "The fix has been applied. Please try the command again.\n"
+                    "If the issue persists, contact the bot administrator."
+                )
+            return f"❌ Error communicating with Copilot: {error_str}"
     
     async def clear_session(self, chat_id: str):
         """Clear/delete a session for a specific chat."""
