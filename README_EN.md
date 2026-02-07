@@ -46,11 +46,20 @@ Get real-time news from multiple sources via RSS feeds:
 - `/news_tech` - Technology news (Hacker News)
 - `/news_taiwan` - Taiwan news (CNA)
 - `/news_global` - Global news (BBC)
+- `/news_finance` - Finance news (from multiple sources)
+- `/news_cw` - CommonWealth Magazine (天下雜誌)
+- `/news_gvm` - Global Views Monthly (遠見雜誌)
+- `/news_udn` - Economic Daily News (經濟日報)
+- `/news_bbc_chinese` - BBC Chinese (BBC中文網)
 
 **Data Sources:**
 - Hacker News - Technology news
 - Central News Agency (CNA) - Taiwan news
 - BBC News - Global news
+- CommonWealth Magazine (天下雜誌) - Finance & In-depth
+- Global Views Monthly (遠見雜誌) - Finance & In-depth
+- Economic Daily News (經濟日報) - Finance news
+- BBC Chinese (BBC中文網) - International news
 
 ### 🤖 AI Conversation Features
 

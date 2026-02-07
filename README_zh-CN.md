@@ -46,11 +46,20 @@
 - `/news_tech` - 科技新闻（Hacker News）
 - `/news_taiwan` - 台湾新闻（中央社）
 - `/news_global` - 全球新闻（BBC）
+- `/news_finance` - 财经新闻（从多个来源）
+- `/news_cw` - 天下杂志
+- `/news_gvm` - 远见杂志
+- `/news_udn` - 经济日报
+- `/news_bbc_chinese` - BBC中文网
 
 **数据来源：**
 - Hacker News - 科技新闻
 - 中央社 (CNA) - 台湾新闻
 - BBC News - 全球新闻
+- 天下杂志 (CommonWealth Magazine) - 财经与深度
+- 远见杂志 (Global Views Monthly) - 财经与深度
+- 经济日报 (Economic Daily News) - 财经新闻
+- BBC中文网 (BBC Chinese) - 国际新闻
 
 ### 🤖 AI 对话功能
 
