@@ -1,4 +1,4 @@
-﻿from time import sleep
+from time import sleep
 import pandas as pd
 
 from .auth import is_admin
