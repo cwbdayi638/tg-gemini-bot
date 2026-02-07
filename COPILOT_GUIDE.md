@@ -202,6 +202,16 @@ The GitHub Copilot integration provides:
 - Install the SDK: `pip install github-copilot-sdk`
 - Verify installation: `python3 -c "import copilot; print('OK')"`
 
+### Error: "Permission denied" with Copilot binary
+**This issue is now automatically fixed!** The bot will automatically detect and fix permission issues with the Copilot binary when it starts.
+
+If you still encounter permission errors:
+1. The fix is applied automatically on first use - try the command again
+2. If it persists, manually fix permissions: `chmod +x ~/.local/lib/python3.*/site-packages/copilot/bin/copilot`
+3. Or reinstall: `pip install --force-reinstall github-copilot-sdk`
+
+**Technical Details**: The `github-copilot-sdk` package includes a bundled binary that sometimes lacks execute permissions. The bot now automatically detects and fixes this during initialization.
+
 ### Error: "Failed to initialize Copilot SDK"
 - Check that Copilot CLI is installed: `which copilot`
 - Verify authentication: `copilot --version`
