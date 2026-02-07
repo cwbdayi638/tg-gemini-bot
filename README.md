@@ -86,6 +86,7 @@
 | GOOGLE_API_KEY | ❌ 否 | Google Gemini API 金鑰，用於 AI 對話和圖片分析功能。從 [Google AI Studio](https://makersuite.google.com/app/apikey) 取得 |
 | CWA_API_KEY | ❌ 否 | 台灣中央氣象署 API 金鑰，用於存取顯著地震資料。從 [CWA 開放資料平台](https://opendata.cwa.gov.tw/) 取得 |
 | MCP_SERVER_URL | ❌ 否 | MCP 伺服器 URL，用於進階地震資料庫搜尋（預設：`https://cwadayi-mcp-2.hf.space`） |
+| MCP_WEB_SEARCH_URL | ❌ 否 | MCP 網頁搜尋伺服器 URL，用於增強新聞和網頁搜尋功能（使用 [open-webSearch](https://github.com/Aas-ee/open-webSearch)，例如：`http://localhost:3000`） |
 | ALLOWED_USERS | ❌ 否 | 允許使用的用戶名或 ID（支援正則表達式，多個值用空格或逗號分隔） |
 | ALLOWED_GROUPS | ❌ 否 | 允許使用的群組 ID 或用戶名（多個值用空格或逗號分隔） |
 | ADMIN_ID | ❌ 否 | 管理員的 Telegram ID，用於執行管理員指令 |
@@ -130,6 +131,36 @@
 
 3. **設置 Webhook**：
    將 Webhook 指向您的 Docker 服務網址。
+
+### MCP 網頁搜尋伺服器設置（可選）
+
+若要啟用增強的新聞和網頁搜尋功能，可以設置 [open-webSearch](https://github.com/Aas-ee/open-webSearch) MCP 伺服器：
+
+1. **使用 NPX 快速啟動**（最簡單）：
+   ```bash
+   # 基本使用
+   npx open-websearch@latest
+   
+   # 或使用環境變數配置
+   DEFAULT_SEARCH_ENGINE=duckduckgo ENABLE_CORS=true npx open-websearch@latest
+   ```
+
+2. **使用 Docker 部署**：
+   ```bash
+   docker run -d --name web-search \
+     -p 3000:3000 \
+     -e ENABLE_CORS=true \
+     -e CORS_ORIGIN=* \
+     ghcr.io/aas-ee/open-web-search:latest
+   ```
+
+3. **配置機器人**：
+   在機器人的環境變數中設置：
+   ```
+   MCP_WEB_SEARCH_URL=http://localhost:3000
+   ```
+
+**注意**：如果不設置 `MCP_WEB_SEARCH_URL`，新聞功能仍會使用傳統的 RSS 訂閱方式。
 
 ## 💡 使用範例
 
