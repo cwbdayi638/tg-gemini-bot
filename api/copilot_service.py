@@ -129,7 +129,7 @@ class CopilotService:
             session = await self.get_or_create_session(chat_id, model)
             
             # Get the current event loop for this async context
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             
             # Event to signal completion (explicitly tied to this loop)
             done = asyncio.Event()
@@ -256,7 +256,7 @@ def _run_async_in_sync(coro):
             asyncio.set_event_loop(loop)
         # Check if loop is already running (e.g., in Jupyter or async context)
         elif loop.is_running():
-            # If the loop is running, we need to use asyncio.run in a new loop
+            # If the loop is running, create a new event loop and run the coroutine there
             # This can happen if called from within another async context
             loop = asyncio.new_event_loop()
             try:
