@@ -16,6 +16,18 @@ GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "")
 # Configuration
 GEMINI_MODEL_NAME = "gemini-1.5-flash"  # Default model
 
+# Fallback messages
+NO_API_KEY_MESSAGE = (
+    "I'm a Telegram bot assistant. To use me effectively, please:\n\n"
+    "• Use /help to see available commands\n"
+    "• Try earthquake commands like /eq_latest or /eq_global\n"
+    "• Check news with /news, /news_tech, or /news_taiwan\n"
+    "• Get your info with /get_my_info\n\n"
+    "Note: Conversational AI features require GOOGLE_API_KEY to be configured."
+)
+
+IMAGE_NO_API_KEY_MESSAGE = "Image analysis is not available. Please configure GOOGLE_API_KEY to enable this feature."
+
 # --- Compatibility Layer ---
 
 class MockResponse:
@@ -24,7 +36,11 @@ class MockResponse:
 
 class ChatConversation:
     def __init__(self):
-        """Initialize chat conversation with optional Gemini API support"""
+        """Initialize chat conversation with optional Gemini API support.
+        
+        If GOOGLE_API_KEY is configured, enables AI-powered conversational responses.
+        Otherwise, provides fallback responses directing users to available commands.
+        """
         self.history = []
         self.use_gemini = GEMINI_AVAILABLE and bool(GOOGLE_API_KEY)
         self.gemini_chat = None
@@ -74,20 +90,11 @@ class ChatConversation:
     
     def _send_fallback(self, text: str) -> MockResponse:
         """Fallback response when Gemini API is not available"""
-        response = (
-            "I'm a Telegram bot assistant. To use me effectively, please:\n\n"
-            "• Use /help to see available commands\n"
-            "• Try earthquake commands like /eq_latest or /eq_global\n"
-            "• Check news with /news, /news_tech, or /news_taiwan\n"
-            "• Get your info with /get_my_info\n\n"
-            "Note: Conversational AI features require GOOGLE_API_KEY to be configured."
-        )
-        
         # Track history for consistency
         self.history.append({"role": "user", "parts": [{"text": text}]})
-        self.history.append({"role": "model", "parts": [{"text": response}]})
+        self.history.append({"role": "model", "parts": [{"text": NO_API_KEY_MESSAGE}]})
         
-        return MockResponse(response)
+        return MockResponse(NO_API_KEY_MESSAGE)
 
     @property
     def history_length(self):
@@ -111,7 +118,7 @@ def generate_text_with_image(prompt: str, image_bytes: BytesIO) -> str:
             return f"Sorry, I couldn't process this image. Error: {str(e)}"
     
     # Fallback when Gemini is not available
-    return "Image analysis is not available. Please configure GOOGLE_API_KEY to enable this feature."
+    return IMAGE_NO_API_KEY_MESSAGE
 
 def list_models():
     """List available models"""
