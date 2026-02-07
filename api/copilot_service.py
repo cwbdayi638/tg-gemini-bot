@@ -238,22 +238,25 @@ def get_copilot_service() -> CopilotService:
 def _run_async_in_sync(coro):
     """
     Helper function to run async code in a sync context.
-    Uses asyncio.run() for Python 3.7+ which properly manages event loops.
+    Reuses the same event loop across calls to prevent event loop conflicts.
     """
     try:
-        # Use asyncio.run() which properly creates and cleans up event loop
-        return asyncio.run(coro)
+        # Try to get the existing event loop
+        loop = asyncio.get_event_loop()
+        if loop.is_closed():
+            # If closed, create a new one and set it
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        return loop.run_until_complete(coro)
     except RuntimeError as e:
-        # Fallback for environments where asyncio.run() might not work
-        # This can happen in some frameworks that already manage event loops
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_closed():
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
+        # If there's no event loop in this thread, create one
+        # This catches the specific case: "There is no current event loop in thread"
+        if "no current event loop" in str(e).lower() or "no running event loop" in str(e).lower():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
             return loop.run_until_complete(coro)
-        except Exception as inner_e:
-            raise RuntimeError(f"Failed to run async function: {inner_e}") from e
+        # Re-raise if it's a different RuntimeError (e.g., loop already running)
+        raise
 
 
 def copilot_chat_sync(chat_id: str, prompt: str, model: str = "gpt-4o") -> str:
