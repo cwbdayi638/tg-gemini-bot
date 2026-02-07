@@ -42,6 +42,13 @@ except ImportError as e:
 # Default search engines for MCP web search
 DEFAULT_MCP_SEARCH_ENGINES = ["bing", "duckduckgo"]
 
+# Import Copilot service
+try:
+    from .copilot_service import copilot_chat_sync, clear_copilot_session_sync, COPILOT_AVAILABLE
+except ImportError as e:
+    print(f"Warning: Copilot service not available: {e}")
+    COPILOT_AVAILABLE = False
+
 
 def help():
     help_message = f"{help_text}\n\n{command_list}"
@@ -79,6 +86,15 @@ def help():
         if MCP_WEB_SEARCH_AVAILABLE:
             web_search_commands += "\n(Enhanced with MCP web search)"
         help_message = help_message + web_search_commands
+    
+    if COPILOT_AVAILABLE:
+        copilot_commands = (
+            "\n\nGitHub Copilot AI:\n"
+            "/copilot <message> - Chat with GitHub Copilot AI\n"
+            "/copilot_new - Start a new conversation (clear history)\n"
+            "/copilot_help - Get help about Copilot features"
+        )
+        help_message = help_message + copilot_commands
     
     return help_message
 
@@ -270,6 +286,58 @@ def perform_web_search(query: str):
     except Exception as e:
         return f"❌ Web search failed: {e}"
 
+def copilot_chat(chat_id: str, message: str) -> str:
+    """Chat with GitHub Copilot AI."""
+    if not COPILOT_AVAILABLE:
+        return "❌ GitHub Copilot SDK is not available. Please install it with: pip install github-copilot-sdk"
+    
+    if not message or not message.strip():
+        return "Please provide a message, e.g.: /copilot How do I sort a list in Python?"
+    
+    try:
+        response = copilot_chat_sync(str(chat_id), message.strip())
+        return f"🤖 **GitHub Copilot:**\n\n{response}"
+    except Exception as e:
+        send_log(f"❌ Copilot chat error: {e}")
+        return f"❌ Error communicating with Copilot: {str(e)}"
+
+def copilot_new_conversation(chat_id: str) -> str:
+    """Start a new Copilot conversation (clear history)."""
+    if not COPILOT_AVAILABLE:
+        return "❌ GitHub Copilot SDK is not available."
+    
+    try:
+        success = clear_copilot_session_sync(str(chat_id))
+        if success:
+            return "✅ Started a new conversation. Previous chat history has been cleared."
+        else:
+            return "✅ Ready for a new conversation."
+    except Exception as e:
+        send_log(f"❌ Error clearing Copilot session: {e}")
+        return f"❌ Error: {str(e)}"
+
+def copilot_help() -> str:
+    """Get help about Copilot features."""
+    return (
+        "🤖 **GitHub Copilot AI Help**\n\n"
+        "GitHub Copilot is an AI-powered coding assistant that can help you with:\n\n"
+        "• **Programming Questions**: Ask about syntax, algorithms, best practices\n"
+        "• **Code Examples**: Request code snippets in any language\n"
+        "• **Debugging Help**: Get assistance with error messages and bugs\n"
+        "• **Explanations**: Understand complex code or concepts\n"
+        "• **General Knowledge**: Ask questions about technology, tools, and more\n\n"
+        "**Commands:**\n"
+        "/copilot <message> - Ask Copilot anything\n"
+        "/copilot_new - Start fresh (clears conversation history)\n"
+        "/copilot_help - Show this help message\n\n"
+        "**Examples:**\n"
+        "• /copilot How do I reverse a string in JavaScript?\n"
+        "• /copilot Explain what is a REST API\n"
+        "• /copilot Write a Python function to find prime numbers\n\n"
+        "**Note:** Conversations are maintained per chat. Use /copilot_new to start over."
+    )
+
+
 def speed_test(id):
     """ This command seems useless, but it must be included in every robot I make. """
     send_message(id, "开始测速")
@@ -369,6 +437,18 @@ def excute_command(from_id, command, from_type, chat_id):
         else:
             query = command[6:].strip()  # Remove "search" prefix
         return perform_web_search(query)
+
+    # GitHub Copilot commands
+    elif command.startswith("copilot_help"):
+        return copilot_help()
+    
+    elif command.startswith("copilot_new"):
+        return copilot_new_conversation(chat_id)
+    
+    elif command.startswith("copilot"):
+        # Extract message from command
+        message = command[7:].strip()  # Remove "copilot" prefix
+        return copilot_chat(chat_id, message)
 
     elif command in ["get_allowed_users", "get_allowed_groups", "get_api_key"]:
         if not is_admin(from_id):
