@@ -18,9 +18,17 @@ except ImportError as e:
     print(f"Warning: Some services not available: {e}")
     SERVICES_AVAILABLE = False
 
+# Import web search service
+try:
+    from .web_search_service import web_search, format_search_results
+    WEB_SEARCH_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: Web search service not available: {e}")
+    WEB_SEARCH_AVAILABLE = False
+
 
 def help():
-    base_help = f"{help_text}\n\n{command_list}"
+    help_message = f"{help_text}\n\n{command_list}"
     if SERVICES_AVAILABLE:
         earthquake_commands = (
             "\n\nEarthquake Services:\n"
@@ -39,8 +47,17 @@ def help():
             "/news_taiwan - Taiwan news (CNA)\n"
             "/news_global - Global news (BBC)"
         )
-        return base_help + earthquake_commands + news_commands
-    return base_help
+        help_message = help_message + earthquake_commands + news_commands
+    
+    if WEB_SEARCH_AVAILABLE:
+        web_search_commands = (
+            "\n\nWeb Search:\n"
+            "/search <query> - Search the web using Bing\n"
+            "/websearch <query> - Search the web (alias for /search)"
+        )
+        help_message = help_message + web_search_commands
+    
+    return help_message
 
 
 
@@ -167,6 +184,20 @@ def get_global_news(limit: int = 5):
         return "News service not available."
     return fetch_global_news(limit)
 
+def perform_web_search(query: str):
+    """Perform web search."""
+    if not WEB_SEARCH_AVAILABLE:
+        return "Web search service not available."
+    if not query or not query.strip():
+        return "Please provide a search query, e.g.: /search Python tutorial"
+    
+    try:
+        # Perform search with Bing engine (most reliable)
+        results = web_search(query.strip(), limit=5, engines=["bing"])
+        return format_search_results(results, query.strip())
+    except Exception as e:
+        return f"❌ Web search failed: {e}"
+
 def speed_test(id):
     """ This command seems useless, but it must be included in every robot I make. """
     send_message(id, "开始测速")
@@ -242,6 +273,15 @@ def excute_command(from_id, command, from_type, chat_id):
     
     elif command.startswith("news"):
         return get_news()
+
+    # Web search commands
+    elif command.startswith("search") or command.startswith("websearch"):
+        # Extract query from command
+        if command.startswith("websearch"):
+            query = command[9:].strip()  # Remove "websearch" prefix
+        else:
+            query = command[6:].strip()  # Remove "search" prefix
+        return perform_web_search(query)
 
     elif command in ["get_allowed_users", "get_allowed_groups", "get_api_key"]:
         if not is_admin(from_id):
