@@ -178,7 +178,7 @@ def fetch_udn_finance_news(limit: int = 5) -> str:
 
 def fetch_bbc_chinese_news(limit: int = 5) -> str:
     """Fetch news from BBC Chinese (BBC中文網)."""
-    url = "https://www.bbc.com/ws/news/rss/"
+    url = "https://feeds.bbci.co.uk/zhongwen/trad/rss.xml"
     result = fetch_rss_news(url, limit, "BBC Chinese")
     return f"🌐 BBC Chinese (BBC中文網)\n{'=' * 40}\n\n{result}"
 
