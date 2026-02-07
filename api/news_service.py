@@ -5,6 +5,17 @@ import feedparser
 from datetime import datetime, timezone
 from typing import List, Dict, Optional
 
+# Import MCP web search service
+try:
+    from .mcp_web_search_service import mcp_news_search, mcp_web_search, format_mcp_search_results
+    from .config import MCP_WEB_SEARCH_URL
+    MCP_SEARCH_AVAILABLE = bool(MCP_WEB_SEARCH_URL)
+except ImportError:
+    MCP_SEARCH_AVAILABLE = False
+
+# Default search engines for MCP web search
+DEFAULT_MCP_SEARCH_ENGINES = ["bing", "duckduckgo"]
+
 def _format_time(time_str: str) -> str:
     """Format time string for display."""
     try:
@@ -76,7 +87,16 @@ def fetch_global_news(limit: int = 5) -> str:
 
 def fetch_general_news(limit: int = 5) -> str:
     """Fetch general news from multiple sources."""
-    # Try multiple sources and return the first one that works
+    # Try MCP web search first if available
+    if MCP_SEARCH_AVAILABLE:
+        try:
+            result = mcp_news_search("latest news", limit=limit, engines=DEFAULT_MCP_SEARCH_ENGINES)
+            if result and not result.startswith("❌"):
+                return result
+        except Exception as e:
+            print(f"MCP news search failed, falling back to RSS: {e}")
+    
+    # Fallback to RSS feeds
     sources = [
         ("Tech", fetch_tech_news),
         ("Global", fetch_global_news),
@@ -92,3 +112,51 @@ def fetch_general_news(limit: int = 5) -> str:
             continue
     
     return "❌ Unable to fetch news from any source at this time.\n\nNote: News feeds may require network access that is not available in this environment."
+
+
+def fetch_tech_news_mcp(limit: int = 5) -> str:
+    """Fetch technology news using MCP web search."""
+    if not MCP_SEARCH_AVAILABLE:
+        return fetch_tech_news(limit)
+    
+    try:
+        result = mcp_news_search("technology", limit=limit, engines=DEFAULT_MCP_SEARCH_ENGINES)
+        if result and not result.startswith("❌"):
+            return result
+    except Exception as e:
+        print(f"MCP tech news search failed: {e}")
+    
+    # Fallback to RSS
+    return fetch_tech_news(limit)
+
+
+def fetch_taiwan_news_mcp(limit: int = 5) -> str:
+    """Fetch Taiwan news using MCP web search."""
+    if not MCP_SEARCH_AVAILABLE:
+        return fetch_taiwan_news(limit)
+    
+    try:
+        result = mcp_news_search("Taiwan 台灣", limit=limit, engines=DEFAULT_MCP_SEARCH_ENGINES)
+        if result and not result.startswith("❌"):
+            return result
+    except Exception as e:
+        print(f"MCP Taiwan news search failed: {e}")
+    
+    # Fallback to RSS
+    return fetch_taiwan_news(limit)
+
+
+def fetch_global_news_mcp(limit: int = 5) -> str:
+    """Fetch global news using MCP web search."""
+    if not MCP_SEARCH_AVAILABLE:
+        return fetch_global_news(limit)
+    
+    try:
+        result = mcp_news_search("world international", limit=limit, engines=DEFAULT_MCP_SEARCH_ENGINES)
+        if result and not result.startswith("❌"):
+            return result
+    except Exception as e:
+        print(f"MCP global news search failed: {e}")
+    
+    # Fallback to RSS
+    return fetch_global_news(limit)

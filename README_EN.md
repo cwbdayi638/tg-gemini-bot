@@ -86,6 +86,7 @@ Send images to the bot and it will analyze and describe the content using AI (re
 | GOOGLE_API_KEY | ❌ No | Google Gemini API key for AI conversations and image analysis. Get from [Google AI Studio](https://makersuite.google.com/app/apikey) |
 | CWA_API_KEY | ❌ No | Taiwan Central Weather Administration API key for significant earthquake data. Get from [CWA Open Data Platform](https://opendata.cwa.gov.tw/) |
 | MCP_SERVER_URL | ❌ No | MCP server URL for advanced earthquake database search (default: `https://cwadayi-mcp-2.hf.space`) |
+| MCP_WEB_SEARCH_URL | ❌ No | MCP web search server URL for enhanced news and web search features (using [open-webSearch](https://github.com/Aas-ee/open-webSearch), e.g., `http://localhost:3000`) |
 | ALLOWED_USERS | ❌ No | Allowed usernames or IDs (supports regex, separate multiple values with space or comma) |
 | ALLOWED_GROUPS | ❌ No | Allowed group IDs or usernames (separate multiple values with space or comma) |
 | ADMIN_ID | ❌ No | Telegram ID for admin commands |
@@ -130,6 +131,36 @@ Send images to the bot and it will analyze and describe the content using AI (re
 
 3. **Set up Webhook**:
    Point the webhook to your Docker service URL.
+
+### MCP Web Search Server Setup (Optional)
+
+To enable enhanced news and web search features, you can set up the [open-webSearch](https://github.com/Aas-ee/open-webSearch) MCP server:
+
+1. **Quick start with NPX** (easiest):
+   ```bash
+   # Basic usage
+   npx open-websearch@latest
+   
+   # Or with environment variables
+   DEFAULT_SEARCH_ENGINE=duckduckgo ENABLE_CORS=true npx open-websearch@latest
+   ```
+
+2. **Deploy with Docker**:
+   ```bash
+   docker run -d --name web-search \
+     -p 3000:3000 \
+     -e ENABLE_CORS=true \
+     -e CORS_ORIGIN=* \
+     ghcr.io/aas-ee/open-web-search:latest
+   ```
+
+3. **Configure the bot**:
+   Set the environment variable for the bot:
+   ```
+   MCP_WEB_SEARCH_URL=http://localhost:3000
+   ```
+
+**Note**: If `MCP_WEB_SEARCH_URL` is not set, news features will still work using traditional RSS feeds.
 
 ## 💡 Usage Examples
 

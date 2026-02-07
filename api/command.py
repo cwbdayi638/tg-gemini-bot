@@ -12,7 +12,10 @@ try:
     from .usgs_service import fetch_global_last24h_text, fetch_taiwan_df_this_year
     from .plotting_service import create_and_save_map
     from .ai_service import generate_ai_text
-    from .news_service import fetch_tech_news, fetch_taiwan_news, fetch_global_news, fetch_general_news
+    from .news_service import (
+        fetch_tech_news, fetch_taiwan_news, fetch_global_news, fetch_general_news,
+        fetch_tech_news_mcp, fetch_taiwan_news_mcp, fetch_global_news_mcp
+    )
     SERVICES_AVAILABLE = True
 except ImportError as e:
     print(f"Warning: Some services not available: {e}")
@@ -25,6 +28,18 @@ try:
 except ImportError as e:
     print(f"Warning: Web search service not available: {e}")
     WEB_SEARCH_AVAILABLE = False
+
+# Import MCP web search service
+try:
+    from .mcp_web_search_service import mcp_web_search, format_mcp_search_results
+    from .config import MCP_WEB_SEARCH_URL
+    MCP_WEB_SEARCH_AVAILABLE = bool(MCP_WEB_SEARCH_URL)
+except ImportError as e:
+    print(f"Warning: MCP web search service not available: {e}")
+    MCP_WEB_SEARCH_AVAILABLE = False
+
+# Default search engines for MCP web search
+DEFAULT_MCP_SEARCH_ENGINES = ["bing", "duckduckgo"]
 
 
 def help():
@@ -49,12 +64,14 @@ def help():
         )
         help_message = help_message + earthquake_commands + news_commands
     
-    if WEB_SEARCH_AVAILABLE:
+    if WEB_SEARCH_AVAILABLE or MCP_WEB_SEARCH_AVAILABLE:
         web_search_commands = (
             "\n\nWeb Search:\n"
             "/search <query> - Search the web using Bing\n"
             "/websearch <query> - Search the web (alias for /search)"
         )
+        if MCP_WEB_SEARCH_AVAILABLE:
+            web_search_commands += "\n(Enhanced with MCP web search)"
         help_message = help_message + web_search_commands
     
     return help_message
@@ -170,26 +187,46 @@ def get_tech_news(limit: int = 5):
     """Get technology news."""
     if not SERVICES_AVAILABLE:
         return "News service not available."
+    # Use MCP-enhanced version if available
+    if MCP_WEB_SEARCH_AVAILABLE:
+        return fetch_tech_news_mcp(limit)
     return fetch_tech_news(limit)
 
 def get_taiwan_news(limit: int = 5):
     """Get Taiwan news."""
     if not SERVICES_AVAILABLE:
         return "News service not available."
+    # Use MCP-enhanced version if available
+    if MCP_WEB_SEARCH_AVAILABLE:
+        return fetch_taiwan_news_mcp(limit)
     return fetch_taiwan_news(limit)
 
 def get_global_news(limit: int = 5):
     """Get global news."""
     if not SERVICES_AVAILABLE:
         return "News service not available."
+    # Use MCP-enhanced version if available
+    if MCP_WEB_SEARCH_AVAILABLE:
+        return fetch_global_news_mcp(limit)
     return fetch_global_news(limit)
 
 def perform_web_search(query: str):
     """Perform web search."""
-    if not WEB_SEARCH_AVAILABLE:
-        return "Web search service not available."
     if not query or not query.strip():
         return "Please provide a search query, e.g.: /search Python tutorial"
+    
+    # Try MCP web search first if available
+    if MCP_WEB_SEARCH_AVAILABLE:
+        try:
+            results = mcp_web_search(query.strip(), limit=5, engines=DEFAULT_MCP_SEARCH_ENGINES)
+            if results:
+                return format_mcp_search_results(results, query.strip())
+        except Exception as e:
+            print(f"MCP web search failed: {e}")
+    
+    # Fallback to built-in web search
+    if not WEB_SEARCH_AVAILABLE:
+        return "Web search service not available."
     
     try:
         # Perform search with Bing engine (most reliable)
