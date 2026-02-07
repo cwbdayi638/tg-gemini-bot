@@ -60,16 +60,6 @@ Get real-time news from multiple sources via RSS feeds:
 - Economic Daily News (經濟日報) - Finance news
 - BBC Chinese (BBC中文網) - International news
 
-### 🤖 AI Conversation Features
-
-The bot now uses Hugging Face Transformers local models, **no API key required**:
-- Natural language conversations (using DialoGPT model)
-- Smart earthquake queries (automatically understands dates, magnitudes, etc.)
-- Answer various questions
-- Provide information and suggestions
-
-**Note:** On first use, models will be downloaded automatically, which may take some time and network bandwidth. Model size is approximately a few hundred MB.
-
 ### 💬 GitHub Copilot AI
 
 The bot now integrates GitHub Copilot SDK, providing advanced AI assistance features:
