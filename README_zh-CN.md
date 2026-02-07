@@ -2,12 +2,11 @@
 
 [English](README_EN.md) | [繁體中文](README.md) | [简体中文](README_zh-CN.md)
 
-**tg-gemini-bot** 是一个功能强大的 Telegram 机器人助手，整合了实时地震信息、新闻服务和 AI 对话能力。
+**tg-gemini-bot** 是一个功能强大的 Telegram 机器人助手，整合了实时地震信息和 AI 对话能力。
 
 ## 🎯 主要功能
 
 - **🌍 地震信息服务**：整合台湾中央气象署 (CWA) 和美国地质调查局 (USGS) 的实时地震数据
-- **📰 新闻服务**：通过 RSS 订阅源获取科技、台湾和全球新闻
 - **💬 GitHub Copilot AI**：整合 GitHub Copilot SDK，提供高级 AI 编程协助和对话功能
 - **🔍 智能地震查询**：使用自然语言查询地震数据
 
@@ -35,30 +34,6 @@
 **数据来源：**
 - 台湾中央气象署开放数据平台
 - 美国地质调查局 (USGS) 地震 API
-
-### 📰 新闻服务
-
-通过 RSS 订阅源获取实时新闻信息：
-
-**新闻指令：**
-- `/news` - 从多个来源获取一般新闻
-- `/news_tech` - 科技新闻（Hacker News）
-- `/news_taiwan` - 台湾新闻（中央社）
-- `/news_global` - 全球新闻（BBC）
-- `/news_finance` - 财经新闻（从多个来源）
-- `/news_cw` - 天下杂志
-- `/news_gvm` - 远见杂志
-- `/news_udn` - 经济日报
-- `/news_bbc_chinese` - BBC中文网
-
-**数据来源：**
-- Hacker News - 科技新闻
-- 中央社 (CNA) - 台湾新闻
-- BBC News - 全球新闻
-- 天下杂志 (CommonWealth Magazine) - 财经与深度
-- 远见杂志 (Global Views Monthly) - 财经与深度
-- 经济日报 (Economic Daily News) - 财经新闻
-- BBC中文网 (BBC Chinese) - 国际新闻
 
 ### 💬 GitHub Copilot AI
 
@@ -105,7 +80,7 @@
 | --- | --- | --- |
 | CWA_API_KEY | ❌ 否 | 台湾中央气象署 API 密钥，用于访问显著地震数据。从 [CWA 开放数据平台](https://opendata.cwa.gov.tw/) 获取 |
 | MCP_SERVER_URL | ❌ 否 | MCP 服务器 URL，用于高级地震数据库搜索（默认：`https://cwadayi-mcp-2.hf.space`） |
-| MCP_WEB_SEARCH_URL | ❌ 否 | MCP 网页搜索服务器 URL，用于增强新闻和网页搜索功能（使用 [open-webSearch](https://github.com/Aas-ee/open-webSearch)，例如：`http://localhost:3000`） |
+| MCP_WEB_SEARCH_URL | ❌ 否 | MCP 网页搜索服务器 URL，用于增强网页搜索功能（使用 [open-webSearch](https://github.com/Aas-ee/open-webSearch)，例如：`http://localhost:3000`） |
 | ALLOWED_USERS | ❌ 否 | 允许使用的用户名或 ID（支持正则表达式，多个值用空格或逗号分隔） |
 | ALLOWED_GROUPS | ❌ 否 | 允许使用的群组 ID 或用户名（多个值用空格或逗号分隔） |
 | ADMIN_ID | ❌ 否 | 管理员的 Telegram ID，用于执行管理员指令 |
@@ -152,7 +127,7 @@
 
 ### MCP 网页搜索服务器设置（可选）
 
-若要启用增强的新闻和网页搜索功能，可以设置 [open-webSearch](https://github.com/Aas-ee/open-webSearch) MCP 服务器：
+若要启用增强的网页搜索功能，可以设置 [open-webSearch](https://github.com/Aas-ee/open-webSearch) MCP 服务器：
 
 1. **使用 NPX 快速启动**（最简单）：
    ```bash
@@ -178,8 +153,6 @@
    MCP_WEB_SEARCH_URL=http://localhost:3000
    ```
 
-**注意**：如果不设置 `MCP_WEB_SEARCH_URL`，新闻功能仍会使用传统的 RSS 订阅方式。
-
 ## 💡 使用范例
 
 ### 查询地震信息
@@ -191,16 +164,6 @@ Time: 2024-02-06 15:30:00
 Location: 花莲县近海
 Magnitude: M5.8 | Depth: 15 km
 Report: [链接]
-```
-
-### 查询新闻
-```
-用户：/news_tech
-机器人：📰 Technology News (Hacker News)
-----------------------------------
-1. New AI Model Released...
-2. Tech Company Announces...
-...
 ```
 
 ### AI 对话（需要 API 密钥）

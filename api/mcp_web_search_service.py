@@ -117,53 +117,6 @@ def mcp_web_search(query: str, limit: int = 10, engines: Optional[List[str]] = N
         return []
 
 
-def mcp_news_search(topic: str, limit: int = 5, engines: Optional[List[str]] = None) -> str:
-    """
-    Search for news articles using MCP web search.
-    
-    Args:
-        topic: News topic to search for
-        limit: Maximum number of results to return
-        engines: Search engines to use
-        
-    Returns:
-        Formatted news results string
-    """
-    if not topic:
-        topic = "latest news"
-    
-    # Add news-specific search terms
-    search_query = f"{topic} news"
-    
-    try:
-        results = mcp_web_search(search_query, limit=limit, engines=engines)
-        
-        if not results:
-            return f"🔍 No news results found for: {topic}"
-        
-        lines = [
-            f"📰 News Search Results: {topic}",
-            f"Found {len(results)} articles:\n"
-        ]
-        lines.append("─" * 40)
-        
-        for i, result in enumerate(results, 1):
-            lines.append(f"\n{i}. {result.title}")
-            lines.append(f"🔗 {result.url}")
-            if result.description:
-                # Limit description to 150 characters
-                desc = result.description[:150] + "..." if len(result.description) > 150 else result.description
-                lines.append(f"📝 {desc}")
-            if result.engine:
-                lines.append(f"🔍 Source: {result.engine}")
-            lines.append("")
-        
-        return "\n".join(lines)
-        
-    except Exception as e:
-        return f"❌ Failed to search news: {e}"
-
-
 def format_mcp_search_results(results: List[MCPSearchResult], query: str) -> str:
     """
     Format MCP search results for display in Telegram.
