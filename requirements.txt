@@ -27,3 +27,4 @@ transformers>=4.35.0
 torch>=2.0.0
 sentencepiece>=0.1.99
 accelerate>=0.20.0
+github-copilot-sdk>=0.1.0
