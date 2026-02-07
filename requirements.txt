@@ -4,7 +4,6 @@ certifi==2023.11.17
 charset-normalizer==3.3.2
 click==8.1.7
 Flask==3.0.0
-google-generativeai>=0.5.0
 idna==3.6
 importlib-metadata==7.0.1
 itsdangerous==2.1.2
@@ -24,3 +23,7 @@ gradio_client>=2.0.0
 feedparser>=6.0.0
 beautifulsoup4>=4.12.0
 lxml>=4.9.0
+transformers>=4.35.0
+torch>=2.0.0
+sentencepiece>=0.1.99
+accelerate>=0.20.0
