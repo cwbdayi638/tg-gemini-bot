@@ -8,6 +8,7 @@ from typing import Optional
 from .printLog import send_log
 
 # Try to import copilot SDK
+# Note: The package is 'github-copilot-sdk' but imports as 'copilot'
 try:
     from copilot import CopilotClient
     COPILOT_AVAILABLE = True
@@ -174,6 +175,27 @@ def get_copilot_service() -> CopilotService:
     return _copilot_service
 
 
+def _run_async_in_sync(coro):
+    """
+    Helper function to run async code in a sync context.
+    Uses asyncio.run() for Python 3.7+ which properly manages event loops.
+    """
+    try:
+        # Use asyncio.run() which properly creates and cleans up event loop
+        return asyncio.run(coro)
+    except RuntimeError as e:
+        # Fallback for environments where asyncio.run() might not work
+        # This can happen in some frameworks that already manage event loops
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_closed():
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            return loop.run_until_complete(coro)
+        except Exception as inner_e:
+            raise RuntimeError(f"Failed to run async function: {inner_e}") from e
+
+
 def copilot_chat_sync(chat_id: str, prompt: str, model: str = "gpt-4o") -> str:
     """
     Synchronous wrapper for Copilot chat.
@@ -184,19 +206,7 @@ def copilot_chat_sync(chat_id: str, prompt: str, model: str = "gpt-4o") -> str:
     
     try:
         service = get_copilot_service()
-        
-        # Try to get or create event loop
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_closed():
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        
-        # Run the async function
-        return loop.run_until_complete(service.chat(chat_id, prompt, model))
+        return _run_async_in_sync(service.chat(chat_id, prompt, model))
     except Exception as e:
         send_log(f"❌ Copilot sync chat error: {e}")
         return f"❌ Error: {str(e)}"
@@ -209,17 +219,7 @@ def clear_copilot_session_sync(chat_id: str) -> bool:
     
     try:
         service = get_copilot_service()
-        
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_closed():
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        
-        return loop.run_until_complete(service.clear_session(chat_id))
+        return _run_async_in_sync(service.clear_session(chat_id))
     except Exception as e:
         send_log(f"❌ Error clearing Copilot session: {e}")
         return False

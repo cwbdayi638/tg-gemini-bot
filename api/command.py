@@ -48,6 +48,11 @@ try:
 except ImportError as e:
     print(f"Warning: Copilot service not available: {e}")
     COPILOT_AVAILABLE = False
+    # Define stub functions to prevent NameError
+    def copilot_chat_sync(chat_id: str, message: str, model: str = "gpt-4o") -> str:
+        return "❌ GitHub Copilot SDK is not available."
+    def clear_copilot_session_sync(chat_id: str) -> bool:
+        return False
 
 
 def help():
@@ -447,7 +452,7 @@ def excute_command(from_id, command, from_type, chat_id):
     
     elif command.startswith("copilot"):
         # Extract message from command
-        message = command[7:].strip()  # Remove "copilot" prefix
+        message = command[8:].strip()  # Remove "copilot " prefix (7 chars + 1 space)
         return copilot_chat(chat_id, message)
 
     elif command in ["get_allowed_users", "get_allowed_groups", "get_api_key"]:
