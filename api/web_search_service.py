@@ -156,7 +156,7 @@ def search_duckduckgo(query: str, limit: int = 10) -> List[SearchResult]:
                     url_params = parse_qs(parsed.query)
                     if 'uddg' in url_params:
                         url = url_params['uddg'][0]
-                except:
+                except Exception:
                     pass
             
             if not url or not url.startswith('http'):
@@ -240,7 +240,10 @@ def format_search_results(results: List[SearchResult], query: str) -> str:
     if not results:
         return f"🔍 No results found for: {query}"
     
-    lines = [f"🔍 Web Search Results for: {query}", f"Found {len(results)} results:\n"]
+    lines = [
+        f"🔍 Web Search Results for: {query}",
+        f"Found {len(results)} results:\n"
+    ]
     lines.append("─" * 40)
     
     for i, result in enumerate(results, 1):

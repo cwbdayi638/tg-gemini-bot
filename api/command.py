@@ -28,7 +28,7 @@ except ImportError as e:
 
 
 def help():
-    base_help = f"{help_text}\n\n{command_list}"
+    help_message = f"{help_text}\n\n{command_list}"
     if SERVICES_AVAILABLE:
         earthquake_commands = (
             "\n\nEarthquake Services:\n"
@@ -47,7 +47,7 @@ def help():
             "/news_taiwan - Taiwan news (CNA)\n"
             "/news_global - Global news (BBC)"
         )
-        base_help = base_help + earthquake_commands + news_commands
+        help_message = help_message + earthquake_commands + news_commands
     
     if WEB_SEARCH_AVAILABLE:
         web_search_commands = (
@@ -55,9 +55,9 @@ def help():
             "/search <query> - Search the web using Bing\n"
             "/websearch <query> - Search the web (alias for /search)"
         )
-        base_help = base_help + web_search_commands
+        help_message = help_message + web_search_commands
     
-    return base_help
+    return help_message
 
 
 
