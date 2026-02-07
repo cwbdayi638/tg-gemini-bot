@@ -1,6 +1,6 @@
 """
 MCP Web Search Service
-Integrates with open-webSearch MCP server (https://github.com/Aas-ee/open-webSearch.git)
+Integrates with open-webSearch MCP server (https://github.com/Aas-ee/open-webSearch)
 for advanced web search capabilities.
 """
 

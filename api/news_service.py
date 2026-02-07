@@ -13,6 +13,9 @@ try:
 except ImportError:
     MCP_SEARCH_AVAILABLE = False
 
+# Default search engines for MCP web search
+DEFAULT_MCP_SEARCH_ENGINES = ["bing", "duckduckgo"]
+
 def _format_time(time_str: str) -> str:
     """Format time string for display."""
     try:
@@ -87,7 +90,7 @@ def fetch_general_news(limit: int = 5) -> str:
     # Try MCP web search first if available
     if MCP_SEARCH_AVAILABLE:
         try:
-            result = mcp_news_search("latest news", limit=limit, engines=["bing", "duckduckgo"])
+            result = mcp_news_search("latest news", limit=limit, engines=DEFAULT_MCP_SEARCH_ENGINES)
             if result and not result.startswith("❌"):
                 return result
         except Exception as e:
@@ -117,7 +120,7 @@ def fetch_tech_news_mcp(limit: int = 5) -> str:
         return fetch_tech_news(limit)
     
     try:
-        result = mcp_news_search("technology tech", limit=limit, engines=["bing", "duckduckgo"])
+        result = mcp_news_search("technology", limit=limit, engines=DEFAULT_MCP_SEARCH_ENGINES)
         if result and not result.startswith("❌"):
             return result
     except Exception as e:
@@ -133,7 +136,7 @@ def fetch_taiwan_news_mcp(limit: int = 5) -> str:
         return fetch_taiwan_news(limit)
     
     try:
-        result = mcp_news_search("Taiwan 台灣", limit=limit, engines=["bing", "duckduckgo"])
+        result = mcp_news_search("Taiwan 台灣", limit=limit, engines=DEFAULT_MCP_SEARCH_ENGINES)
         if result and not result.startswith("❌"):
             return result
     except Exception as e:
@@ -149,7 +152,7 @@ def fetch_global_news_mcp(limit: int = 5) -> str:
         return fetch_global_news(limit)
     
     try:
-        result = mcp_news_search("world international", limit=limit, engines=["bing", "duckduckgo"])
+        result = mcp_news_search("world international", limit=limit, engines=DEFAULT_MCP_SEARCH_ENGINES)
         if result and not result.startswith("❌"):
             return result
     except Exception as e:

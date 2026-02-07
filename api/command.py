@@ -38,6 +38,9 @@ except ImportError as e:
     print(f"Warning: MCP web search service not available: {e}")
     MCP_WEB_SEARCH_AVAILABLE = False
 
+# Default search engines for MCP web search
+DEFAULT_MCP_SEARCH_ENGINES = ["bing", "duckduckgo"]
+
 
 def help():
     help_message = f"{help_text}\n\n{command_list}"
@@ -215,7 +218,7 @@ def perform_web_search(query: str):
     # Try MCP web search first if available
     if MCP_WEB_SEARCH_AVAILABLE:
         try:
-            results = mcp_web_search(query.strip(), limit=5, engines=["bing", "duckduckgo"])
+            results = mcp_web_search(query.strip(), limit=5, engines=DEFAULT_MCP_SEARCH_ENGINES)
             if results:
                 return format_mcp_search_results(results, query.strip())
         except Exception as e:
