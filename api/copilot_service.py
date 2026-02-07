@@ -128,7 +128,10 @@ class CopilotService:
         try:
             session = await self.get_or_create_session(chat_id, model)
             
-            # Event to signal completion
+            # Get the current event loop for this async context
+            loop = asyncio.get_event_loop()
+            
+            # Event to signal completion (explicitly tied to this loop)
             done = asyncio.Event()
             response_text = []
             error_occurred = False
@@ -140,15 +143,18 @@ class CopilotService:
                     if event.type.value == "assistant.message":
                         response_text.append(event.data.content)
                     elif event.type.value == "session.idle":
-                        done.set()
+                        # Use call_soon_threadsafe to safely set the event from any thread
+                        loop.call_soon_threadsafe(done.set)
                     elif event.type.value == "error":
                         error_occurred = True
                         error_message = str(event.data) if hasattr(event, 'data') else "Unknown error"
-                        done.set()
+                        # Use call_soon_threadsafe to safely set the event from any thread
+                        loop.call_soon_threadsafe(done.set)
                 except Exception as e:
                     error_occurred = True
                     error_message = str(e)
-                    done.set()
+                    # Use call_soon_threadsafe to safely set the event from any thread
+                    loop.call_soon_threadsafe(done.set)
             
             # Register event handler
             session.on(on_event)
@@ -238,24 +244,35 @@ def get_copilot_service() -> CopilotService:
 def _run_async_in_sync(coro):
     """
     Helper function to run async code in a sync context.
-    Reuses the same event loop across calls to prevent event loop conflicts.
+    Ensures proper event loop management to prevent event loop conflicts.
     """
     try:
         # Try to get the existing event loop
         loop = asyncio.get_event_loop()
+        # Check if the loop is closed or if we're in a different thread's loop
         if loop.is_closed():
             # If closed, create a new one and set it
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
+        # Check if loop is already running (e.g., in Jupyter or async context)
+        elif loop.is_running():
+            # If the loop is running, we need to use asyncio.run in a new loop
+            # This can happen if called from within another async context
+            loop = asyncio.new_event_loop()
+            try:
+                return loop.run_until_complete(coro)
+            finally:
+                loop.close()
         return loop.run_until_complete(coro)
     except RuntimeError as e:
         # If there's no event loop in this thread, create one
         # This catches the specific case: "There is no current event loop in thread"
-        if "no current event loop" in str(e).lower() or "no running event loop" in str(e).lower():
+        error_str = str(e).lower()
+        if "no current event loop" in error_str or "no running event loop" in error_str:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             return loop.run_until_complete(coro)
-        # Re-raise if it's a different RuntimeError (e.g., loop already running)
+        # Re-raise if it's a different RuntimeError
         raise
 
 
