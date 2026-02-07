@@ -8,7 +8,7 @@ AI_NOT_AVAILABLE_MESSAGE = (
     "I'm a Telegram bot assistant. To use me effectively, please:\n\n"
     "• Use /help to see available commands\n"
     "• Try earthquake commands like /eq_latest or /eq_global\n"
-    "• Check news with /news, /news_tech, or /news_taiwan\n"
+    "• Use web search with /search <query>\n"
     "• Get your info with /get_my_info\n\n"
     "Note: AI conversational features are not available."
 )
