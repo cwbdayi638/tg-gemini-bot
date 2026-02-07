@@ -36,7 +36,9 @@ def _load_ai_model():
         _ai_tokenizer = AutoTokenizer.from_pretrained(model_name)
         
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        _ai_model = AutoModelForCausalLM.from_pretrained(
+        # flan-t5 is a seq2seq model, not causal LM
+        from transformers import AutoModelForSeq2SeqLM
+        _ai_model = AutoModelForSeq2SeqLM.from_pretrained(
             model_name,
             torch_dtype=torch.float16 if device == "cuda" else torch.float32,
             low_cpu_mem_usage=True
@@ -135,16 +137,13 @@ def _parse_date_from_question(question: str) -> tuple:
     # Check for specific month patterns (e.g., "2024年4月" or "April 2024")
     month_year_match = re.search(r'(20\d{2})[年\-](0?[1-9]|1[0-2])', question)
     if month_year_match:
-        year = month_year_match.group(1)
-        month = month_year_match.group(2).zfill(2)
-        start_date = f"{year}-{month}-01"
-        # Last day of month
-        if month in ['01', '03', '05', '07', '08', '10', '12']:
-            end_date = f"{year}-{month}-31"
-        elif month in ['04', '06', '09', '11']:
-            end_date = f"{year}-{month}-30"
-        else:  # February
-            end_date = f"{year}-{month}-28"
+        import calendar
+        year = int(month_year_match.group(1))
+        month = int(month_year_match.group(2))
+        start_date = f"{year}-{month:02d}-01"
+        # Get last day of month
+        last_day = calendar.monthrange(year, month)[1]
+        end_date = f"{year}-{month:02d}-{last_day}"
     
     return start_date, end_date
 

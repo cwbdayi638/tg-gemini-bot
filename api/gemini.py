@@ -103,9 +103,11 @@ class ChatConversation:
     def _send_with_transformers(self, text: str) -> MockResponse:
         """Send message using Hugging Face Transformers"""
         try:
-            # Build conversation context from history
+            # Build conversation context from history (last 3 complete user-bot exchanges)
             conversation_context = ""
-            for msg in self.history[-6:]:  # Keep last 3 exchanges (6 messages)
+            # Ensure we have complete exchanges by taking last 6 messages
+            recent_history = self.history[-6:] if len(self.history) >= 6 else self.history
+            for msg in recent_history:
                 role = msg.get("role", "user")
                 content = msg.get("parts", [{}])[0].get("text", "")
                 if role == "user":

@@ -130,7 +130,6 @@
    ```bash
    docker run -d \
      -e BOT_TOKEN="您的机器人Token" \
-     
      -e CWA_API_KEY="您的CWA API密钥" \
      -p 8080:8080 \
      tg-gemini-bot
