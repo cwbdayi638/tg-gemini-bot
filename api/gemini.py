@@ -23,9 +23,9 @@ class MockResponse:
 
 class ChatConversation:
     def __init__(self):
-        """Initialize chat conversation with simple fallback responses."""
+        """Initialize chat conversation with a basic response system."""
         self.history = []
-        print("Chat initialized with basic response system.")
+        print("Chat initialized with a basic response system.")
 
     def send_message(self, text: str) -> MockResponse:
         """Send a message and get a fallback response"""

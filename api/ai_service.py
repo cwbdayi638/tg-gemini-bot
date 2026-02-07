@@ -179,11 +179,13 @@ def generate_ai_text(user_prompt: str) -> str:
             return f"🤖 I encountered an error while searching for earthquake data: {e}\n\nPlease try using specific commands like /eq_latest or /eq_global instead."
     
     # For non-earthquake questions, return a helpful message
-    response_text = "🤖 I'm an assistant for this Telegram bot. You asked: '" + user_prompt + "'\n\n"
-    response_text += "I can help you with:\n"
-    response_text += "• Earthquake information (use /eq_latest, /eq_global, /eq_taiwan)\n"
-    response_text += "• News updates (use /news, /news_tech, /news_taiwan)\n"
-    response_text += "• Web search (use /search <query>)\n\n"
-    response_text += "For earthquake-specific questions, please mention 'earthquake' or '地震' in your question."
+    response_text = (
+        f"🤖 I'm an assistant for this Telegram bot. You asked: '{user_prompt}'\n\n"
+        "I can help you with:\n"
+        "• Earthquake information (use /eq_latest, /eq_global, /eq_taiwan)\n"
+        "• News updates (use /news, /news_tech, /news_taiwan)\n"
+        "• Web search (use /search <query>)\n\n"
+        "For earthquake-specific questions, please mention 'earthquake' or '地震' in your question."
+    )
     
     return response_text
