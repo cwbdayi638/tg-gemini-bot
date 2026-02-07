@@ -207,7 +207,10 @@ The GitHub Copilot integration provides:
 
 If you still encounter permission errors:
 1. The fix is applied automatically on first use - try the command again
-2. If it persists, manually fix permissions: `chmod +x ~/.local/lib/python3.*/site-packages/copilot/bin/copilot`
+2. If it persists, manually fix permissions (replace `3.12` with your Python version):
+   ```bash
+   chmod +x ~/.local/lib/python3.12/site-packages/copilot/bin/copilot
+   ```
 3. Or reinstall: `pip install --force-reinstall github-copilot-sdk`
 
 **Technical Details**: The `github-copilot-sdk` package includes a bundled binary that sometimes lacks execute permissions. The bot now automatically detects and fixes this during initialization.

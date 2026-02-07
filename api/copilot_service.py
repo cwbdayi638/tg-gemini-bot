@@ -25,6 +25,9 @@ def _fix_copilot_binary_permissions():
     The github-copilot-sdk package includes a binary that may not have execute permissions.
     This function ensures the binary is executable before attempting to use it.
     """
+    if not COPILOT_AVAILABLE:
+        return False
+    
     try:
         import copilot
         copilot_pkg_dir = Path(copilot.__file__).parent
@@ -37,14 +40,14 @@ def _fix_copilot_binary_permissions():
                 # Add execute permissions for user, group, and others
                 new_permissions = current_permissions | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
                 copilot_binary.chmod(new_permissions)
-                print(f"✅ Fixed Copilot binary permissions: {copilot_binary}")
+                send_log(f"✅ Fixed Copilot binary permissions: {copilot_binary}")
                 return True
             return True  # Already executable
         else:
-            print(f"⚠️  Copilot binary not found at expected location: {copilot_binary}")
+            send_log(f"⚠️  Copilot binary not found at expected location: {copilot_binary}")
             return False
     except Exception as e:
-        print(f"⚠️  Could not fix Copilot binary permissions: {e}")
+        send_log(f"⚠️  Could not fix Copilot binary permissions: {e}")
         return False
 
 
