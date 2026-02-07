@@ -1,65 +1,10 @@
-# ai_service.py - Enhanced AI service with Hugging Face Transformers
+# ai_service.py - Enhanced AI service for earthquake queries
 import json
 import re
 from datetime import datetime, timedelta
 from gradio_client import Client
 
 from .config import MCP_SERVER_URL
-
-# Try to import Hugging Face Transformers
-try:
-    from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
-    import torch
-    TRANSFORMERS_AVAILABLE = True
-except ImportError:
-    TRANSFORMERS_AVAILABLE = False
-
-# Global model cache
-_ai_model = None
-_ai_tokenizer = None
-
-def _load_ai_model():
-    """Load Hugging Face model for AI text generation."""
-    global _ai_model, _ai_tokenizer
-    
-    if _ai_model is not None:
-        return _ai_model, _ai_tokenizer
-    
-    if not TRANSFORMERS_AVAILABLE:
-        return None, None
-    
-    try:
-        # Use a lightweight instruction-following model
-        model_name = "google/flan-t5-base"
-        print(f"Loading AI model: {model_name}...")
-        
-        _ai_tokenizer = AutoTokenizer.from_pretrained(model_name)
-        
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        # flan-t5 is a seq2seq model, not causal LM
-        from transformers import AutoModelForSeq2SeqLM
-        _ai_model = AutoModelForSeq2SeqLM.from_pretrained(
-            model_name,
-            torch_dtype=torch.float16 if device == "cuda" else torch.float32,
-            low_cpu_mem_usage=True
-        )
-        _ai_model.to(device)
-        _ai_model.eval()
-        
-        print(f"✓ AI model loaded successfully on {device}")
-        return _ai_model, _ai_tokenizer
-    except Exception as e:
-        print(f"Error loading AI model: {e}")
-        # Try fallback to pipeline
-        try:
-            print("Trying text-generation pipeline as fallback...")
-            _ai_model = pipeline("text-generation", model="microsoft/DialoGPT-small")
-            _ai_tokenizer = None
-            print("✓ Fallback pipeline loaded")
-            return _ai_model, None
-        except Exception as e2:
-            print(f"Fallback also failed: {e2}")
-            return None, None
 
 # Tool function for earthquake search
 def call_mcp_earthquake_search(
@@ -174,7 +119,7 @@ def _should_search_earthquakes(question: str) -> bool:
 
 # Main AI text generation function
 def generate_ai_text(user_prompt: str) -> str:
-    """Generate AI response with earthquake search capability using Hugging Face Transformers."""
+    """Generate AI response with earthquake search capability."""
     
     # Check if this is an earthquake-related question
     if _should_search_earthquakes(user_prompt):
@@ -233,29 +178,14 @@ def generate_ai_text(user_prompt: str) -> str:
             print(f"Error processing earthquake question: {e}")
             return f"🤖 I encountered an error while searching for earthquake data: {e}\n\nPlease try using specific commands like /eq_latest or /eq_global instead."
     
-    # For non-earthquake questions, use simple conversational AI
-    model, tokenizer = _load_ai_model()
+    # For non-earthquake questions, return a helpful message
+    response_text = (
+        f"🤖 I'm an assistant for this Telegram bot. You asked: '{user_prompt}'\n\n"
+        "I can help you with:\n"
+        "• Earthquake information (use /eq_latest, /eq_global, /eq_taiwan)\n"
+        "• News updates (use /news, /news_tech, /news_taiwan)\n"
+        "• Web search (use /search <query>)\n\n"
+        "For earthquake-specific questions, please mention 'earthquake' or '地震' in your question."
+    )
     
-    if model is None:
-        return "🤖 AI service is not available. Transformers library may not be installed. Please use specific commands like /help, /eq_latest, or /news to access available features."
-    
-    try:
-        # Simple text generation response
-        if tokenizer is not None:
-            # Using a proper model
-            response_text = f"I'm an AI assistant for this Telegram bot. You asked: '{user_prompt}'\n\n"
-            response_text += "I can help you with:\n"
-            response_text += "• Earthquake information (use /eq_latest, /eq_global, /eq_taiwan)\n"
-            response_text += "• News updates (use /news, /news_tech, /news_taiwan)\n"
-            response_text += "• Web search (use /search <query>)\n\n"
-            response_text += "For earthquake-specific questions, please mention 'earthquake' or '地震' in your question."
-        else:
-            # Using pipeline
-            generated = model(user_prompt, max_length=100, num_return_sequences=1)
-            response_text = generated[0]['generated_text']
-        
-        return response_text
-        
-    except Exception as e:
-        print(f"Error during AI text generation: {e}")
-        return f"🤖 AI service error: {e}\n\nPlease use /help to see available commands."
+    return response_text

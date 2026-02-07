@@ -8,9 +8,8 @@
 
 - **🌍 Earthquake Information Services**: Integrated real-time earthquake data from Taiwan Central Weather Administration (CWA) and USGS
 - **📰 News Services**: Get technology, Taiwan, and global news through RSS feeds
-- **🤖 AI Conversations**: Local AI conversations using Hugging Face Transformers (no API key required)
 - **💬 GitHub Copilot AI**: Integrated GitHub Copilot SDK for advanced AI programming assistance and conversations
-- **🔍 Smart Earthquake Query**: AI understands natural language questions and queries earthquake data
+- **🔍 Smart Earthquake Query**: Use natural language to query earthquake data
 
 ## 🚀 Feature Details
 
@@ -36,7 +35,6 @@ Integrated real-time earthquake data from Taiwan Central Weather Administration 
 **Data Sources:**
 - Taiwan Central Weather Administration Open Data Platform
 - United States Geological Survey (USGS) Earthquake API
-- Hugging Face Transformers (local AI models, no API key required)
 
 ### 📰 News Services
 
@@ -61,16 +59,6 @@ Get real-time news from multiple sources via RSS feeds:
 - Global Views Monthly (遠見雜誌) - Finance & In-depth
 - Economic Daily News (經濟日報) - Finance news
 - BBC Chinese (BBC中文網) - International news
-
-### 🤖 AI Conversation Features
-
-The bot now uses Hugging Face Transformers local models, **no API key required**:
-- Natural language conversations (using DialoGPT model)
-- Smart earthquake queries (automatically understands dates, magnitudes, etc.)
-- Answer various questions
-- Provide information and suggestions
-
-**Note:** On first use, models will be downloaded automatically, which may take some time and network bandwidth. Model size is approximately a few hundred MB.
 
 ### 💬 GitHub Copilot AI
 
@@ -215,10 +203,14 @@ Bot: 📰 Technology News (Hacker News)
 ...
 ```
 
-### AI Conversation (no API key required)
+### Smart Earthquake Queries
 ```
-User: Hello, tell me about earthquakes in Taiwan
-Bot: Taiwan is located on the Pacific Ring of Fire, which makes it one of the most seismically active regions...
+User: /eq_ai Were there any earthquakes in Hualien yesterday?
+Bot: 🌍 Earthquake Search Results (2024-01-15 to 2024-01-15, M≥4.5):
+
+Found 2 earthquake(s):
+
+1. Time: 2024-01-15 08:23:45...
 ```
 
 ### Smart Earthquake Query
@@ -239,10 +231,9 @@ Found 1 earthquake(s):
 
 ## 📝 Notes
 
-1. **AI Features**:
-   - Bot uses Hugging Face Transformers local models, **no Google API key required**
-   - Models will be downloaded automatically on first startup (approximately a few hundred MB), ensure sufficient disk space and network bandwidth
-   - AI conversation features run locally, speed depends on server hardware configuration
+1. **GitHub Copilot AI Features**:
+   - Bot can integrate GitHub Copilot SDK for advanced AI conversations
+   - Requires GitHub account and authorization to use Copilot features
 
 2. **API Keys**:
    - Without `CWA_API_KEY`: Some earthquake information features may be limited
