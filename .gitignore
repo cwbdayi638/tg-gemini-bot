@@ -16,3 +16,8 @@ variables.txt
 .DS_Store
 .envrc
 .vscode
+
+# Backup files
+*_old.py
+*_old.md
+*.backup
