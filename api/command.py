@@ -49,6 +49,14 @@ except ImportError as e:
     def clear_copilot_session_sync(chat_id: str) -> bool:
         return False
 
+# Import AI Demo service
+try:
+    from .ai_demo_service import get_ai_demo_tip
+    AI_DEMO_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: AI Demo service not available: {e}")
+    AI_DEMO_AVAILABLE = False
+
 
 def help():
     help_message = f"{help_text}\n\n{command_list}"
@@ -80,7 +88,8 @@ def help():
             "\n\nGitHub Copilot AI:\n"
             "/copilot <message> - Chat with GitHub Copilot AI\n"
             "/copilot_new - Start a new conversation (clear history)\n"
-            "/copilot_help - Get help about Copilot features"
+            "/copilot_help - Get help about Copilot features\n"
+            "/ai_demo - 隨機顯示 GitHub Copilot AI 高生產力應用案例"
         )
         help_message = help_message + copilot_commands
     
@@ -255,13 +264,25 @@ def copilot_help() -> str:
         "**Commands:**\n"
         "/copilot <message> - Ask Copilot anything\n"
         "/copilot_new - Start fresh (clears conversation history)\n"
-        "/copilot_help - Show this help message\n\n"
+        "/copilot_help - Show this help message\n"
+        "/ai_demo - 查看 GitHub Copilot 高生產力應用案例\n\n"
         "**Examples:**\n"
         "• /copilot How do I reverse a string in JavaScript?\n"
         "• /copilot Explain what is a REST API\n"
         "• /copilot Write a Python function to find prime numbers\n\n"
         "**Note:** Conversations are maintained per chat. Use /copilot_new to start over."
     )
+
+def ai_demo(chat_id: str) -> str:
+    """Show a random GitHub Copilot AI productivity tip."""
+    if not AI_DEMO_AVAILABLE:
+        return "❌ AI Demo service is not available."
+    
+    try:
+        return get_ai_demo_tip(str(chat_id))
+    except Exception as e:
+        send_log(f"❌ AI Demo error: {e}")
+        return f"❌ Error getting AI demo: {str(e)}"
 
 
 def speed_test(id):
@@ -347,6 +368,9 @@ def excute_command(from_id, command, from_type, chat_id):
         # Extract message from command
         message = command[8:].strip()  # Remove "copilot " prefix (7 chars + 1 space)
         return copilot_chat(chat_id, message)
+    
+    elif command.startswith("ai_demo"):
+        return ai_demo(chat_id)
 
     elif command in ["get_allowed_users", "get_allowed_groups", "get_api_key"]:
         if not is_admin(from_id):
