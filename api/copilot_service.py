@@ -3,6 +3,7 @@ GitHub Copilot SDK service for Telegram bot.
 Provides AI-powered conversation capabilities using GitHub Copilot.
 """
 import asyncio
+import concurrent.futures
 import os
 import stat
 from pathlib import Path
@@ -238,25 +239,31 @@ def get_copilot_service() -> CopilotService:
 def _run_async_in_sync(coro):
     """
     Helper function to run async code in a sync context.
-    Reuses the same event loop across calls to prevent event loop conflicts.
+    Handles three scenarios:
+    1. No event loop exists - creates a new one
+    2. Event loop exists but is not running - reuses it
+    3. Event loop is already running (e.g., inside Flask/ASGI) - runs in a separate thread
     """
     try:
-        # Try to get the existing event loop
         loop = asyncio.get_event_loop()
-        if loop.is_closed():
-            # If closed, create a new one and set it
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        return loop.run_until_complete(coro)
-    except RuntimeError as e:
-        # If there's no event loop in this thread, create one
-        # This catches the specific case: "There is no current event loop in thread"
-        if "no current event loop" in str(e).lower() or "no running event loop" in str(e).lower():
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            return loop.run_until_complete(coro)
-        # Re-raise if it's a different RuntimeError (e.g., loop already running)
-        raise
+    except RuntimeError:
+        # No event loop in this thread
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+    if loop.is_closed():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+    if loop.is_running():
+        # Event loop is already running (e.g., inside an async framework).
+        # Run the coroutine in a new thread with its own event loop.
+        # Timeout matches the 60s async wait in chat() plus overhead for init.
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(asyncio.run, coro)
+            return future.result(timeout=120)
+
+    return loop.run_until_complete(coro)
 
 
 def copilot_chat_sync(chat_id: str, prompt: str, model: str = "gpt-4o") -> str:
