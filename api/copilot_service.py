@@ -129,7 +129,10 @@ class CopilotService:
         try:
             session = await self.get_or_create_session(chat_id, model)
             
-            # Event to signal completion
+            # Get the current event loop to ensure all asyncio primitives use the same loop
+            loop = asyncio.get_running_loop()
+            
+            # Event to signal completion - created in the correct event loop context
             done = asyncio.Event()
             response_text = []
             error_occurred = False
@@ -141,15 +144,17 @@ class CopilotService:
                     if event.type.value == "assistant.message":
                         response_text.append(event.data.content)
                     elif event.type.value == "session.idle":
-                        done.set()
+                        # Use call_soon_threadsafe because the Copilot SDK may invoke 
+                        # this callback from a different thread than the event loop thread
+                        loop.call_soon_threadsafe(done.set)
                     elif event.type.value == "error":
                         error_occurred = True
                         error_message = str(event.data) if hasattr(event, 'data') else "Unknown error"
-                        done.set()
+                        loop.call_soon_threadsafe(done.set)
                 except Exception as e:
                     error_occurred = True
                     error_message = str(e)
-                    done.set()
+                    loop.call_soon_threadsafe(done.set)
             
             # Register event handler
             session.on(on_event)
