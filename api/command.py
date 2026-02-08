@@ -89,7 +89,7 @@ def help():
             "/copilot <message> - Chat with GitHub Copilot AI\n"
             "/copilot_new - Start a new conversation (clear history)\n"
             "/copilot_help - Get help about Copilot features\n"
-            "/ai_demo - 隨機顯示 GitHub Copilot AI 高生產力應用案例"
+            "/ai_demo - Show GitHub Copilot productivity tips (隨機顯示高生產力應用案例)"
         )
         help_message = help_message + copilot_commands
     
@@ -265,7 +265,7 @@ def copilot_help() -> str:
         "/copilot <message> - Ask Copilot anything\n"
         "/copilot_new - Start fresh (clears conversation history)\n"
         "/copilot_help - Show this help message\n"
-        "/ai_demo - 查看 GitHub Copilot 高生產力應用案例\n\n"
+        "/ai_demo - Show productivity tips (查看高生產力應用案例)\n\n"
         "**Examples:**\n"
         "• /copilot How do I reverse a string in JavaScript?\n"
         "• /copilot Explain what is a REST API\n"
