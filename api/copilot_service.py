@@ -144,7 +144,8 @@ class CopilotService:
                     if event.type.value == "assistant.message":
                         response_text.append(event.data.content)
                     elif event.type.value == "session.idle":
-                        # Use call_soon_threadsafe to set the event from potentially different thread
+                        # Use call_soon_threadsafe because the Copilot SDK may invoke 
+                        # this callback from a different thread than the event loop thread
                         loop.call_soon_threadsafe(done.set)
                     elif event.type.value == "error":
                         error_occurred = True

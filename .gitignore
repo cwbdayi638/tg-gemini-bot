@@ -21,6 +21,3 @@ variables.txt
 *_old.py
 *_old.md
 *.backup
-
-# Test files
-test_flask_scenario.py
