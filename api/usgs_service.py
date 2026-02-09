@@ -79,7 +79,7 @@ def fetch_taiwan_df_this_year(min_mag: float = 5.0) -> pd.DataFrame | str:
     except Exception as e:
         return f"❌ Query failed: {e}"
 
-def fetch_global_earthquakes_by_date(start_date: str, end_date: str, min_magnitude: float = 5.0) -> str:
+def fetch_global_earthquakes_by_date(start_date: str, end_date: str, min_magnitude: float = 5.0) -> tuple:
     """
     Fetch global earthquake data from external API based on date range and minimum magnitude.
     
@@ -89,7 +89,9 @@ def fetch_global_earthquakes_by_date(start_date: str, end_date: str, min_magnitu
         min_magnitude: Minimum earthquake magnitude (default 5.0)
     
     Returns:
-        Formatted string with earthquake results
+        A tuple of (formatted_text, earthquakes_list) where earthquakes_list
+        contains dicts with latitude, longitude, magnitude keys for map plotting,
+        or (formatted_text, None) on error / no results.
     """
     try:
         # Validate date format and range
@@ -97,18 +99,18 @@ def fetch_global_earthquakes_by_date(start_date: str, end_date: str, min_magnitu
             start_dt = datetime.strptime(start_date, "%Y-%m-%d")
             end_dt = datetime.strptime(end_date, "%Y-%m-%d")
         except ValueError:
-            return "❌ 日期格式錯誤！請使用 YYYY-MM-DD 格式（例如：2024-07-01）"
+            return "❌ 日期格式錯誤！請使用 YYYY-MM-DD 格式（例如：2024-07-01）", None
         
         if start_dt > end_dt:
-            return "❌ 日期範圍錯誤！起始日期不能晚於結束日期"
+            return "❌ 日期範圍錯誤！起始日期不能晚於結束日期", None
         
         # Validate magnitude
         try:
             min_mag = float(min_magnitude)
             if min_mag < 0 or min_mag > 10:
-                return "❌ 規模參數錯誤！請輸入 0-10 之間的數值"
+                return "❌ 規模參數錯誤！請輸入 0-10 之間的數值", None
         except ValueError:
-            return "❌ 規模參數格式錯誤！請輸入數字（例如：5.0）"
+            return "❌ 規模參數格式錯誤！請輸入數字（例如：5.0）", None
         
         params = {
             "start_date": start_date,
@@ -122,13 +124,13 @@ def fetch_global_earthquakes_by_date(start_date: str, end_date: str, min_magnitu
         
         # Handle error response from API
         if "error" in data:
-            return f"❌ API 錯誤：{data['error']}"
+            return f"❌ API 錯誤：{data['error']}", None
         
         earthquakes = data.get("earthquakes", [])
         total_count = data.get("count", len(earthquakes))
         
         if not earthquakes:
-            return f"✅ 在 {start_date} 至 {end_date} 期間，沒有規模 ≥{min_mag} 的地震記錄。"
+            return f"✅ 在 {start_date} 至 {end_date} 期間，沒有規模 ≥{min_mag} 的地震記錄。", None
         
         lines = [
             f"🌍 全球地震查詢結果",
@@ -152,7 +154,7 @@ def fetch_global_earthquakes_by_date(start_date: str, end_date: str, min_magnitu
             except (ValueError, TypeError):
                 time_str = str(raw_time)
             
-            place = eq.get("place", "未知地點")
+            place = eq.get("place", "")
             depth = eq.get("depth_km", "—")
             depth_str = f"{depth:.1f}" if isinstance(depth, (int, float)) else str(depth)
             
@@ -161,21 +163,25 @@ def fetch_global_earthquakes_by_date(start_date: str, end_date: str, min_magnitu
             lat_str = f"{lat:.4f}" if isinstance(lat, (int, float)) else str(lat)
             lon_str = f"{lon:.4f}" if isinstance(lon, (int, float)) else str(lon)
             
-            lines.append(
+            entry = (
                 f"{i}. 規模：M{mag_str} | 深度：{depth_str} 公里\n"
                 f"   時間：{time_str}\n"
-                f"   緯度：{lat_str} | 經度：{lon_str}\n"
-                f"   位置：{place}"
+                f"   緯度：{lat_str} | 經度：{lon_str}"
             )
+            # Only show location line when place is available and meaningful
+            if place and place not in ("N/A", "未知地點"):
+                entry += f"\n   位置：{place}"
+            
+            lines.append(entry)
         
         if total_count > display_count:
             lines.append(f"\n...（另有 {total_count - display_count} 筆記錄）")
         
-        return "\n\n".join(lines)
+        return "\n\n".join(lines), earthquakes
         
     except requests.exceptions.Timeout:
-        return "❌ 查詢超時，請稍後再試。"
+        return "❌ 查詢超時，請稍後再試。", None
     except requests.exceptions.RequestException as e:
-        return f"❌ 網路請求失敗：{e}"
+        return f"❌ 網路請求失敗：{e}", None
     except Exception as e:
-        return f"❌ 查詢失敗：{e}"
+        return f"❌ 查詢失敗：{e}", None

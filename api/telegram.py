@@ -37,6 +37,21 @@ def send_imageMessage(chat_id, text, imageID):
     return r
 
 
+def send_photo_file(chat_id, filepath, caption=""):
+    """Send a local image file as a photo message via Telegram."""
+    payload = {
+        "chat_id": chat_id,
+    }
+    if caption:
+        payload["caption"] = escape(caption)
+        payload["parse_mode"] = "MarkdownV2"
+    with open(filepath, "rb") as f:
+        r = requests.post(f"{TELEGRAM_API}/sendPhoto", data=payload, files={"photo": f})
+    print(f"Sent photo file: {filepath} to {chat_id}")
+    send_log(f"{send_photo_log}\n```json\n{str(r)}```")
+    return r
+
+
 class Update:
     def __init__(self, update: Dict) -> None:
         self.update = update

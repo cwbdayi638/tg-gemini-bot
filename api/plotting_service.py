@@ -36,3 +36,49 @@ def create_and_save_map(df: pd.DataFrame) -> str:
     fig.savefig(filepath)
     plt.close(fig)
     return filename
+
+
+def create_global_earthquake_map(earthquakes: list, start_date: str, end_date: str, min_mag: float = 5.0) -> str | None:
+    """Create a global earthquake epicenter map from a list of earthquake dicts and return the file path.
+    
+    Each dict should have 'latitude', 'longitude', and 'magnitude' keys.
+    Returns the full file path of the saved PNG, or None if no valid data.
+    """
+    rows = []
+    for eq in earthquakes:
+        lat = eq.get("latitude")
+        lon = eq.get("longitude")
+        mag = eq.get("magnitude")
+        if isinstance(lat, (int, float)) and isinstance(lon, (int, float)) and isinstance(mag, (int, float)):
+            rows.append({"latitude": lat, "longitude": lon, "magnitude": mag})
+    
+    if not rows:
+        return None
+    
+    df = pd.DataFrame(rows)
+    
+    fig, ax = plt.subplots(figsize=(12, 6), dpi=150)
+    ax.set_xlim(-180, 180)
+    ax.set_ylim(-90, 90)
+    ax.set_xlabel("Longitude (°E)")
+    ax.set_ylabel("Latitude (°N)")
+    ax.set_title(f"Global Earthquakes (M≥{min_mag}) — {start_date} to {end_date}")
+    ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.4)
+    
+    mags = df["magnitude"].astype(float).clip(lower=0)
+    norm = Normalize(vmin=max(4.5, mags.min()), vmax=max(9.0, mags.max()))
+    cmap = cm.get_cmap("YlOrRd")
+    colors = cmap(norm(mags.values))
+    sizes = 20 + (mags - mags.min()) * 30
+    
+    ax.scatter(df["longitude"].values, df["latitude"].values,
+               s=sizes, c=colors, edgecolor="k", linewidths=0.4, alpha=0.9)
+    
+    fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, pad=0.02).set_label("Magnitude")
+    
+    filename = f"global_map_{uuid.uuid4().hex}.png"
+    filepath = os.path.join(STATIC_DIR, filename)
+    fig.tight_layout()
+    fig.savefig(filepath)
+    plt.close(fig)
+    return filepath
