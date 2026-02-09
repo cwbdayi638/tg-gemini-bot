@@ -5,15 +5,15 @@ from .config import new_chat_info, prompt_new_info, gemini_err_info, generation_
 
 # Fallback messages
 AI_NOT_AVAILABLE_MESSAGE = (
-    "I'm a Telegram bot assistant. To use me effectively, please:\n\n"
-    "• Use /help to see available commands\n"
-    "• Try earthquake commands like /eq_latest or /eq_global\n"
-    "• Use web search with /search <query>\n"
-    "• Get your info with /get_my_info\n\n"
-    "Note: AI conversational features are not available."
+    "我是 Telegram 機器人助手。請使用以下方式使用我：\n\n"
+    "• 使用 /help 查看可用指令\n"
+    "• 嘗試地震指令，如 /eq_latest 或 /eq_global\n"
+    "• 使用 /search <關鍵字> 進行網頁搜尋\n"
+    "• 使用 /get_my_info 取得您的資訊\n\n"
+    "注意：AI 對話功能目前無法使用。"
 )
 
-IMAGE_NO_API_KEY_MESSAGE = "Image analysis feature is not currently available."
+IMAGE_NO_API_KEY_MESSAGE = "圖片分析功能目前無法使用。"
 
 # --- Compatibility Layer ---
 
@@ -25,7 +25,7 @@ class ChatConversation:
     def __init__(self):
         """Initialize chat conversation with a basic response system."""
         self.history = []
-        print("Chat initialized with a basic response system.")
+        print("已使用基本回應系統初始化聊天。")
 
     def send_message(self, text: str) -> MockResponse:
         """Send a message and get a fallback response"""
@@ -45,7 +45,7 @@ def generate_text_with_image(prompt: str, image_bytes: BytesIO) -> str:
 
 def list_models():
     """List available models"""
-    print("No AI models currently configured.")
+    print("目前未設定 AI 模型。")
 
 # Provider class for handle.py compatibility
 class HybridProvider:
