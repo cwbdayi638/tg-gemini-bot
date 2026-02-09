@@ -54,7 +54,7 @@ GROUP_MODE = os.getenv("GROUP_MODE=", "1")
 prompt_new_threshold = int(3)
 
 #The default prompt when the photo has no accompanying text
-defaut_photo_caption = "describe this picture"
+defaut_photo_caption = "描述這張圖片"
 
 """ 以下是使用者相關文字 """
 help_text = "您可以傳送文字或圖片給我。傳送圖片時，請在同一則訊息中附上文字說明。\n在群組中使用請 @機器人 或回覆機器人的任何訊息"
