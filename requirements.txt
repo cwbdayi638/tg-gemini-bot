@@ -19,4 +19,5 @@ Werkzeug==3.0.1
 zipp==3.17.0
 pandas>=2.0.0
 matplotlib>=3.7.0
+cartopy>=0.21.0
 gradio_client>=2.0.0

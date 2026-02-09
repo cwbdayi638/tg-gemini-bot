@@ -7,17 +7,22 @@ matplotlib.use("Agg")  # Use non-interactive backend
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 import matplotlib.cm as cm
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
 from .config import STATIC_DIR, CURRENT_YEAR
 
 def create_and_save_map(df: pd.DataFrame) -> str:
     """Create an earthquake map, save the image, and return the filename."""
-    fig, ax = plt.subplots(figsize=(9, 6), dpi=150)
-    ax.set_xlim(118.5, 123.5)
-    ax.set_ylim(20.5, 26.8)
-    ax.set_xlabel("Longitude (°E)")
-    ax.set_ylabel("Latitude (°N)")
+    fig, ax = plt.subplots(figsize=(9, 6), dpi=150, subplot_kw={"projection": ccrs.PlateCarree()})
+    ax.set_extent([118.5, 123.5, 20.5, 26.8], crs=ccrs.PlateCarree())
+    ax.add_feature(cfeature.LAND, facecolor="lightgray")
+    ax.add_feature(cfeature.OCEAN, facecolor="lightblue")
+    ax.add_feature(cfeature.COASTLINE, linewidth=0.5)
+    ax.add_feature(cfeature.BORDERS, linestyle="--", linewidth=0.5)
     ax.set_title(f"Significant Earthquakes (M≥5.0) in Taiwan Area This Year ({CURRENT_YEAR}) — UTC")
-    ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.4)
+    gl = ax.gridlines(draw_labels=True, linestyle="--", linewidth=0.5, alpha=0.4)
+    gl.top_labels = False
+    gl.right_labels = False
 
     mags = df["magnitude"].astype(float).clip(lower=0)
     norm = Normalize(vmin=max(4.5, mags.min()), vmax=max(6.5, mags.max()))
@@ -26,7 +31,8 @@ def create_and_save_map(df: pd.DataFrame) -> str:
     sizes = 15 + (mags - mags.min()) * 25
 
     ax.scatter(df["longitude"].values, df["latitude"].values,
-               s=sizes, c=colors, edgecolor="k", linewidths=0.4, alpha=0.9)
+               s=sizes, c=colors, edgecolor="k", linewidths=0.4, alpha=0.9,
+               transform=ccrs.PlateCarree())
 
     fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, pad=0.02).set_label("Magnitude")
 
@@ -57,13 +63,16 @@ def create_global_earthquake_map(earthquakes: list, start_date: str, end_date: s
     
     df = pd.DataFrame(rows)
     
-    fig, ax = plt.subplots(figsize=(12, 6), dpi=150)
-    ax.set_xlim(-180, 180)
-    ax.set_ylim(-90, 90)
-    ax.set_xlabel("Longitude (°E)")
-    ax.set_ylabel("Latitude (°N)")
+    fig, ax = plt.subplots(figsize=(12, 6), dpi=150, subplot_kw={"projection": ccrs.PlateCarree()})
+    ax.set_global()
+    ax.add_feature(cfeature.LAND, facecolor="lightgray")
+    ax.add_feature(cfeature.OCEAN, facecolor="lightblue")
+    ax.add_feature(cfeature.COASTLINE, linewidth=0.5)
+    ax.add_feature(cfeature.BORDERS, linestyle="--", linewidth=0.5)
     ax.set_title(f"Global Earthquakes (M≥{min_mag}) — {start_date} to {end_date}")
-    ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.4)
+    gl = ax.gridlines(draw_labels=True, linestyle="--", linewidth=0.5, alpha=0.4)
+    gl.top_labels = False
+    gl.right_labels = False
     
     mags = df["magnitude"].astype(float).clip(lower=0)
     norm = Normalize(vmin=max(4.5, mags.min()), vmax=max(9.0, mags.max()))
@@ -72,7 +81,8 @@ def create_global_earthquake_map(earthquakes: list, start_date: str, end_date: s
     sizes = 20 + (mags - mags.min()) * 30
     
     ax.scatter(df["longitude"].values, df["latitude"].values,
-               s=sizes, c=colors, edgecolor="k", linewidths=0.4, alpha=0.9)
+               s=sizes, c=colors, edgecolor="k", linewidths=0.4, alpha=0.9,
+               transform=ccrs.PlateCarree())
     
     fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, pad=0.02).set_label("Magnitude")
     
