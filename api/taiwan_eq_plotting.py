@@ -146,11 +146,46 @@ def create_taiwan_eq_folium_map(df: pd.DataFrame, title: str = "台灣地震分�
     if work.empty:
         return None
 
-    # Create Folium map centered on Taiwan
-    m = folium.Map(location=[23.5, 121], zoom_start=6, tiles="CartoDB positron")
+    # Create Folium map centered on Taiwan with OpenStreetMap for better coastline detail
+    m = folium.Map(
+        location=[23.5, 121], 
+        zoom_start=7, 
+        tiles="OpenStreetMap",
+        control_scale=True
+    )
+    
+    # Add alternative tile layers for better visualization
+    folium.TileLayer(
+        tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        attr='Esri',
+        name='Satellite',
+        overlay=False,
+        control=True
+    ).add_to(m)
+    
+    folium.TileLayer(
+        tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+        attr='Esri',
+        name='Terrain',
+        overlay=False,
+        control=True
+    ).add_to(m)
 
-    # Create a MarkerCluster
-    marker_cluster = MarkerCluster().add_to(m)
+    # Create a MarkerCluster for better performance with many markers
+    marker_cluster = MarkerCluster(name="地震事件").add_to(m)
+
+    # Define color scale based on magnitude
+    def get_color_by_magnitude(ml):
+        if ml < 3.0:
+            return "green"
+        elif ml < 4.0:
+            return "blue"
+        elif ml < 5.0:
+            return "yellow"
+        elif ml < 6.0:
+            return "orange"
+        else:
+            return "red"
 
     # Iterate through earthquake events and add to map
     for idx, row in work.iterrows():
@@ -162,36 +197,110 @@ def create_taiwan_eq_folium_map(df: pd.DataFrame, title: str = "台灣地震分�
             event_date = row["date"]
             event_time = row["time"]
 
-            # Create popup HTML
+            # Create popup HTML with proper UTF-8 encoding
             popup_html = f"""
-            <b>時間:</b> {event_date} {event_time}<br>
-            <b>規模:</b> ML {mag_value:.2f}<br>
-            <b>深度:</b> {depth_km:.1f} km<br>
-            <b>位置:</b> ({lat:.4f}, {lon:.4f})
+            <div style="font-family: Arial, 'Microsoft JhengHei', sans-serif; width: 200px;">
+                <h4 style="margin: 0 0 10px 0; color: #333;">地震資訊</h4>
+                <table style="width: 100%; font-size: 12px;">
+                    <tr>
+                        <td><b>日期:</b></td>
+                        <td>{event_date}</td>
+                    </tr>
+                    <tr>
+                        <td><b>時間:</b></td>
+                        <td>{event_time}</td>
+                    </tr>
+                    <tr>
+                        <td><b>規模:</b></td>
+                        <td>ML {mag_value:.2f}</td>
+                    </tr>
+                    <tr>
+                        <td><b>深度:</b></td>
+                        <td>{depth_km:.1f} km</td>
+                    </tr>
+                    <tr>
+                        <td><b>經度:</b></td>
+                        <td>{lon:.4f}</td>
+                    </tr>
+                    <tr>
+                        <td><b>緯度:</b></td>
+                        <td>{lat:.4f}</td>
+                    </tr>
+                </table>
+            </div>
             """
 
             # Set circle size based on magnitude
-            radius = mag_value * 2
+            radius = mag_value * 1.5 + 2
+            
+            # Get color based on magnitude
+            marker_color = get_color_by_magnitude(mag_value)
 
             # Add CircleMarker to MarkerCluster
             folium.CircleMarker(
                 location=[lat, lon],
                 radius=radius,
-                popup=folium.Popup(popup_html, max_width=300),
-                color="red",
+                popup=folium.Popup(popup_html, max_width=250),
+                tooltip=f"ML {mag_value:.2f}",
+                color=marker_color,
                 fill=True,
-                fill_color="red",
-                fill_opacity=0.4
+                fill_color=marker_color,
+                fill_opacity=0.6,
+                weight=2
             ).add_to(marker_cluster)
             
         except Exception as e:
             # Ignore errors for individual events
             print(f"處理事件時發生錯誤 (index {idx}, lat={lat if 'lat' in locals() else 'N/A'}, lon={lon if 'lon' in locals() else 'N/A'}): {e}")
 
+    # Add a title to the map using HTML
+    title_html = f'''
+    <div style="position: fixed; 
+                top: 10px; 
+                left: 50px; 
+                width: auto;
+                height: auto;
+                background-color: white;
+                border: 2px solid grey;
+                border-radius: 5px;
+                z-index: 9999;
+                font-size: 16px;
+                font-weight: bold;
+                padding: 10px;
+                font-family: Arial, 'Microsoft JhengHei', sans-serif;">
+        {title}
+    </div>
+    '''
+    m.get_root().html.add_child(folium.Element(title_html))
+    
+    # Add legend
+    legend_html = '''
+    <div style="position: fixed; 
+                bottom: 50px; 
+                left: 50px; 
+                width: 150px;
+                height: auto;
+                background-color: white;
+                border: 2px solid grey;
+                border-radius: 5px;
+                z-index: 9999;
+                font-size: 12px;
+                padding: 10px;
+                font-family: Arial, 'Microsoft JhengHei', sans-serif;">
+        <p style="margin: 0 0 5px 0; font-weight: bold;">規模圖例</p>
+        <p style="margin: 2px 0;"><span style="color: green;">●</span> ML < 3.0</p>
+        <p style="margin: 2px 0;"><span style="color: blue;">●</span> 3.0 ≤ ML < 4.0</p>
+        <p style="margin: 2px 0;"><span style="color: yellow;">●</span> 4.0 ≤ ML < 5.0</p>
+        <p style="margin: 2px 0;"><span style="color: orange;">●</span> 5.0 ≤ ML < 6.0</p>
+        <p style="margin: 2px 0;"><span style="color: red;">●</span> ML ≥ 6.0</p>
+    </div>
+    '''
+    m.get_root().html.add_child(folium.Element(legend_html))
+
     # Add layer control
     folium.LayerControl().add_to(m)
 
-    # Save to HTML file
+    # Save to HTML file with UTF-8 encoding
     filename = f"tw_eq_{uuid.uuid4().hex}.html"
     filepath = os.path.join(STATIC_DIR, filename)
     m.save(filepath)
