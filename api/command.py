@@ -10,7 +10,7 @@ from .telegram import send_message
 try:
     from .cwa_service import fetch_cwa_alarm_list, fetch_significant_earthquakes, fetch_latest_significant_earthquake
     from .usgs_service import fetch_global_last24h_text, fetch_taiwan_df_this_year, fetch_global_earthquakes_by_date
-    from .plotting_service import create_and_save_map
+    from .plotting_service import create_and_save_map, create_global_earthquake_map
     from .ai_service import generate_ai_text
     SERVICES_AVAILABLE = True
 except ImportError as e:
@@ -168,8 +168,8 @@ def process_earthquake_ai(question: str):
         return "請提供問題，例如：/eq_ai 台灣最高的山是什麼？"
     return generate_ai_text(question)
 
-def process_earthquake_query(args: str):
-    """處理全球地震查詢。"""
+def process_earthquake_query(args: str, chat_id=None):
+    """處理全球地震查詢，並生成震央地圖。"""
     if not SERVICES_AVAILABLE:
         return "地震資訊服務無法使用。"
     
@@ -195,7 +195,20 @@ def process_earthquake_query(args: str):
     end_date = parts[1]
     min_magnitude = parts[2]
     
-    return fetch_global_earthquakes_by_date(start_date, end_date, min_magnitude)
+    text, earthquakes = fetch_global_earthquakes_by_date(start_date, end_date, min_magnitude)
+    
+    # Generate and send epicenter map if we have data and a chat_id
+    if earthquakes and chat_id:
+        try:
+            from .telegram import send_photo_file
+            min_mag = float(min_magnitude)
+            filepath = create_global_earthquake_map(earthquakes, start_date, end_date, min_mag)
+            if filepath:
+                send_photo_file(chat_id, filepath, caption=f"🗺️ 震央分布圖 {start_date} ~ {end_date} (M≥{min_mag})")
+        except Exception as e:
+            print(f"Failed to generate/send earthquake map: {e}")
+    
+    return text
 
 def perform_web_search(query: str):
     """執行網頁搜尋。"""
@@ -289,7 +302,7 @@ def excute_command(from_id, command, from_type, chat_id):
     elif command.startswith("eq_query"):
         # 擷取查詢參數
         args = command[8:].strip()  # 移除 "eq_query" 前綴
-        return process_earthquake_query(args)
+        return process_earthquake_query(args, chat_id=chat_id)
 
     # 網頁搜尋指令
     elif command.startswith("search") or command.startswith("websearch"):
