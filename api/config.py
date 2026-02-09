@@ -12,9 +12,6 @@ BOT_TOKEN = os.environ.get("BOT_TOKEN")
 # Google Gemini API Key (optional - enables function calling capabilities)
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "")
 
-# OpenAI API Key (optional - enables OpenAI chat capabilities)
-OPENAI_KEY = os.environ.get("OPENAI_KEY", "")
-
 # CWA (Central Weather Administration) API Key for Taiwan earthquake data
 CWA_API_KEY = os.environ.get("CWA_API_KEY", "")
 
@@ -59,33 +56,33 @@ prompt_new_threshold = int(3)
 #The default prompt when the photo has no accompanying text
 defaut_photo_caption = "describe this picture"
 
-""" Below is some text related to the user """
-help_text = "You can send me text or pictures. When sending pictures, please include the text in the same message.\nTo use the group please @bot or reply to any message sent by the bot"
-command_list = "/new Start a new chat\n/get_my_info Get personal information\n/get_group_info Get group information (group only)\n/get_allowed_users Get the list of users that are allowed to use the bot (admin only)\n/get_allowed_groups Get the list of groups that are allowed to use the bot (admin only)\n/list_models list available features (admin only)\n/help Get help"
-admin_auch_info = "You are not the administrator or your administrator ID is set incorrectly!!!"
-debug_mode_info = "Debug mode is not enabled!"
-command_format_error_info = "Command format error"
-command_invalid_error_info = "Invalid command, use /help for help"
-user_no_permission_info = "You are not allowed to use this bot."
-group_no_permission_info = "This group does not have permission to use this robot."
-gemini_err_info = f"Something went wrong while processing your request. Please try again later."
-new_chat_info = "We're having a fresh chat."
-prompt_new_info = "Type /new to kick off a new chat."
-unable_to_recognize_content_sent = "The content you sent is not recognized!"
+""" 以下是使用者相關文字 """
+help_text = "您可以傳送文字或圖片給我。傳送圖片時，請在同一則訊息中附上文字說明。\n在群組中使用請 @機器人 或回覆機器人的任何訊息"
+command_list = "/new 開始新對話\n/get_my_info 取得個人資訊\n/get_group_info 取得群組資訊（僅群組可用）\n/get_allowed_users 取得允許使用的用戶列表（僅管理員可用）\n/get_allowed_groups 取得允許使用的群組列表（僅管理員可用）\n/help 取得說明"
+admin_auch_info = "您不是管理員，或管理員 ID 設定錯誤！"
+debug_mode_info = "除錯模式未啟用！"
+command_format_error_info = "指令格式錯誤"
+command_invalid_error_info = "無效指令，使用 /help 取得說明"
+user_no_permission_info = "您沒有使用此機器人的權限。"
+group_no_permission_info = "此群組沒有使用此機器人的權限。"
+gemini_err_info = f"處理您的請求時發生錯誤，請稍後再試。"
+new_chat_info = "我們正在進行一個全新的對話。"
+prompt_new_info = "輸入 /new 開始新對話。"
+unable_to_recognize_content_sent = "無法識別您傳送的內容！"
 
-""" Below is some text related to the log """
-send_message_log = "Send a message. The content returned is:"
-send_photo_log = "Send a photo. The content returned is:"
-unnamed_user = "UnnamedUser"
-unnamed_group = "UnnamedGroup"
-event_received = "event received"
-group = "group"
-the_content_sent_is = "The content sent is:"
-the_reply_content_is = "The reply content is:"
-the_accompanying_message_is = "The accompanying message is:"
-the_logarithm_of_historical_conversations_is = "The logarithm of historical conversations is:"
-no_rights_to_use = "No rights to use"
-send_unrecognized_content = "Send unrecognized content"
+""" 以下是紀錄相關文字 """
+send_message_log = "傳送訊息，回傳內容為："
+send_photo_log = "傳送圖片，回傳內容為："
+unnamed_user = "未命名用戶"
+unnamed_group = "未命名群組"
+event_received = "收到事件"
+group = "群組"
+the_content_sent_is = "傳送內容為："
+the_reply_content_is = "回覆內容為："
+the_accompanying_message_is = "附加訊息為："
+the_logarithm_of_historical_conversations_is = "歷史對話輪數為："
+no_rights_to_use = "無使用權限"
+send_unrecognized_content = "傳送了無法識別的內容"
 
 
 """ read https://ai.google.dev/api/rest/v1/GenerationConfig """

@@ -1,14 +1,15 @@
 # tg-gemini-bot
 
-[English](README_EN.md) | [繁體中文](README.md) | [简体中文](README_zh-CN.md)
+[繁體中文](README.md) | [简体中文](README_zh-CN.md) | [English](README_EN.md)
 
 **tg-gemini-bot** 是一個功能強大的 Telegram 機器人助手，整合了即時地震資訊和 AI 對話能力。
 
 ## 🎯 主要功能
 
 - **🌍 地震資訊服務**：整合台灣中央氣象署 (CWA) 和美國地質調查局 (USGS) 的即時地震資料
-- **💬 GitHub Copilot AI**：整合 GitHub Copilot SDK，提供進階 AI 程式設計協助和對話功能
+- **💬 AI 對話**：整合 Google Gemini AI，提供智慧對話和圖片分析功能
 - **🔍 智慧地震查詢**：使用自然語言查詢地震資料
+- **🌐 網頁搜尋**：整合網頁搜尋功能
 
 ## 🚀 功能詳情
 
@@ -35,28 +36,10 @@
 - 台灣中央氣象署開放資料平台
 - 美國地質調查局 (USGS) 地震 API
 
-### 💬 GitHub Copilot AI
+### 🔍 網頁搜尋
 
-機器人現在整合了 GitHub Copilot SDK，提供進階 AI 協助功能：
-
-**功能特點：**
-- 程式設計問題解答和程式碼範例
-- 除錯協助和錯誤說明
-- 演算法和最佳實踐建議
-- 技術概念解釋
-- 多種程式語言支援
-
-**Copilot 指令：**
-- `/copilot <訊息>` - 與 GitHub Copilot AI 對話
-- `/copilot_new` - 開始新對話（清除歷史記錄）
-- `/copilot_help` - 取得 Copilot 功能說明
-
-**使用範例：**
-- `/copilot 如何在 Python 中反轉字串？`
-- `/copilot 解釋什麼是 REST API`
-- `/copilot 寫一個找質數的函數`
-
-**注意：** 使用 GitHub Copilot SDK 需要有效的 GitHub Copilot 訂閱或 BYOK（自帶金鑰）設定。每個聊天室的對話記錄會分別保存。
+- `/search <關鍵字>` - 搜尋網頁
+- `/websearch <關鍵字>` - 搜尋網頁（別名）
 
 ## 📋 基本指令
 
@@ -78,9 +61,10 @@
 
 | 變數 | 必填 | 描述 |
 | --- | --- | --- |
+| GOOGLE_API_KEY | ❌ 否 | Google Gemini API 金鑰，啟用 AI 對話功能 |
 | CWA_API_KEY | ❌ 否 | 台灣中央氣象署 API 金鑰，用於存取顯著地震資料。從 [CWA 開放資料平台](https://opendata.cwa.gov.tw/) 取得 |
 | MCP_SERVER_URL | ❌ 否 | MCP 伺服器 URL，用於進階地震資料庫搜尋（預設：`https://cwadayi-mcp-2.hf.space`） |
-| MCP_WEB_SEARCH_URL | ❌ 否 | MCP 網頁搜尋伺服器 URL，用於增強網頁搜尋功能（使用 [open-webSearch](https://github.com/Aas-ee/open-webSearch)，例如：`http://localhost:3000`） |
+| MCP_WEB_SEARCH_URL | ❌ 否 | MCP 網頁搜尋伺服器 URL，用於增強網頁搜尋功能 |
 | ALLOWED_USERS | ❌ 否 | 允許使用的用戶名或 ID（支援正則表達式，多個值用空格或逗號分隔） |
 | ALLOWED_GROUPS | ❌ 否 | 允許使用的群組 ID 或用戶名（多個值用空格或逗號分隔） |
 | ADMIN_ID | ❌ 否 | 管理員的 Telegram ID，用於執行管理員指令 |
@@ -125,48 +109,20 @@
 3. **設置 Webhook**：
    將 Webhook 指向您的 Docker 服務網址。
 
-### MCP 網頁搜尋伺服器設置（可選）
-
-若要啟用增強的網頁搜尋功能，可以設置 [open-webSearch](https://github.com/Aas-ee/open-webSearch) MCP 伺服器：
-
-1. **使用 NPX 快速啟動**（最簡單）：
-   ```bash
-   # 基本使用
-   npx open-websearch@latest
-   
-   # 或使用環境變數配置
-   DEFAULT_SEARCH_ENGINE=duckduckgo ENABLE_CORS=true npx open-websearch@latest
-   ```
-
-2. **使用 Docker 部署**：
-   ```bash
-   docker run -d --name web-search \
-     -p 3000:3000 \
-     -e ENABLE_CORS=true \
-     -e CORS_ORIGIN=* \
-     ghcr.io/aas-ee/open-web-search:latest
-   ```
-
-3. **配置機器人**：
-   在機器人的環境變數中設置：
-   ```
-   MCP_WEB_SEARCH_URL=http://localhost:3000
-   ```
-
 ## 💡 使用範例
 
 ### 查詢地震資訊
 ```
 用戶：/eq_latest
-機器人：🚨 CWA Latest Significant Earthquake
+機器人：🚨 中央氣象署最新顯著地震
 ----------------------------------
-Time: 2024-02-06 15:30:00
-Location: 花蓮縣近海
-Magnitude: M5.8 | Depth: 15 km
-Report: [連結]
+時間：2024-02-06 15:30:00
+位置：花蓮縣近海
+規模：M5.8 | 深度：15 公里
+報告：[連結]
 ```
 
-### AI 對話（無需 API 金鑰）
+### AI 對話
 ```
 用戶：你好，請介紹一下台灣的地震情況
 機器人：台灣位於環太平洋地震帶上，是地震活動頻繁的地區...
@@ -175,11 +131,11 @@ Report: [連結]
 ### 智慧地震查詢
 ```
 用戶：/eq_ai 昨天花蓮有地震嗎？
-機器人：🌍 Earthquake Search Results (2024-02-05 to 2024-02-05, M≥4.5):
-Found 1 earthquake(s):
-1. Time: 2024-02-05 15:30:00
-   Location: 花蓮縣近海
-   Magnitude: M5.2 | Depth: 12 km
+機器人：🌍 地震搜尋結果 (2024-02-05 至 2024-02-05, M≥4.5):
+找到 1 筆地震記錄：
+1. 時間：2024-02-05 15:30:00
+   位置：花蓮縣近海
+   規模：M5.2 | 深度：12 公里
 ```
 
 ## 🔐 安全功能
@@ -187,21 +143,17 @@ Found 1 earthquake(s):
 - **身份驗證支援**：可選的用戶/群組限制
 - **管理員指令**：特定指令僅限管理員使用
 - **調試模式**：可選的日誌記錄功能
-- **安全設置**：Gemini API 安全設定
 
 ## 📝 注意事項
 
-1. **GitHub Copilot AI 功能**：
-   - 機器人可以整合 GitHub Copilot SDK 進行進階 AI 對話
-   - 需要配置 GitHub 帳號和授權才能使用 Copilot 功能
-
-2. **API 金鑰**：
+1. **API 金鑰**：
    - 沒有 `CWA_API_KEY`：部分地震資訊功能可能受限
+   - 沒有 `GOOGLE_API_KEY`：AI 對話功能將無法使用
 
-3. **群組使用**：
+2. **群組使用**：
    - 在群組中使用時，請 @機器人 或回覆機器人的訊息
 
-4. **對話歷史**：
+3. **對話歷史**：
    - 使用 `/new` 指令可以清除對話歷史，開始新的對話
 
 ## 📄 授權

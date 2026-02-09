@@ -1,14 +1,15 @@
 # tg-gemini-bot
 
-[English](README_EN.md) | [繁體中文](README.md) | [简体中文](README_zh-CN.md)
+[繁體中文](README.md) | [简体中文](README_zh-CN.md) | [English](README_EN.md)
 
 **tg-gemini-bot** 是一个功能强大的 Telegram 机器人助手，整合了实时地震信息和 AI 对话能力。
 
 ## 🎯 主要功能
 
 - **🌍 地震信息服务**：整合台湾中央气象署 (CWA) 和美国地质调查局 (USGS) 的实时地震数据
-- **💬 GitHub Copilot AI**：整合 GitHub Copilot SDK，提供高级 AI 编程协助和对话功能
+- **💬 AI 对话**：整合 Google Gemini AI，提供智能对话和图片分析功能
 - **🔍 智能地震查询**：使用自然语言查询地震数据
+- **🌐 网页搜索**：整合网页搜索功能
 
 ## 🚀 功能详情
 
@@ -35,28 +36,10 @@
 - 台湾中央气象署开放数据平台
 - 美国地质调查局 (USGS) 地震 API
 
-### 💬 GitHub Copilot AI
+### 🔍 网页搜索
 
-机器人现在整合了 GitHub Copilot SDK，提供高级 AI 协助功能：
-
-**功能特点：**
-- 编程问题解答和代码示例
-- 调试协助和错误说明
-- 算法和最佳实践建议
-- 技术概念解释
-- 多种编程语言支持
-
-**Copilot 指令：**
-- `/copilot <消息>` - 与 GitHub Copilot AI 对话
-- `/copilot_new` - 开始新对话（清除历史记录）
-- `/copilot_help` - 获取 Copilot 功能说明
-
-**使用示例：**
-- `/copilot 如何在 Python 中反转字符串？`
-- `/copilot 解释什么是 REST API`
-- `/copilot 写一个找质数的函数`
-
-**注意：** 使用 GitHub Copilot SDK 需要有效的 GitHub Copilot 订阅或 BYOK（自带密钥）设置。每个聊天室的对话记录会分别保存。
+- `/search <关键字>` - 搜索网页
+- `/websearch <关键字>` - 搜索网页（别名）
 
 ## 📋 基本指令
 
@@ -78,9 +61,10 @@
 
 | 变量 | 必填 | 描述 |
 | --- | --- | --- |
+| GOOGLE_API_KEY | ❌ 否 | Google Gemini API 密钥，启用 AI 对话功能 |
 | CWA_API_KEY | ❌ 否 | 台湾中央气象署 API 密钥，用于访问显著地震数据。从 [CWA 开放数据平台](https://opendata.cwa.gov.tw/) 获取 |
 | MCP_SERVER_URL | ❌ 否 | MCP 服务器 URL，用于高级地震数据库搜索（默认：`https://cwadayi-mcp-2.hf.space`） |
-| MCP_WEB_SEARCH_URL | ❌ 否 | MCP 网页搜索服务器 URL，用于增强网页搜索功能（使用 [open-webSearch](https://github.com/Aas-ee/open-webSearch)，例如：`http://localhost:3000`） |
+| MCP_WEB_SEARCH_URL | ❌ 否 | MCP 网页搜索服务器 URL，用于增强网页搜索功能 |
 | ALLOWED_USERS | ❌ 否 | 允许使用的用户名或 ID（支持正则表达式，多个值用空格或逗号分隔） |
 | ALLOWED_GROUPS | ❌ 否 | 允许使用的群组 ID 或用户名（多个值用空格或逗号分隔） |
 | ADMIN_ID | ❌ 否 | 管理员的 Telegram ID，用于执行管理员指令 |
@@ -125,57 +109,33 @@
 3. **设置 Webhook**：
    将 Webhook 指向您的 Docker 服务网址。
 
-### MCP 网页搜索服务器设置（可选）
-
-若要启用增强的网页搜索功能，可以设置 [open-webSearch](https://github.com/Aas-ee/open-webSearch) MCP 服务器：
-
-1. **使用 NPX 快速启动**（最简单）：
-   ```bash
-   # 基本使用
-   npx open-websearch@latest
-   
-   # 或使用环境变量配置
-   DEFAULT_SEARCH_ENGINE=duckduckgo ENABLE_CORS=true npx open-websearch@latest
-   ```
-
-2. **使用 Docker 部署**：
-   ```bash
-   docker run -d --name web-search \
-     -p 3000:3000 \
-     -e ENABLE_CORS=true \
-     -e CORS_ORIGIN=* \
-     ghcr.io/aas-ee/open-web-search:latest
-   ```
-
-3. **配置机器人**：
-   在机器人的环境变量中设置：
-   ```
-   MCP_WEB_SEARCH_URL=http://localhost:3000
-   ```
-
 ## 💡 使用范例
 
 ### 查询地震信息
 ```
 用户：/eq_latest
-机器人：🚨 CWA Latest Significant Earthquake
+机器人：🚨 中央气象署最新显著地震
 ----------------------------------
-Time: 2024-02-06 15:30:00
-Location: 花莲县近海
-Magnitude: M5.8 | Depth: 15 km
-Report: [链接]
+时间：2024-02-06 15:30:00
+位置：花莲县近海
+规模：M5.8 | 深度：15 公里
+报告：[链接]
 ```
 
-### AI 对话（需要 API 密钥）
+### AI 对话
 ```
 用户：你好，请介绍一下台湾的地震情况
 机器人：台湾位于环太平洋地震带上，是地震活动频繁的地区...
 ```
 
-### 图片分析（需要 API 密钥）
+### 智能地震查询
 ```
-用户：[发送图片并附上文字「描述这张图片」]
-机器人：这张图片显示了...
+用户：/eq_ai 昨天花莲有地震吗？
+机器人：🌍 地震搜索结果 (2024-02-05 至 2024-02-05, M≥4.5):
+找到 1 条地震记录：
+1. 时间：2024-02-05 15:30:00
+   位置：花莲县近海
+   规模：M5.2 | 深度：12 公里
 ```
 
 ## 🔐 安全功能
@@ -186,17 +146,14 @@ Report: [链接]
 
 ## 📝 注意事项
 
-1. **GitHub Copilot AI 功能**：
-   - 机器人可以整合 GitHub Copilot SDK 进行高级 AI 对话
-   - 需要配置 GitHub 账号和授权才能使用 Copilot 功能
-
-2. **API 密钥**：
+1. **API 密钥**：
    - 没有 `CWA_API_KEY`：部分地震信息功能可能受限
+   - 没有 `GOOGLE_API_KEY`：AI 对话功能将无法使用
 
-3. **群组使用**：
+2. **群组使用**：
    - 在群组中使用时，请 @机器人 或回复机器人的消息
 
-4. **对话历史**：
+3. **对话历史**：
    - 使用 `/new` 指令可以清除对话历史，开始新的对话
 
 ## 📄 授权

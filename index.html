@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TG Gemini Bot - Earthquake, News & AI Telegram Assistant</title>
-    <meta name="description" content="A powerful Telegram bot with real-time earthquake monitoring, news aggregation, AI conversation, and web search capabilities">
+    <title>TG Gemini Bot - 地震資訊與 AI 對話 Telegram 助手</title>
+    <meta name="description" content="功能強大的 Telegram 機器人，整合即時地震監控、AI 對話和網頁搜尋功能">
     <style>
         * {
             margin: 0;
@@ -328,127 +328,106 @@
         <header>
             <div class="logo">🤖</div>
             <h1>TG Gemini Bot</h1>
-            <p class="tagline">Earthquake Monitoring, News & AI Telegram Assistant</p>
+            <p class="tagline">地震監控、AI 對話 Telegram 助手</p>
             <p style="font-size: 1.1em; margin-top: 20px;">
-                Real-time earthquake data • News aggregation • AI conversation • Web search
+                即時地震資料 • AI 對話 • 網頁搜尋
             </p>
             <div class="cta-buttons">
                 <a href="https://github.com/cwbdayi638/tg-gemini-bot" class="btn btn-primary" target="_blank">
-                    View on GitHub
+                    在 GitHub 上查看
                 </a>
                 <a href="#features" class="btn btn-secondary">
-                    Explore Features
+                    探索功能
                 </a>
             </div>
         </header>
 
         <div class="stats">
             <div class="stat-item">
-                <div class="stat-number">4</div>
-                <div class="stat-label">Core Services</div>
+                <div class="stat-number">3</div>
+                <div class="stat-label">核心服務</div>
             </div>
             <div class="stat-item">
-                <div class="stat-number">15+</div>
-                <div class="stat-label">Commands</div>
+                <div class="stat-number">10+</div>
+                <div class="stat-label">可用指令</div>
             </div>
             <div class="stat-item">
                 <div class="stat-number">24/7</div>
-                <div class="stat-label">Monitoring</div>
+                <div class="stat-label">即時監控</div>
             </div>
             <div class="stat-item">
                 <div class="stat-number">∞</div>
-                <div class="stat-label">Possibilities</div>
+                <div class="stat-label">無限可能</div>
             </div>
         </div>
 
         <div id="features" class="features">
             <div class="feature-card">
                 <span class="feature-icon">🌍</span>
-                <h3>Earthquake Monitoring</h3>
-                <p>Real-time earthquake information from CWA and USGS</p>
+                <h3>地震監控</h3>
+                <p>來自中央氣象署與 USGS 的即時地震資訊</p>
                 <ul class="feature-list">
-                    <li>Latest significant earthquakes</li>
-                    <li>CWA early warnings & alerts</li>
-                    <li>Global 24-hour earthquake data</li>
-                    <li>Taiwan regional earthquake history</li>
-                    <li>AI-powered earthquake queries</li>
-                </ul>
-            </div>
-
-            <div class="feature-card">
-                <span class="feature-icon">📰</span>
-                <h3>News Aggregation</h3>
-                <p>Stay updated with news from multiple sources</p>
-                <ul class="feature-list">
-                    <li>Technology news (Hacker News)</li>
-                    <li>Taiwan news (CNA)</li>
-                    <li>Global news (BBC)</li>
-                    <li>Finance news (multiple sources)</li>
-                    <li>Chinese language news</li>
+                    <li>最新顯著地震報告</li>
+                    <li>中央氣象署速報與預警</li>
+                    <li>全球 24 小時地震資料</li>
+                    <li>台灣區域地震歷史</li>
+                    <li>AI 智慧地震查詢</li>
                 </ul>
             </div>
 
             <div class="feature-card">
                 <span class="feature-icon">💬</span>
-                <h3>GitHub Copilot AI</h3>
-                <p>Integrated GitHub Copilot SDK</p>
+                <h3>AI 對話</h3>
+                <p>整合 Google Gemini AI</p>
                 <ul class="feature-list">
-                    <li>Advanced AI assistance</li>
-                    <li>Code-aware conversations</li>
-                    <li>Programming help</li>
-                    <li>Intelligent earthquake queries</li>
-                    <li>Context-aware responses</li>
+                    <li>智慧對話功能</li>
+                    <li>圖片分析能力</li>
+                    <li>自然語言處理</li>
+                    <li>智慧地震查詢</li>
+                    <li>多輪對話記憶</li>
                 </ul>
             </div>
 
             <div class="feature-card">
                 <span class="feature-icon">🔍</span>
-                <h3>Web Search</h3>
-                <p>Search the web directly from Telegram</p>
+                <h3>網頁搜尋</h3>
+                <p>在 Telegram 中直接搜尋網頁</p>
                 <ul class="feature-list">
-                    <li>Bing search integration</li>
-                    <li>DuckDuckGo support</li>
-                    <li>MCP enhanced search</li>
-                    <li>Formatted results</li>
-                    <li>Quick information access</li>
+                    <li>Bing 搜尋整合</li>
+                    <li>DuckDuckGo 支援</li>
+                    <li>MCP 增強搜尋</li>
+                    <li>格式化結果呈現</li>
+                    <li>快速取得資訊</li>
                 </ul>
             </div>
         </div>
 
         <div class="demo-section">
-            <h2>💡 Usage Examples</h2>
+            <h2>💡 使用範例</h2>
             <div class="examples">
                 <div class="example">
-                    <div class="example-input">📝 "/eq_latest"</div>
-                    <div class="example-output">✓ 🚨 Latest earthquake: M5.8, 花蓮縣近海</div>
+                    <div class="example-input">📝 「/eq_latest」</div>
+                    <div class="example-output">✓ 🚨 最新地震：M5.8，花蓮縣近海</div>
                 </div>
                 <div class="example">
-                    <div class="example-input">📝 "/eq_ai 昨天花蓮有地震嗎？"</div>
-                    <div class="example-output">✓ AI searches earthquake data for recent events</div>
+                    <div class="example-input">📝 「/eq_ai 昨天花蓮有地震嗎？」</div>
+                    <div class="example-output">✓ AI 搜尋地震資料</div>
                 </div>
                 <div class="example">
-                    <div class="example-input">📝 "/news_tech"</div>
-                    <div class="example-output">✓ 📰 Top technology news from Hacker News</div>
+                    <div class="example-input">📝 「/search Python 教學」</div>
+                    <div class="example-output">✓ 🔍 Python 教學搜尋結果</div>
                 </div>
                 <div class="example">
-                    <div class="example-input">📝 "/news_taiwan"</div>
-                    <div class="example-output">✓ Latest Taiwan news from CNA</div>
-                </div>
-                <div class="example">
-                    <div class="example-input">📝 "/search python tutorial"</div>
-                    <div class="example-output">✓ 🔍 Web search results for python tutorial</div>
-                </div>
-                <div class="example">
-                    <div class="example-input">📝 "你好，請介紹一下台灣"</div>
-                    <div class="example-output">✓ AI responds with information about Taiwan</div>
+                    <div class="example-input">📝 「你好，請介紹一下台灣」</div>
+                    <div class="example-output">✓ AI 回覆台灣相關資訊</div>
                 </div>
             </div>
         </div>
 
         <div class="tech-stack">
-            <h2>🔧 Technology Stack</h2>
+            <h2>🔧 技術架構</h2>
             <p style="color: var(--text-muted); margin-bottom: 20px;">
-                Built with modern, reliable technologies
+                使用現代、可靠的技術構建
             </p>
             <div class="tech-icons">
                 <div class="tech-icon">🐍 Python</div>
@@ -461,68 +440,68 @@
         </div>
 
         <div class="demo-section">
-            <h2>🚀 Quick Start</h2>
+            <h2>🚀 快速開始</h2>
             <div style="max-width: 800px; margin: 0 auto;">
-                <h3 style="color: var(--secondary-color); margin: 20px 0;">1. Get Your Bot Token</h3>
+                <h3 style="color: var(--secondary-color); margin: 20px 0;">1. 取得機器人 Token</h3>
                 <p style="color: var(--text-muted); margin-bottom: 20px;">
-                    Create a bot via <a href="https://t.me/BotFather" style="color: var(--primary-color);">@BotFather</a> on Telegram
+                    透過 Telegram 的 <a href="https://t.me/BotFather" style="color: var(--primary-color);">@BotFather</a> 創建機器人
                 </p>
 
-                <h3 style="color: var(--secondary-color); margin: 20px 0;">2. Configure Environment Variables</h3>
+                <h3 style="color: var(--secondary-color); margin: 20px 0;">2. 設定環境變數</h3>
                 <p style="color: var(--text-muted); margin-bottom: 20px;">
-                    Set up required and optional variables:
-                </p>
-                <ul class="feature-list" style="margin-left: 20px;">
-                    <li><span class="highlight">BOT_TOKEN</span>: Required - Your Telegram bot token</li>
-                    <li><span class="highlight">CWA_API_KEY</span>: Optional - For earthquake data access</li>
-                    <li><span class="highlight">MCP_WEB_SEARCH_URL</span>: Optional - Enhanced web search</li>
-                </ul>
-
-                <h3 style="color: var(--secondary-color); margin: 20px 0;">3. Deploy</h3>
-                <p style="color: var(--text-muted); margin-bottom: 20px;">
-                    Choose your deployment method:
+                    配置必要和可選的環境變數：
                 </p>
                 <ul class="feature-list" style="margin-left: 20px;">
-                    <li><span class="highlight">Vercel</span>: One-click serverless deployment</li>
-                    <li><span class="highlight">Docker</span>: Containerized deployment</li>
-                    <li><span class="highlight">Local</span>: Development environment</li>
+                    <li><span class="highlight">BOT_TOKEN</span>：必填 - 您的 Telegram 機器人 Token</li>
+                    <li><span class="highlight">CWA_API_KEY</span>：可選 - 地震資料存取</li>
+                    <li><span class="highlight">GOOGLE_API_KEY</span>：可選 - AI 對話功能</li>
                 </ul>
 
-                <h3 style="color: var(--secondary-color); margin: 20px 0;">4. Set Webhook</h3>
+                <h3 style="color: var(--secondary-color); margin: 20px 0;">3. 部署</h3>
                 <p style="color: var(--text-muted); margin-bottom: 20px;">
-                    Configure the webhook URL and start using your bot!
+                    選擇您的部署方式：
+                </p>
+                <ul class="feature-list" style="margin-left: 20px;">
+                    <li><span class="highlight">Vercel</span>：一鍵無伺服器部署</li>
+                    <li><span class="highlight">Docker</span>：容器化部署</li>
+                    <li><span class="highlight">本地</span>：開發環境</li>
+                </ul>
+
+                <h3 style="color: var(--secondary-color); margin: 20px 0;">4. 設定 Webhook</h3>
+                <p style="color: var(--text-muted); margin-bottom: 20px;">
+                    配置 Webhook URL 並開始使用您的機器人！
                 </p>
             </div>
         </div>
 
         <div class="demo-section">
-            <h2>✨ Why Choose This Bot?</h2>
+            <h2>✨ 為什麼選擇這個機器人？</h2>
             <div class="features" style="margin-top: 30px;">
                 <div class="feature-card">
                     <span class="feature-icon">🌍</span>
-                    <h3>Real-Time Data</h3>
-                    <p>Access live earthquake monitoring from CWA and USGS, plus news from multiple reliable sources.</p>
+                    <h3>即時資料</h3>
+                    <p>存取來自中央氣象署和 USGS 的即時地震監控資料。</p>
                 </div>
                 <div class="feature-card">
                     <span class="feature-icon">🔍</span>
-                    <h3>Smart Queries</h3>
-                    <p>Intelligent earthquake queries using natural language processing. Get earthquake data by asking simple questions.</p>
+                    <h3>智慧查詢</h3>
+                    <p>使用自然語言處理的智慧地震查詢。透過簡單問題取得地震資料。</p>
                 </div>
                 <div class="feature-card">
                     <span class="feature-icon">🔒</span>
-                    <h3>Privacy Focused</h3>
-                    <p>Built with privacy in mind. Optional authentication for added security and access control.</p>
+                    <h3>注重隱私</h3>
+                    <p>以隱私為核心設計。可選的身份驗證功能提供額外的安全性和存取控制。</p>
                 </div>
             </div>
         </div>
 
         <footer>
-            <p>Built with ❤️ for fast, efficient, and practical bot interactions</p>
+            <p>用 ❤️ 製作，為快速、高效且實用的機器人互動</p>
             <a href="https://github.com/cwbdayi638/tg-gemini-bot" class="github-link" target="_blank">
-                ⭐ Star on GitHub
+                ⭐ 在 GitHub 上給星星
             </a>
             <p style="margin-top: 20px; font-size: 0.9em;">
-                Open Source • MIT License • Community Driven
+                開源專案 • MIT 授權 • 社群驅動
             </p>
         </footer>
     </div>

@@ -20,5 +20,3 @@ zipp==3.17.0
 pandas>=2.0.0
 matplotlib>=3.7.0
 gradio_client>=2.0.0
-github-copilot-sdk>=0.1.0
-openai>=1.0.0

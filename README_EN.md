@@ -1,14 +1,15 @@
 # tg-gemini-bot
 
-[English](README_EN.md) | [繁體中文](README.md) | [简体中文](README_zh-CN.md)
+[繁體中文](README.md) | [简体中文](README_zh-CN.md) | [English](README_EN.md)
 
 **tg-gemini-bot** is a powerful Telegram bot assistant that integrates real-time earthquake information and AI conversation capabilities.
 
 ## 🎯 Main Features
 
 - **🌍 Earthquake Information Services**: Integrated real-time earthquake data from Taiwan Central Weather Administration (CWA) and USGS
-- **💬 GitHub Copilot AI**: Integrated GitHub Copilot SDK for advanced AI programming assistance and conversations
+- **💬 AI Conversation**: Integrated Google Gemini AI for intelligent conversation and image analysis
 - **🔍 Smart Earthquake Query**: Use natural language to query earthquake data
+- **🌐 Web Search**: Integrated web search functionality
 
 ## 🚀 Feature Details
 
@@ -35,28 +36,10 @@ Integrated real-time earthquake data from Taiwan Central Weather Administration 
 - Taiwan Central Weather Administration Open Data Platform
 - United States Geological Survey (USGS) Earthquake API
 
-### 💬 GitHub Copilot AI
+### 🔍 Web Search
 
-The bot now integrates GitHub Copilot SDK, providing advanced AI assistance features:
-
-**Key Features:**
-- Programming questions and code examples
-- Debugging help and error explanations
-- Algorithm and best practice recommendations
-- Technical concept explanations
-- Multiple programming language support
-
-**Copilot Commands:**
-- `/copilot <message>` - Chat with GitHub Copilot AI
-- `/copilot_new` - Start a new conversation (clear history)
-- `/copilot_help` - Get help about Copilot features
-
-**Usage Examples:**
-- `/copilot How do I reverse a string in Python?`
-- `/copilot Explain what is a REST API`
-- `/copilot Write a function to find prime numbers`
-
-**Note:** Using GitHub Copilot SDK requires a valid GitHub Copilot subscription or BYOK (Bring Your Own Key) setup. Conversation history is maintained separately for each chat.
+- `/search <query>` - Search the web
+- `/websearch <query>` - Search the web (alias)
 
 ## 📋 Basic Commands
 
@@ -78,12 +61,10 @@ The bot now integrates GitHub Copilot SDK, providing advanced AI assistance feat
 
 | Variable | Required | Description |
 | --- | --- | --- |
+| GOOGLE_API_KEY | ❌ No | Google Gemini API key, enables AI conversation features |
 | CWA_API_KEY | ❌ No | Taiwan Central Weather Administration API key for significant earthquake data. Get from [CWA Open Data Platform](https://opendata.cwa.gov.tw/) |
-| OPENAI_KEY | ❌ No | OpenAI API key for OpenAI chat capabilities (enables `/openai` commands) |
 | MCP_SERVER_URL | ❌ No | MCP server URL for advanced earthquake database search (default: `https://cwadayi-mcp-2.hf.space`) |
-| MCP_WEB_SEARCH_URL | ❌ No | MCP web search server URL for enhanced web search features (using [open-webSearch](https://github.com/Aas-ee/open-webSearch), e.g., `http://localhost:3000`) |
-| HTTP_PROXY | ❌ No | HTTP proxy URL (e.g., `http://proxy.example.com:8080`) - automatically used by OpenAI client |
-| HTTPS_PROXY | ❌ No | HTTPS proxy URL (e.g., `https://proxy.example.com:8443`) - automatically used by OpenAI client |
+| MCP_WEB_SEARCH_URL | ❌ No | MCP web search server URL for enhanced web search features |
 | ALLOWED_USERS | ❌ No | Allowed usernames or IDs (supports regex, separate multiple values with space or comma) |
 | ALLOWED_GROUPS | ❌ No | Allowed group IDs or usernames (separate multiple values with space or comma) |
 | ADMIN_ID | ❌ No | Telegram ID for admin commands |
@@ -128,34 +109,6 @@ The bot now integrates GitHub Copilot SDK, providing advanced AI assistance feat
 3. **Set up Webhook**:
    Point the webhook to your Docker service URL.
 
-### MCP Web Search Server Setup (Optional)
-
-To enable enhanced web search features, you can set up the [open-webSearch](https://github.com/Aas-ee/open-webSearch) MCP server:
-
-1. **Quick start with NPX** (easiest):
-   ```bash
-   # Basic usage
-   npx open-websearch@latest
-   
-   # Or with environment variables
-   DEFAULT_SEARCH_ENGINE=duckduckgo ENABLE_CORS=true npx open-websearch@latest
-   ```
-
-2. **Deploy with Docker**:
-   ```bash
-   docker run -d --name web-search \
-     -p 3000:3000 \
-     -e ENABLE_CORS=true \
-     -e CORS_ORIGIN=* \
-     ghcr.io/aas-ee/open-web-search:latest
-   ```
-
-3. **Configure the bot**:
-   Set the environment variable for the bot:
-   ```
-   MCP_WEB_SEARCH_URL=http://localhost:3000
-   ```
-
 ## 💡 Usage Examples
 
 ### Query Earthquake Information
@@ -167,6 +120,12 @@ Time: 2024-02-06 15:30:00
 Location: Near Hualien Coast
 Magnitude: M5.8 | Depth: 15 km
 Report: [link]
+```
+
+### AI Conversation
+```
+User: Hello, please introduce Taiwan's earthquake situation
+Bot: Taiwan is located on the Pacific Ring of Fire, an area with frequent seismic activity...
 ```
 
 ### Smart Earthquake Query
@@ -187,17 +146,14 @@ Found 1 earthquake(s):
 
 ## 📝 Notes
 
-1. **GitHub Copilot AI Features**:
-   - Bot can integrate GitHub Copilot SDK for advanced AI conversations
-   - Requires GitHub account and authorization to use Copilot features
-
-2. **API Keys**:
+1. **API Keys**:
    - Without `CWA_API_KEY`: Some earthquake information features may be limited
+   - Without `GOOGLE_API_KEY`: AI conversation features will not be available
 
-3. **Group Usage**:
+2. **Group Usage**:
    - When using in groups, @mention the bot or reply to its messages
 
-4. **Conversation History**:
+3. **Conversation History**:
    - Use `/new` command to clear conversation history and start fresh
 
 ## 📄 License
