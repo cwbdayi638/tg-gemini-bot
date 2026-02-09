@@ -8,10 +8,9 @@ from typing import Dict, List, Optional
 from .config import OPENAI_KEY
 from .printLog import send_log
 
-# Try to import OpenAI and httpx
+# Try to import OpenAI
 try:
     from openai import OpenAI
-    import httpx
     OPENAI_AVAILABLE = bool(OPENAI_KEY)
 except ImportError:
     OPENAI_AVAILABLE = False
@@ -32,7 +31,7 @@ class OpenAIService:
         
         Proxy configuration:
         - Set HTTP_PROXY and/or HTTPS_PROXY environment variables
-        - The httpx library (used by OpenAI SDK v1.0+) will automatically use them
+        - The underlying httpx library (used by OpenAI SDK v1.0+) will automatically use them
         - Do NOT pass 'proxies' parameter directly to OpenAI() - it's not supported
         """
         if not OPENAI_KEY:
