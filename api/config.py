@@ -12,6 +12,9 @@ BOT_TOKEN = os.environ.get("BOT_TOKEN")
 # Google Gemini API Key (optional - enables function calling capabilities)
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "")
 
+# OpenAI API Key (optional - enables OpenAI chat capabilities)
+OPENAI_KEY = os.environ.get("OPENAI_KEY", "")
+
 # CWA (Central Weather Administration) API Key for Taiwan earthquake data
 CWA_API_KEY = os.environ.get("CWA_API_KEY", "")
 

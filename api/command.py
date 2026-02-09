@@ -57,6 +57,18 @@ except ImportError as e:
     print(f"Warning: AI Demo service not available: {e}")
     AI_DEMO_AVAILABLE = False
 
+# Import OpenAI service
+try:
+    from .openai_service import openai_chat_sync, clear_openai_session_sync, OPENAI_AVAILABLE
+except ImportError as e:
+    print(f"Warning: OpenAI service not available: {e}")
+    OPENAI_AVAILABLE = False
+    # Define stub functions to prevent NameError
+    def openai_chat_sync(chat_id: str, prompt: str, model: str = "gpt-4o") -> str:
+        return "❌ OpenAI service is not available."
+    def clear_openai_session_sync(chat_id: str) -> bool:
+        return False
+
 
 def help():
     help_message = f"{help_text}\n\n{command_list}"
@@ -92,6 +104,15 @@ def help():
             "/ai_demo - Show GitHub Copilot productivity tips (隨機顯示高生產力應用案例)"
         )
         help_message = help_message + copilot_commands
+    
+    if OPENAI_AVAILABLE:
+        openai_commands = (
+            "\n\nOpenAI Chat:\n"
+            "/openai <message> - Chat with OpenAI\n"
+            "/openai_new - Start a new conversation (clear history)\n"
+            "/openai_help - Get help about OpenAI features"
+        )
+        help_message = help_message + openai_commands
     
     return help_message
 
@@ -285,6 +306,60 @@ def ai_demo(chat_id: str) -> str:
         return f"❌ Error getting AI demo: {str(e)}"
 
 
+def openai_chat(chat_id: str, message: str) -> str:
+    """Chat with OpenAI."""
+    if not OPENAI_AVAILABLE:
+        return "❌ OpenAI is not available. Please ensure OPENAI_KEY is set and openai package is installed."
+    
+    if not message or not message.strip():
+        return "Please provide a message, e.g.: /openai What is the capital of France?"
+    
+    try:
+        response = openai_chat_sync(str(chat_id), message.strip())
+        return f"🤖 **OpenAI:**\n\n{response}"
+    except Exception as e:
+        send_log(f"❌ OpenAI chat error: {e}")
+        return f"❌ Error communicating with OpenAI: {str(e)}"
+
+
+def openai_new_conversation(chat_id: str) -> str:
+    """Start a new OpenAI conversation (clear history)."""
+    if not OPENAI_AVAILABLE:
+        return "❌ OpenAI is not available."
+    
+    try:
+        success = clear_openai_session_sync(str(chat_id))
+        if success:
+            return "✅ Started a new conversation. Previous chat history has been cleared."
+        else:
+            return "✅ Ready for a new conversation."
+    except Exception as e:
+        send_log(f"❌ Error clearing OpenAI session: {e}")
+        return f"❌ Error: {str(e)}"
+
+
+def openai_help() -> str:
+    """Get help about OpenAI features."""
+    return (
+        "🤖 **OpenAI Chat Help**\n\n"
+        "OpenAI is a powerful AI assistant that can help you with:\n\n"
+        "• **General Questions**: Ask about any topic\n"
+        "• **Programming**: Get code examples and explanations\n"
+        "• **Writing**: Help with text, summaries, and translations\n"
+        "• **Analysis**: Understand complex topics and concepts\n"
+        "• **Creative Tasks**: Brainstorming, ideas, and more\n\n"
+        "**Commands:**\n"
+        "/openai <message> - Ask OpenAI anything\n"
+        "/openai_new - Start fresh (clears conversation history)\n"
+        "/openai_help - Show this help message\n\n"
+        "**Examples:**\n"
+        "• /openai What is the capital of France?\n"
+        "• /openai Explain quantum computing in simple terms\n"
+        "• /openai Write a haiku about programming\n\n"
+        "**Note:** Conversations are maintained per chat. Use /openai_new to start over."
+    )
+
+
 def speed_test(id):
     """ This command seems useless, but it must be included in every robot I make. """
     send_message(id, "开始测速")
@@ -371,6 +446,18 @@ def excute_command(from_id, command, from_type, chat_id):
     
     elif command.startswith("ai_demo"):
         return ai_demo(chat_id)
+
+    # OpenAI commands
+    elif command.startswith("openai_help"):
+        return openai_help()
+    
+    elif command.startswith("openai_new"):
+        return openai_new_conversation(chat_id)
+    
+    elif command.startswith("openai"):
+        # Extract message from command
+        message = command[6:].strip()  # Remove "openai" prefix
+        return openai_chat(chat_id, message)
 
     elif command in ["get_allowed_users", "get_allowed_groups", "get_api_key"]:
         if not is_admin(from_id):
