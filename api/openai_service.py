@@ -8,9 +8,10 @@ from typing import Dict, List, Optional
 from .config import OPENAI_KEY
 from .printLog import send_log
 
-# Try to import OpenAI
+# Try to import OpenAI and httpx
 try:
     from openai import OpenAI
+    import httpx
     OPENAI_AVAILABLE = bool(OPENAI_KEY)
 except ImportError:
     OPENAI_AVAILABLE = False
@@ -26,7 +27,14 @@ class OpenAIService:
         self._initialized = False
     
     def initialize(self):
-        """Initialize the OpenAI client."""
+        """
+        Initialize the OpenAI client.
+        
+        Proxy configuration:
+        - Set HTTP_PROXY and/or HTTPS_PROXY environment variables
+        - The httpx library (used by OpenAI SDK v1.0+) will automatically use them
+        - Do NOT pass 'proxies' parameter directly to OpenAI() - it's not supported
+        """
         if not OPENAI_KEY:
             raise RuntimeError("OPENAI_KEY environment variable is not set")
         
@@ -34,9 +42,23 @@ class OpenAIService:
             return
         
         try:
+            # Initialize OpenAI client
+            # Note: httpx (underlying HTTP client) automatically respects 
+            # HTTP_PROXY and HTTPS_PROXY environment variables
             self.client = OpenAI(api_key=OPENAI_KEY)
             self._initialized = True
-            send_log("✅ OpenAI client initialized successfully")
+            
+            # Log proxy configuration if present
+            proxy_info = []
+            if os.environ.get('HTTP_PROXY'):
+                proxy_info.append(f"HTTP_PROXY={os.environ.get('HTTP_PROXY')}")
+            if os.environ.get('HTTPS_PROXY'):
+                proxy_info.append(f"HTTPS_PROXY={os.environ.get('HTTPS_PROXY')}")
+            
+            if proxy_info:
+                send_log(f"✅ OpenAI client initialized with proxy: {', '.join(proxy_info)}")
+            else:
+                send_log("✅ OpenAI client initialized successfully")
         except Exception as e:
             send_log(f"❌ Failed to initialize OpenAI client: {e}")
             raise

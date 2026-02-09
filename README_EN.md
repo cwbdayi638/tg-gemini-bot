@@ -79,8 +79,11 @@ The bot now integrates GitHub Copilot SDK, providing advanced AI assistance feat
 | Variable | Required | Description |
 | --- | --- | --- |
 | CWA_API_KEY | ❌ No | Taiwan Central Weather Administration API key for significant earthquake data. Get from [CWA Open Data Platform](https://opendata.cwa.gov.tw/) |
+| OPENAI_KEY | ❌ No | OpenAI API key for OpenAI chat capabilities (enables `/openai` commands) |
 | MCP_SERVER_URL | ❌ No | MCP server URL for advanced earthquake database search (default: `https://cwadayi-mcp-2.hf.space`) |
 | MCP_WEB_SEARCH_URL | ❌ No | MCP web search server URL for enhanced web search features (using [open-webSearch](https://github.com/Aas-ee/open-webSearch), e.g., `http://localhost:3000`) |
+| HTTP_PROXY | ❌ No | HTTP proxy URL (e.g., `http://proxy.example.com:8080`) - automatically used by OpenAI client |
+| HTTPS_PROXY | ❌ No | HTTPS proxy URL (e.g., `https://proxy.example.com:8443`) - automatically used by OpenAI client |
 | ALLOWED_USERS | ❌ No | Allowed usernames or IDs (supports regex, separate multiple values with space or comma) |
 | ALLOWED_GROUPS | ❌ No | Allowed group IDs or usernames (separate multiple values with space or comma) |
 | ADMIN_ID | ❌ No | Telegram ID for admin commands |
