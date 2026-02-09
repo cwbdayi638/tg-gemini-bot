@@ -9,7 +9,7 @@ from .telegram import send_message
 # Import new services
 try:
     from .cwa_service import fetch_cwa_alarm_list, fetch_significant_earthquakes, fetch_latest_significant_earthquake
-    from .usgs_service import fetch_global_last24h_text, fetch_taiwan_df_this_year
+    from .usgs_service import fetch_global_last24h_text, fetch_taiwan_df_this_year, fetch_global_earthquakes_by_date
     from .plotting_service import create_and_save_map
     from .ai_service import generate_ai_text
     SERVICES_AVAILABLE = True
@@ -49,7 +49,9 @@ def help():
             "/eq_alert - 中央氣象署地震速報\n"
             "/eq_significant - 中央氣象署過去 7 天顯著地震\n"
             "/eq_map - 地震查詢服務連結\n"
-            "/eq_ai <問題> - AI 智慧地震查詢"
+            "/eq_ai <問題> - AI 智慧地震查詢\n"
+            "/eq_query <起始日期> <結束日期> <最小規模> - 查詢全球地震\n"
+            "  範例：/eq_query 2024-07-01 2024-07-07 5.0"
         )
         help_message = help_message + earthquake_commands
     
@@ -166,6 +168,35 @@ def process_earthquake_ai(question: str):
         return "請提供問題，例如：/eq_ai 台灣最高的山是什麼？"
     return generate_ai_text(question)
 
+def process_earthquake_query(args: str):
+    """處理全球地震查詢。"""
+    if not SERVICES_AVAILABLE:
+        return "地震資訊服務無法使用。"
+    
+    if not args or not args.strip():
+        return (
+            "請提供查詢參數：起始日期、結束日期、最小規模\n\n"
+            "格式：/eq_query <起始日期> <結束日期> <最小規模>\n"
+            "範例：/eq_query 2024-07-01 2024-07-07 5.0\n\n"
+            "說明：\n"
+            "- 日期格式：YYYY-MM-DD\n"
+            "- 規模範圍：0-10"
+        )
+    
+    parts = args.strip().split()
+    if len(parts) < 3:
+        return (
+            "參數不足！需要提供：起始日期、結束日期、最小規模\n\n"
+            "格式：/eq_query <起始日期> <結束日期> <最小規模>\n"
+            "範例：/eq_query 2024-07-01 2024-07-07 5.0"
+        )
+    
+    start_date = parts[0]
+    end_date = parts[1]
+    min_magnitude = parts[2]
+    
+    return fetch_global_earthquakes_by_date(start_date, end_date, min_magnitude)
+
 def perform_web_search(query: str):
     """執行網頁搜尋。"""
     if not query or not query.strip():
@@ -254,6 +285,11 @@ def excute_command(from_id, command, from_type, chat_id):
         # 擷取問題
         question = command[5:].strip()  # 移除 "eq_ai" 前綴
         return process_earthquake_ai(question)
+    
+    elif command.startswith("eq_query"):
+        # 擷取查詢參數
+        args = command[8:].strip()  # 移除 "eq_query" 前綴
+        return process_earthquake_query(args)
 
     # 網頁搜尋指令
     elif command.startswith("search") or command.startswith("websearch"):
