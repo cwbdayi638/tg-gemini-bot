@@ -23,3 +23,5 @@ cartopy>=0.21.0
 gradio_client>=2.0.0
 plotly>=5.18.0
 kaleido==0.2.1
+folium>=0.14.0
+obspy>=1.4.0
