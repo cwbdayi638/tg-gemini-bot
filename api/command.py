@@ -37,94 +37,43 @@ except ImportError as e:
 # Default search engines for MCP web search
 DEFAULT_MCP_SEARCH_ENGINES = ["bing", "duckduckgo"]
 
-# Import Copilot service
-try:
-    from .copilot_service import copilot_chat_sync, clear_copilot_session_sync, COPILOT_AVAILABLE
-except ImportError as e:
-    print(f"Warning: Copilot service not available: {e}")
-    COPILOT_AVAILABLE = False
-    # Define stub functions to prevent NameError
-    def copilot_chat_sync(chat_id: str, message: str, model: str = "gpt-4o") -> str:
-        return "❌ GitHub Copilot SDK is not available."
-    def clear_copilot_session_sync(chat_id: str) -> bool:
-        return False
-
-# Import AI Demo service
-try:
-    from .ai_demo_service import get_ai_demo_tip
-    AI_DEMO_AVAILABLE = True
-except ImportError as e:
-    print(f"Warning: AI Demo service not available: {e}")
-    AI_DEMO_AVAILABLE = False
-
-# Import OpenAI service
-try:
-    from .openai_service import openai_chat_sync, clear_openai_session_sync, OPENAI_AVAILABLE
-except ImportError as e:
-    print(f"Warning: OpenAI service not available: {e}")
-    OPENAI_AVAILABLE = False
-    # Define stub functions to prevent NameError
-    def openai_chat_sync(chat_id: str, prompt: str, model: str = "gpt-4o") -> str:
-        return "❌ OpenAI service is not available."
-    def clear_openai_session_sync(chat_id: str) -> bool:
-        return False
-
 
 def help():
     help_message = f"{help_text}\n\n{command_list}"
     if SERVICES_AVAILABLE:
         earthquake_commands = (
-            "\n\nEarthquake Services:\n"
-            "/eq_latest - Latest significant earthquake (with image)\n"
-            "/eq_global - Global earthquakes in past 24h (USGS)\n"
-            "/eq_taiwan - Taiwan earthquakes this year (USGS)\n"
-            "/eq_alert - CWA earthquake early warnings\n"
-            "/eq_significant - CWA significant earthquakes (past 7 days)\n"
-            "/eq_map - Link to earthquake map service\n"
-            "/eq_ai <question> - Ask AI about earthquakes"
+            "\n\n🌍 地震資訊服務：\n"
+            "/eq_latest - 最新顯著地震報告（含圖片）\n"
+            "/eq_global - 全球近 24 小時地震（USGS）\n"
+            "/eq_taiwan - 台灣今年地震列表（USGS）\n"
+            "/eq_alert - 中央氣象署地震速報\n"
+            "/eq_significant - 中央氣象署過去 7 天顯著地震\n"
+            "/eq_map - 地震查詢服務連結\n"
+            "/eq_ai <問題> - AI 智慧地震查詢"
         )
         help_message = help_message + earthquake_commands
     
     if WEB_SEARCH_AVAILABLE or MCP_WEB_SEARCH_AVAILABLE:
         web_search_commands = (
-            "\n\nWeb Search:\n"
-            "/search <query> - Search the web using Bing\n"
-            "/websearch <query> - Search the web (alias for /search)"
+            "\n\n🔍 網頁搜尋：\n"
+            "/search <關鍵字> - 搜尋網頁\n"
+            "/websearch <關鍵字> - 搜尋網頁（別名）"
         )
         if MCP_WEB_SEARCH_AVAILABLE:
-            web_search_commands += "\n(Enhanced with MCP web search)"
+            web_search_commands += "\n（已啟用 MCP 增強搜尋）"
         help_message = help_message + web_search_commands
-    
-    if COPILOT_AVAILABLE:
-        copilot_commands = (
-            "\n\nGitHub Copilot AI:\n"
-            "/copilot <message> - Chat with GitHub Copilot AI\n"
-            "/copilot_new - Start a new conversation (clear history)\n"
-            "/copilot_help - Get help about Copilot features\n"
-            "/ai_demo - Show GitHub Copilot productivity tips (隨機顯示高生產力應用案例)"
-        )
-        help_message = help_message + copilot_commands
-    
-    if OPENAI_AVAILABLE:
-        openai_commands = (
-            "\n\nOpenAI Chat:\n"
-            "/openai <message> - Chat with OpenAI\n"
-            "/openai_new - Start a new conversation (clear history)\n"
-            "/openai_help - Get help about OpenAI features"
-        )
-        help_message = help_message + openai_commands
     
     return help_message
 
 
 
 def get_my_info(id):
-    return f"your telegram id is: `{id}`"
+    return f"您的 Telegram ID 是：`{id}`"
 
 def get_group_info(type, chat_id):
     if type == "supergroup":
-        return f"this group id is: `{chat_id}`"
-    return "Please use this command in a group"
+        return f"此群組 ID 是：`{chat_id}`"
+    return "請在群組中使用此指令"
 
 def get_allowed_users():
     send_log(f"```json\n{ALLOWED_USERS}```")
@@ -139,88 +88,88 @@ def get_API_key():
     return ""
 
 def get_latest_earthquake():
-    """Get the latest significant earthquake with image."""
+    """取得最新的顯著地震資訊（含圖片）。"""
     if not SERVICES_AVAILABLE:
-        return "Earthquake services not available."
+        return "地震資訊服務無法使用。"
     try:
         latest_eq = fetch_latest_significant_earthquake()
         if not latest_eq:
-            return "✅ No recent significant earthquake reports."
+            return "✅ 目前沒有最新的顯著地震報告。"
 
         mag_str = f"{latest_eq['Magnitude']:.1f}" if latest_eq.get('Magnitude') is not None else "—"
         depth_str = f"{latest_eq['Depth']:.0f}" if latest_eq.get('Depth') is not None else "—"
         
         result = (
-            f"🚨 CWA Latest Significant Earthquake\n"
+            f"🚨 中央氣象署最新顯著地震\n"
             f"----------------------------------\n"
-            f"Time: {latest_eq.get('TimeStr', '—')}\n"
-            f"Location: {latest_eq.get('Location', '—')}\n"
-            f"Magnitude: M{mag_str} | Depth: {depth_str} km\n"
-            f"Report: {latest_eq.get('URL', 'None')}"
+            f"時間：{latest_eq.get('TimeStr', '—')}\n"
+            f"位置：{latest_eq.get('Location', '—')}\n"
+            f"規模：M{mag_str} | 深度：{depth_str} 公里\n"
+            f"報告：{latest_eq.get('URL', '無')}"
         )
         
         if latest_eq.get("ImageURL"):
-            result += f"\n\nImage: {latest_eq['ImageURL']}"
+            result += f"\n\n圖片：{latest_eq['ImageURL']}"
         
         return result
     except Exception as e:
-        return f"❌ Failed to query latest earthquake: {e}"
+        return f"❌ 查詢最新地震失敗：{e}"
 
 def get_global_earthquakes():
-    """Get global earthquakes in the past 24 hours."""
+    """取得全球近 24 小時的地震資訊。"""
     if not SERVICES_AVAILABLE:
-        return "Earthquake services not available."
+        return "地震資訊服務無法使用。"
     return fetch_global_last24h_text()
 
 def get_taiwan_earthquakes():
-    """Get Taiwan earthquakes this year."""
+    """取得台灣今年的地震資訊。"""
     if not SERVICES_AVAILABLE:
-        return "Earthquake services not available."
+        return "地震資訊服務無法使用。"
     result = fetch_taiwan_df_this_year()
     if isinstance(result, pd.DataFrame):
         count = len(result)
-        lines = [f"🇹🇼 Taiwan Area Significant Earthquakes (M≥5.0) This Year ({CURRENT_YEAR}), Total {count} records:", "-" * 20]
+        lines = [f"🇹🇼 台灣地區今年顯著地震（M≥5.0），共 {count} 筆記錄（{CURRENT_YEAR}）：", "-" * 20]
         for _, row in result.head(15).iterrows():
             t = row["time_utc"].strftime("%Y-%m-%d %H:%M")
             lines.append(
-                f"Magnitude: {row['magnitude']:.1f} | Date/Time: {t} (UTC)\n"
-                f"Location: {row['place']}\n"
-                f"Report Link: {row.get('url', 'None')}"
+                f"規模：{row['magnitude']:.1f} | 時間：{t} (UTC)\n"
+                f"位置：{row['place']}\n"
+                f"報告連結：{row.get('url', '無')}"
             )
         if count > 15:
-            lines.append(f"... (plus {count-15} more records)")
+            lines.append(f"...（另有 {count-15} 筆記錄）")
         return "\n\n".join(lines)
     else:
         return result
 
 def get_earthquake_alerts():
-    """Get CWA earthquake early warnings."""
+    """取得中央氣象署地震速報。"""
     if not SERVICES_AVAILABLE:
-        return "Earthquake services not available."
+        return "地震資訊服務無法使用。"
     return fetch_cwa_alarm_list(limit=5)
 
 def get_significant_earthquakes():
-    """Get CWA significant earthquakes in the past 7 days."""
+    """取得中央氣象署過去 7 天的顯著地震。"""
     if not SERVICES_AVAILABLE:
-        return "Earthquake services not available."
+        return "地震資訊服務無法使用。"
     return fetch_significant_earthquakes(limit=5)
 
 def get_earthquake_map():
-    """Get link to earthquake map service."""
-    return f"🗺️ External Earthquake Query Service\n\nPlease visit:\n{MCP_SERVER_URL}"
+    """取得地震查詢服務連結。"""
+    return f"🗺️ 外部地震查詢服務\n\n請造訪：\n{MCP_SERVER_URL}"
 
 def process_earthquake_ai(question: str):
-    """Process AI question about earthquakes."""
+    """處理 AI 地震查詢。"""
     if not SERVICES_AVAILABLE:
-        return "AI service not available."
+        return "AI 服務無法使用。"
     if not question:
-        return "Please provide a question, e.g.: /eq_ai What's the highest mountain in Taiwan?"
+        return "請提供問題，例如：/eq_ai 台灣最高的山是什麼？"
     return generate_ai_text(question)
 
 def perform_web_search(query: str):
-    """Perform web search."""
+    """執行網頁搜尋。"""
     if not query or not query.strip():
-        return "Please provide a search query, e.g.: /search Python tutorial"
+        return "請提供搜尋關鍵字，例如：/search Python 教學"
     
     # Try MCP web search first if available
     if MCP_WEB_SEARCH_AVAILABLE:
@@ -233,138 +182,21 @@ def perform_web_search(query: str):
     
     # Fallback to built-in web search
     if not WEB_SEARCH_AVAILABLE:
-        return "Web search service not available."
+        return "網頁搜尋服務無法使用。"
     
     try:
         # Perform search with Bing engine (most reliable)
         results = web_search(query.strip(), limit=5, engines=["bing"])
         return format_search_results(results, query.strip())
     except Exception as e:
-        return f"❌ Web search failed: {e}"
-
-def copilot_chat(chat_id: str, message: str) -> str:
-    """Chat with GitHub Copilot AI."""
-    if not COPILOT_AVAILABLE:
-        return "❌ GitHub Copilot SDK is not available. Please install it with: pip install github-copilot-sdk"
-    
-    if not message or not message.strip():
-        return "Please provide a message, e.g.: /copilot How do I sort a list in Python?"
-    
-    try:
-        response = copilot_chat_sync(str(chat_id), message.strip())
-        return f"🤖 **GitHub Copilot:**\n\n{response}"
-    except Exception as e:
-        send_log(f"❌ Copilot chat error: {e}")
-        return f"❌ Error communicating with Copilot: {str(e)}"
-
-def copilot_new_conversation(chat_id: str) -> str:
-    """Start a new Copilot conversation (clear history)."""
-    if not COPILOT_AVAILABLE:
-        return "❌ GitHub Copilot SDK is not available."
-    
-    try:
-        success = clear_copilot_session_sync(str(chat_id))
-        if success:
-            return "✅ Started a new conversation. Previous chat history has been cleared."
-        else:
-            return "✅ Ready for a new conversation."
-    except Exception as e:
-        send_log(f"❌ Error clearing Copilot session: {e}")
-        return f"❌ Error: {str(e)}"
-
-def copilot_help() -> str:
-    """Get help about Copilot features."""
-    return (
-        "🤖 **GitHub Copilot AI Help**\n\n"
-        "GitHub Copilot is an AI-powered coding assistant that can help you with:\n\n"
-        "• **Programming Questions**: Ask about syntax, algorithms, best practices\n"
-        "• **Code Examples**: Request code snippets in any language\n"
-        "• **Debugging Help**: Get assistance with error messages and bugs\n"
-        "• **Explanations**: Understand complex code or concepts\n"
-        "• **General Knowledge**: Ask questions about technology, tools, and more\n\n"
-        "**Commands:**\n"
-        "/copilot <message> - Ask Copilot anything\n"
-        "/copilot_new - Start fresh (clears conversation history)\n"
-        "/copilot_help - Show this help message\n"
-        "/ai_demo - Show productivity tips (查看高生產力應用案例)\n\n"
-        "**Examples:**\n"
-        "• /copilot How do I reverse a string in JavaScript?\n"
-        "• /copilot Explain what is a REST API\n"
-        "• /copilot Write a Python function to find prime numbers\n\n"
-        "**Note:** Conversations are maintained per chat. Use /copilot_new to start over."
-    )
-
-def ai_demo(chat_id: str) -> str:
-    """Show a random GitHub Copilot AI productivity tip."""
-    if not AI_DEMO_AVAILABLE:
-        return "❌ AI Demo service is not available."
-    
-    try:
-        return get_ai_demo_tip(str(chat_id))
-    except Exception as e:
-        send_log(f"❌ AI Demo error: {e}")
-        return f"❌ Error getting AI demo: {str(e)}"
-
-
-def openai_chat(chat_id: str, message: str) -> str:
-    """Chat with OpenAI."""
-    if not OPENAI_AVAILABLE:
-        return "❌ OpenAI is not available. Please ensure OPENAI_KEY is set and openai package is installed."
-    
-    if not message or not message.strip():
-        return "Please provide a message, e.g.: /openai What is the capital of France?"
-    
-    try:
-        response = openai_chat_sync(str(chat_id), message.strip())
-        return f"🤖 **OpenAI:**\n\n{response}"
-    except Exception as e:
-        send_log(f"❌ OpenAI chat error: {e}")
-        return f"❌ Error communicating with OpenAI: {str(e)}"
-
-
-def openai_new_conversation(chat_id: str) -> str:
-    """Start a new OpenAI conversation (clear history)."""
-    if not OPENAI_AVAILABLE:
-        return "❌ OpenAI is not available."
-    
-    try:
-        success = clear_openai_session_sync(str(chat_id))
-        if success:
-            return "✅ Started a new conversation. Previous chat history has been cleared."
-        else:
-            return "✅ Ready for a new conversation."
-    except Exception as e:
-        send_log(f"❌ Error clearing OpenAI session: {e}")
-        return f"❌ Error: {str(e)}"
-
-
-def openai_help() -> str:
-    """Get help about OpenAI features."""
-    return (
-        "🤖 **OpenAI Chat Help**\n\n"
-        "OpenAI is a powerful AI assistant that can help you with:\n\n"
-        "• **General Questions**: Ask about any topic\n"
-        "• **Programming**: Get code examples and explanations\n"
-        "• **Writing**: Help with text, summaries, and translations\n"
-        "• **Analysis**: Understand complex topics and concepts\n"
-        "• **Creative Tasks**: Brainstorming, ideas, and more\n\n"
-        "**Commands:**\n"
-        "/openai <message> - Ask OpenAI anything\n"
-        "/openai_new - Start fresh (clears conversation history)\n"
-        "/openai_help - Show this help message\n\n"
-        "**Examples:**\n"
-        "• /openai What is the capital of France?\n"
-        "• /openai Explain quantum computing in simple terms\n"
-        "• /openai Write a haiku about programming\n\n"
-        "**Note:** Conversations are maintained per chat. Use /openai_new to start over."
-    )
+        return f"❌ 網頁搜尋失敗：{e}"
 
 
 def speed_test(id):
-    """ This command seems useless, but it must be included in every robot I make. """
-    send_message(id, "开始测速")
+    """速度測試指令（彩蛋）。"""
+    send_message(id, "開始測速")
     sleep(5)
-    return "测试完成，您的5G速度为：\n**114514B/s**"
+    return "測試完成，您的 5G 速度為：\n**114514B/s**"
 
 def send_message_test(id, command):
     if not is_admin(id):
@@ -399,7 +231,7 @@ def excute_command(from_id, command, from_type, chat_id):
     elif command.startswith("send_message"):
         return send_message_test(from_id, command)
 
-    # Earthquake service commands
+    # 地震資訊服務指令
     elif command.startswith("eq_latest"):
         return get_latest_earthquake()
     
@@ -419,45 +251,18 @@ def excute_command(from_id, command, from_type, chat_id):
         return get_earthquake_map()
     
     elif command.startswith("eq_ai"):
-        # Extract question from command
-        question = command[5:].strip()  # Remove "eq_ai" prefix
+        # 擷取問題
+        question = command[5:].strip()  # 移除 "eq_ai" 前綴
         return process_earthquake_ai(question)
 
-    # Web search commands
+    # 網頁搜尋指令
     elif command.startswith("search") or command.startswith("websearch"):
-        # Extract query from command
+        # 擷取搜尋關鍵字
         if command.startswith("websearch"):
-            query = command[9:].strip()  # Remove "websearch" prefix
+            query = command[9:].strip()  # 移除 "websearch" 前綴
         else:
-            query = command[6:].strip()  # Remove "search" prefix
+            query = command[6:].strip()  # 移除 "search" 前綴
         return perform_web_search(query)
-
-    # GitHub Copilot commands
-    elif command.startswith("copilot_help"):
-        return copilot_help()
-    
-    elif command.startswith("copilot_new"):
-        return copilot_new_conversation(chat_id)
-    
-    elif command.startswith("copilot"):
-        # Extract message from command
-        message = command[8:].strip()  # Remove "copilot " prefix (7 chars + 1 space)
-        return copilot_chat(chat_id, message)
-    
-    elif command.startswith("ai_demo"):
-        return ai_demo(chat_id)
-
-    # OpenAI commands
-    elif command.startswith("openai_help"):
-        return openai_help()
-    
-    elif command.startswith("openai_new"):
-        return openai_new_conversation(chat_id)
-    
-    elif command.startswith("openai"):
-        # Extract message from command
-        message = command[6:].strip()  # Remove "openai" prefix
-        return openai_chat(chat_id, message)
 
     elif command in ["get_allowed_users", "get_allowed_groups", "get_api_key"]:
         if not is_admin(from_id):
