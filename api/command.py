@@ -1,5 +1,6 @@
 from time import sleep
 import pandas as pd
+import os
 
 from .auth import is_admin
 from .config import *
@@ -315,10 +316,9 @@ def process_taiwan_eq_query(args: str, chat_id=None):
             if filepath:
                 # If it's an HTML file (Folium), send a link
                 if filepath.endswith('.html'):
-                    import os
                     filename = os.path.basename(filepath)
                     # Get the base URL from environment or use a default
-                    base_url = os.getenv("VERCEL_URL", os.getenv("BASE_URL", ""))
+                    base_url = os.getenv('VERCEL_URL') or os.getenv('BASE_URL') or ''
                     if base_url:
                         if not base_url.startswith("http"):
                             base_url = f"https://{base_url}"

@@ -5,7 +5,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from .config import STATIC_DIR
-import warnings
 
 # Try to import folium for interactive maps
 try:
@@ -15,9 +14,6 @@ try:
 except ImportError:
     FOLIUM_AVAILABLE = False
     print("Warning: folium not available, using Plotly for maps")
-
-# Ignore specific warnings
-warnings.filterwarnings("ignore", message="The coordinates conversion method is not specified.*")
 
 
 def create_taiwan_eq_map(df: pd.DataFrame, title: str = "台灣地震分布圖") -> str | None:
@@ -157,7 +153,7 @@ def create_taiwan_eq_folium_map(df: pd.DataFrame, title: str = "台灣地震分�
     marker_cluster = MarkerCluster().add_to(m)
 
     # Iterate through earthquake events and add to map
-    for _, row in work.iterrows():
+    for idx, row in work.iterrows():
         try:
             lat = row["lat"]
             lon = row["lon"]
@@ -190,7 +186,7 @@ def create_taiwan_eq_folium_map(df: pd.DataFrame, title: str = "台灣地震分�
             
         except Exception as e:
             # Ignore errors for individual events
-            print(f"處理事件時發生錯誤: {e}")
+            print(f"處理事件時發生錯誤 (index {idx}, lat={lat if 'lat' in locals() else 'N/A'}, lon={lon if 'lon' in locals() else 'N/A'}): {e}")
 
     # Add layer control
     folium.LayerControl().add_to(m)
