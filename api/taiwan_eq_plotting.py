@@ -290,7 +290,7 @@ def create_taiwan_eq_folium_map(df: pd.DataFrame, title: str = "台灣地震分�
         <p style="margin: 0 0 5px 0; font-weight: bold;">規模圖例</p>
         <p style="margin: 2px 0;"><span style="color: green;">●</span> ML < 3.0</p>
         <p style="margin: 2px 0;"><span style="color: blue;">●</span> 3.0 ≤ ML < 4.0</p>
-        <p style="margin: 2px 0;"><span style="color: gold;">●</span> 4.0 ≤ ML < 5.0</p>
+        <p style="margin: 2px 0;"><span style="color: yellow;">●</span> 4.0 ≤ ML < 5.0</p>
         <p style="margin: 2px 0;"><span style="color: orange;">●</span> 5.0 ≤ ML < 6.0</p>
         <p style="margin: 2px 0;"><span style="color: red;">●</span> ML ≥ 6.0</p>
     </div>
