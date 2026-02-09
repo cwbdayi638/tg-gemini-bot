@@ -61,7 +61,7 @@ def help():
             "/eq_ai <問題> - AI 智慧地震查詢\n"
             "/eq_query <起始日期> <結束日期> <最小規模> - 查詢全球地震\n"
             "  範例：/eq_query 2024-07-01 2024-07-07 5.0\n"
-            "/eq_tw_query <條件> - 台灣地震目錄查詢（含地圖）\n"
+            "/eq_tw_query <條件> - 台灣地震目錄查詢（含互動式地圖）\n"
             "  範例：/eq_tw_query 2024-01-01 2024-06-30 4.5\n"
             "  格式：起始日期 結束日期 [最小規模] [最大規模] [最小深度] [最大深度]"
         )
@@ -223,7 +223,11 @@ def process_earthquake_query(args: str, chat_id=None):
     return text
 
 def process_taiwan_eq_query(args: str, chat_id=None):
-    """處理台灣地震目錄查詢（含 Plotly 地圖）。
+    """處理台灣地震目錄查詢（含互動式 Folium 地圖）。
+
+    Uses Folium to create interactive HTML maps. If VERCEL_URL or BASE_URL is set,
+    the map is served via /static endpoint and a link is sent to the user.
+    Otherwise, falls back to Plotly PNG images.
 
     格式: /eq_tw_query <起始日期> <結束日期> [最小規模] [最大規模] [最小深度] [最大深度]
     範例: /eq_tw_query 2024-01-01 2024-06-30 4.5
