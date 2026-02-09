@@ -1,5 +1,6 @@
 from time import sleep
 import pandas as pd
+import os
 
 from .auth import is_admin
 from .config import *
@@ -20,7 +21,7 @@ except ImportError as e:
 # Import Taiwan earthquake catalog service
 try:
     from .taiwan_eq_service import fetch_taiwan_eq_data, filter_taiwan_eq, format_taiwan_eq_text
-    from .taiwan_eq_plotting import create_taiwan_eq_map
+    from .taiwan_eq_plotting import create_taiwan_eq_map, create_taiwan_eq_folium_map
     TW_EQ_SERVICE_AVAILABLE = True
 except ImportError as e:
     print(f"Warning: Taiwan earthquake catalog service not available: {e}")
@@ -61,7 +62,7 @@ def help():
             "/eq_ai <問題> - AI 智慧地震查詢\n"
             "/eq_query <起始日期> <結束日期> <最小規模> - 查詢全球地震\n"
             "  範例：/eq_query 2024-07-01 2024-07-07 5.0\n"
-            "/eq_tw_query <條件> - 台灣地震目錄查詢（含地圖）\n"
+            "/eq_tw_query <條件> - 台灣地震目錄查詢（含互動式地圖）\n"
             "  範例：/eq_tw_query 2024-01-01 2024-06-30 4.5\n"
             "  格式：起始日期 結束日期 [最小規模] [最大規模] [最小深度] [最大深度]"
         )
@@ -223,7 +224,11 @@ def process_earthquake_query(args: str, chat_id=None):
     return text
 
 def process_taiwan_eq_query(args: str, chat_id=None):
-    """處理台灣地震目錄查詢（含 Plotly 地圖）。
+    """處理台灣地震目錄查詢（含互動式 Folium 地圖）。
+
+    Uses Folium to create interactive HTML maps. If VERCEL_URL or BASE_URL is set,
+    the map is served via /static endpoint and a link is sent to the user.
+    Otherwise, falls back to Plotly PNG images.
 
     格式: /eq_tw_query <起始日期> <結束日期> [最小規模] [最大規模] [最小深度] [最大深度]
     範例: /eq_tw_query 2024-01-01 2024-06-30 4.5
@@ -303,14 +308,33 @@ def process_taiwan_eq_query(args: str, chat_id=None):
 
     text = format_taiwan_eq_text(df, filters_desc)
 
-    # Generate Plotly map and send as photo
+    # Generate Folium interactive map and send link
     if not df.empty and chat_id:
         try:
-            from .telegram import send_photo_file
             title = f"台灣地震分布圖（{filters_desc}）"
-            filepath = create_taiwan_eq_map(df, title=title)
+            filepath = create_taiwan_eq_folium_map(df, title=title)
             if filepath:
-                send_photo_file(chat_id, filepath, caption=f"🗺️ {title}")
+                # If it's an HTML file (Folium), send a link
+                if filepath.endswith('.html'):
+                    filename = os.path.basename(filepath)
+                    # Get the base URL from environment or use a default
+                    base_url = os.getenv('VERCEL_URL') or os.getenv('BASE_URL') or ''
+                    if base_url:
+                        if not base_url.startswith("http"):
+                            base_url = f"https://{base_url}"
+                        map_url = f"{base_url}/static/{filename}"
+                        text += f"\n\n🗺️ 互動式地圖：{map_url}"
+                    else:
+                        # If no base URL, try to send as photo (fallback to Plotly)
+                        from .telegram import send_photo_file
+                        # Re-generate using Plotly
+                        plotly_filepath = create_taiwan_eq_map(df, title=title)
+                        if plotly_filepath:
+                            send_photo_file(chat_id, plotly_filepath, caption=f"🗺️ {title}")
+                else:
+                    # If it's a PNG file (Plotly fallback), send as photo
+                    from .telegram import send_photo_file
+                    send_photo_file(chat_id, filepath, caption=f"🗺️ {title}")
         except Exception as e:
             print(f"Failed to generate/send Taiwan earthquake map: {e}")
 

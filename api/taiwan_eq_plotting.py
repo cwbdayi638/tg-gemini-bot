@@ -1,10 +1,19 @@
-# taiwan_eq_plotting.py - Plot Taiwan earthquake maps using Plotly
+# taiwan_eq_plotting.py - Plot Taiwan earthquake maps using Plotly and Folium
 import os
 import uuid
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from .config import STATIC_DIR
+
+# Try to import folium for interactive maps
+try:
+    import folium
+    from folium.plugins import MarkerCluster
+    FOLIUM_AVAILABLE = True
+except ImportError:
+    FOLIUM_AVAILABLE = False
+    print("Warning: folium not available, using Plotly for maps")
 
 
 def create_taiwan_eq_map(df: pd.DataFrame, title: str = "台灣地震分布圖") -> str | None:
@@ -110,4 +119,80 @@ def create_taiwan_eq_map(df: pd.DataFrame, title: str = "台灣地震分布圖")
     filename = f"tw_eq_{uuid.uuid4().hex}.png"
     filepath = os.path.join(STATIC_DIR, filename)
     fig.write_image(filepath, scale=2)
+    return filepath
+
+
+def create_taiwan_eq_folium_map(df: pd.DataFrame, title: str = "台灣地震分布圖") -> str | None:
+    """Create an interactive earthquake map using Folium.
+
+    Parameters
+    ----------
+    df : DataFrame with columns ``lat``, ``lon``, ``ML``, ``depth``, ``date``, ``time``.
+    title : map title string.
+
+    Returns
+    -------
+    Full file path of the saved HTML file, or ``None`` if no valid data or folium not available.
+    """
+    if not FOLIUM_AVAILABLE:
+        # Fallback to Plotly if Folium is not available
+        return create_taiwan_eq_map(df, title)
+    
+    if df.empty:
+        return None
+
+    work = df.copy()
+    work = work.dropna(subset=["lat", "lon", "ML"])
+    if work.empty:
+        return None
+
+    # Create Folium map centered on Taiwan
+    m = folium.Map(location=[23.5, 121], zoom_start=6, tiles="CartoDB positron")
+
+    # Create a MarkerCluster
+    marker_cluster = MarkerCluster().add_to(m)
+
+    # Iterate through earthquake events and add to map
+    for idx, row in work.iterrows():
+        try:
+            lat = row["lat"]
+            lon = row["lon"]
+            depth_km = row["depth"] if pd.notna(row["depth"]) else 0
+            mag_value = row["ML"]
+            event_date = row["date"]
+            event_time = row["time"]
+
+            # Create popup HTML
+            popup_html = f"""
+            <b>時間:</b> {event_date} {event_time}<br>
+            <b>規模:</b> ML {mag_value:.2f}<br>
+            <b>深度:</b> {depth_km:.1f} km<br>
+            <b>位置:</b> ({lat:.4f}, {lon:.4f})
+            """
+
+            # Set circle size based on magnitude
+            radius = mag_value * 2
+
+            # Add CircleMarker to MarkerCluster
+            folium.CircleMarker(
+                location=[lat, lon],
+                radius=radius,
+                popup=folium.Popup(popup_html, max_width=300),
+                color="red",
+                fill=True,
+                fill_color="red",
+                fill_opacity=0.4
+            ).add_to(marker_cluster)
+            
+        except Exception as e:
+            # Ignore errors for individual events
+            print(f"處理事件時發生錯誤 (index {idx}, lat={lat if 'lat' in locals() else 'N/A'}, lon={lon if 'lon' in locals() else 'N/A'}): {e}")
+
+    # Add layer control
+    folium.LayerControl().add_to(m)
+
+    # Save to HTML file
+    filename = f"tw_eq_{uuid.uuid4().hex}.html"
+    filepath = os.path.join(STATIC_DIR, filename)
+    m.save(filepath)
     return filepath
