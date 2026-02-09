@@ -144,14 +144,27 @@ def fetch_global_earthquakes_by_date(start_date: str, end_date: str, min_magnitu
             mag = eq.get("magnitude", "—")
             mag_str = f"{mag:.1f}" if isinstance(mag, (int, float)) else str(mag)
             
-            time_str = eq.get("time", "—")
+            # Format time in Traditional Chinese readable format
+            raw_time = eq.get("time", "—")
+            try:
+                dt = datetime.fromisoformat(str(raw_time))
+                time_str = dt.strftime("%Y年%m月%d日 %H:%M:%S")
+            except (ValueError, TypeError):
+                time_str = str(raw_time)
+            
             place = eq.get("place", "未知地點")
-            depth = eq.get("depth", "—")
+            depth = eq.get("depth_km", "—")
             depth_str = f"{depth:.1f}" if isinstance(depth, (int, float)) else str(depth)
             
+            lat = eq.get("latitude", "—")
+            lon = eq.get("longitude", "—")
+            lat_str = f"{lat:.4f}" if isinstance(lat, (int, float)) else str(lat)
+            lon_str = f"{lon:.4f}" if isinstance(lon, (int, float)) else str(lon)
+            
             lines.append(
-                f"{i}. 規模：M{mag_str} | 深度：{depth_str} km\n"
+                f"{i}. 規模：M{mag_str} | 深度：{depth_str} 公里\n"
                 f"   時間：{time_str}\n"
+                f"   緯度：{lat_str} | 經度：{lon_str}\n"
                 f"   位置：{place}"
             )
         
