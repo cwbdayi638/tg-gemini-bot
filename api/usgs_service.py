@@ -92,12 +92,15 @@ def fetch_global_earthquakes_by_date(start_date: str, end_date: str, min_magnitu
         Formatted string with earthquake results
     """
     try:
-        # Validate date format
+        # Validate date format and range
         try:
-            datetime.strptime(start_date, "%Y-%m-%d")
-            datetime.strptime(end_date, "%Y-%m-%d")
+            start_dt = datetime.strptime(start_date, "%Y-%m-%d")
+            end_dt = datetime.strptime(end_date, "%Y-%m-%d")
         except ValueError:
             return "❌ 日期格式錯誤！請使用 YYYY-MM-DD 格式（例如：2024-07-01）"
+        
+        if start_dt > end_dt:
+            return "❌ 日期範圍錯誤！起始日期不能晚於結束日期"
         
         # Validate magnitude
         try:
