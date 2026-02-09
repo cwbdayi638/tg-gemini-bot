@@ -17,6 +17,15 @@ except ImportError as e:
     print(f"Warning: Some services not available: {e}")
     SERVICES_AVAILABLE = False
 
+# Import Taiwan earthquake catalog service
+try:
+    from .taiwan_eq_service import fetch_taiwan_eq_data, filter_taiwan_eq, format_taiwan_eq_text
+    from .taiwan_eq_plotting import create_taiwan_eq_map
+    TW_EQ_SERVICE_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: Taiwan earthquake catalog service not available: {e}")
+    TW_EQ_SERVICE_AVAILABLE = False
+
 # Import web search service
 try:
     from .web_search_service import web_search, format_search_results
@@ -51,7 +60,10 @@ def help():
             "/eq_map - 地震查詢服務連結\n"
             "/eq_ai <問題> - AI 智慧地震查詢\n"
             "/eq_query <起始日期> <結束日期> <最小規模> - 查詢全球地震\n"
-            "  範例：/eq_query 2024-07-01 2024-07-07 5.0"
+            "  範例：/eq_query 2024-07-01 2024-07-07 5.0\n"
+            "/eq_tw_query <條件> - 台灣地震目錄查詢（含地圖）\n"
+            "  範例：/eq_tw_query 2024-01-01 2024-06-30 4.5\n"
+            "  格式：起始日期 結束日期 [最小規模] [最大規模] [最小深度] [最大深度]"
         )
         help_message = help_message + earthquake_commands
     
@@ -210,6 +222,100 @@ def process_earthquake_query(args: str, chat_id=None):
     
     return text
 
+def process_taiwan_eq_query(args: str, chat_id=None):
+    """處理台灣地震目錄查詢（含 Plotly 地圖）。
+
+    格式: /eq_tw_query <起始日期> <結束日期> [最小規模] [最大規模] [最小深度] [最大深度]
+    範例: /eq_tw_query 2024-01-01 2024-06-30 4.5
+    """
+    if not TW_EQ_SERVICE_AVAILABLE:
+        return "台灣地震目錄查詢服務無法使用。"
+
+    if not args or not args.strip():
+        return (
+            "📖 台灣地震目錄查詢\n\n"
+            "格式：/eq_tw_query <起始日期> <結束日期> [最小規模] [最大規模] [最小深度] [最大深度]\n\n"
+            "範例：\n"
+            "  /eq_tw_query 2024-01-01 2024-06-30\n"
+            "  /eq_tw_query 2024-01-01 2024-03-31 4.5\n"
+            "  /eq_tw_query 2024-01-01 2024-12-31 4.0 6.0 0 100\n\n"
+            "說明：\n"
+            "  - 日期格式：YYYY-MM-DD\n"
+            "  - 規模與深度為可選參數\n"
+            "  - 資料來源：CWA 台灣地震目錄"
+        )
+
+    parts = args.strip().split()
+    if len(parts) < 2:
+        return (
+            "參數不足！至少需要提供起始日期與結束日期。\n\n"
+            "格式：/eq_tw_query <起始日期> <結束日期> [最小規模] [最大規模] [最小深度] [最大深度]\n"
+            "範例：/eq_tw_query 2024-01-01 2024-06-30 4.5"
+        )
+
+    start_date = parts[0]
+    end_date = parts[1]
+    try:
+        min_ml = float(parts[2]) if len(parts) > 2 else None
+        max_ml = float(parts[3]) if len(parts) > 3 else None
+        min_depth = float(parts[4]) if len(parts) > 4 else None
+        max_depth = float(parts[5]) if len(parts) > 5 else None
+    except ValueError:
+        return "❌ 數值參數格式錯誤！規模與深度請輸入數字（例如：4.5）"
+
+    # Validate dates
+    from datetime import datetime as _dt
+    try:
+        sd = _dt.strptime(start_date, "%Y-%m-%d")
+        ed = _dt.strptime(end_date, "%Y-%m-%d")
+    except ValueError:
+        return "❌ 日期格式錯誤！請使用 YYYY-MM-DD（例如：2024-01-01）"
+    if sd > ed:
+        return "❌ 起始日期不能晚於結束日期。"
+
+    # Fetch & filter
+    try:
+        df = fetch_taiwan_eq_data()
+    except RuntimeError as e:
+        return f"❌ {e}"
+
+    df = filter_taiwan_eq(
+        df,
+        start_date=start_date,
+        end_date=end_date,
+        min_ml=min_ml,
+        max_ml=max_ml,
+        min_depth=min_depth,
+        max_depth=max_depth,
+    )
+
+    # Build filter description
+    desc_parts = [f"{start_date} ~ {end_date}"]
+    if min_ml is not None:
+        desc_parts.append(f"ML≥{min_ml}")
+    if max_ml is not None:
+        desc_parts.append(f"ML≤{max_ml}")
+    if min_depth is not None:
+        desc_parts.append(f"深度≥{min_depth}km")
+    if max_depth is not None:
+        desc_parts.append(f"深度≤{max_depth}km")
+    filters_desc = "，".join(desc_parts)
+
+    text = format_taiwan_eq_text(df, filters_desc)
+
+    # Generate Plotly map and send as photo
+    if not df.empty and chat_id:
+        try:
+            from .telegram import send_photo_file
+            title = f"台灣地震分布圖（{filters_desc}）"
+            filepath = create_taiwan_eq_map(df, title=title)
+            if filepath:
+                send_photo_file(chat_id, filepath, caption=f"🗺️ {title}")
+        except Exception as e:
+            print(f"Failed to generate/send Taiwan earthquake map: {e}")
+
+    return text
+
 def perform_web_search(query: str):
     """執行網頁搜尋。"""
     if not query or not query.strip():
@@ -303,6 +409,11 @@ def excute_command(from_id, command, from_type, chat_id):
         # 擷取查詢參數
         args = command[8:].strip()  # 移除 "eq_query" 前綴
         return process_earthquake_query(args, chat_id=chat_id)
+
+    elif command.startswith("eq_tw_query"):
+        # 台灣地震目錄查詢
+        args = command[11:].strip()  # 移除 "eq_tw_query" 前綴
+        return process_taiwan_eq_query(args, chat_id=chat_id)
 
     # 網頁搜尋指令
     elif command.startswith("search") or command.startswith("websearch"):
