@@ -255,10 +255,13 @@ def process_taiwan_eq_query(args: str, chat_id=None):
 
     start_date = parts[0]
     end_date = parts[1]
-    min_ml = float(parts[2]) if len(parts) > 2 else None
-    max_ml = float(parts[3]) if len(parts) > 3 else None
-    min_depth = float(parts[4]) if len(parts) > 4 else None
-    max_depth = float(parts[5]) if len(parts) > 5 else None
+    try:
+        min_ml = float(parts[2]) if len(parts) > 2 else None
+        max_ml = float(parts[3]) if len(parts) > 3 else None
+        min_depth = float(parts[4]) if len(parts) > 4 else None
+        max_depth = float(parts[5]) if len(parts) > 5 else None
+    except ValueError:
+        return "❌ 數值參數格式錯誤！規模與深度請輸入數字（例如：4.5）"
 
     # Validate dates
     from datetime import datetime as _dt

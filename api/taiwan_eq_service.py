@@ -108,11 +108,15 @@ def format_taiwan_eq_text(df: pd.DataFrame, filters_desc: str = "") -> str:
         lines.append(f"\n...（另有 {count - display} 筆記錄未顯示）")
 
     # Summary statistics
+    ml_valid = df["ML"].dropna()
+    depth_valid = df["depth"].dropna()
     lines.append("─" * 28)
     lines.append("📈 統計摘要")
-    lines.append(f"   最大規模：ML {df['ML'].max():.2f}")
-    lines.append(f"   最小規模：ML {df['ML'].min():.2f}")
-    lines.append(f"   平均深度：{df['depth'].mean():.1f} km")
+    if not ml_valid.empty:
+        lines.append(f"   最大規模：ML {ml_valid.max():.2f}")
+        lines.append(f"   最小規模：ML {ml_valid.min():.2f}")
+    if not depth_valid.empty:
+        lines.append(f"   平均深度：{depth_valid.mean():.1f} km")
     lines.append(f"   日期範圍：{df['date'].min()} ~ {df['date'].max()}")
 
     return "\n\n".join(lines)
