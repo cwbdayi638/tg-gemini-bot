@@ -8,7 +8,7 @@ from gradio_client import Client
 from .config import MCP_SERVER_URL
 
 # Ollama server configuration
-OLLAMA_BASE_URL = "https://fgs.zeabur.app"
+OLLAMA_BASE_URL = "http://ollama.zeabur.internal:11434"
 OLLAMA_MODEL = "smollm:135m"
 OLLAMA_PROMPT_TEMPLATE = "Context:\n{context}\n\nQuestion: {prompt}\n\nPlease provide a concise and informative answer based on the context provided."
 
