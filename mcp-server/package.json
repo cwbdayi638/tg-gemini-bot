@@ -1,0 +1,29 @@
+{
+  "name": "tg-gemini-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Telegram Gemini Bot with earthquake, web search, and utility tools",
+  "type": "module",
+  "main": "server.js",
+  "bin": {
+    "tg-gemini-mcp": "./server.js"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test.js"
+  },
+  "keywords": [
+    "mcp",
+    "telegram",
+    "bot",
+    "earthquake",
+    "tools"
+  ],
+  "author": "tg-gemini-bot",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

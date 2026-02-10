@@ -10,6 +10,7 @@
 - **💬 AI 對話**：整合 Google Gemini AI，提供智慧對話和圖片分析功能
 - **🔍 智慧地震查詢**：使用自然語言查詢地震資料
 - **🌐 網頁搜尋**：整合網頁搜尋功能
+- **🔧 MCP 工具**：提供 Model Context Protocol 工具，可用於計算、資料獲取等功能
 
 ## 🚀 功能詳情
 
@@ -46,6 +47,18 @@
 
 - `/search <關鍵字>` - 搜尋網頁
 - `/websearch <關鍵字>` - 搜尋網頁（別名）
+
+### 🔧 MCP 工具
+
+基於 [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) 的擴展功能：
+
+- `/mcp_info` - 取得 Bot 詳細資訊
+- `/mcp_calc <運算> <數字1> <數字2>` - 數學計算（支援 add, subtract, multiply, divide）
+  - 範例：`/mcp_calc add 25 17`
+- `/mcp_weather <地點>` - 查詢天氣資訊（模擬）
+- `/mcp_fetch <URL>` - 從外部 API 獲取數據
+
+💡 **MCP 功能說明**：本 Bot 整合了 MCP 伺服器，可透過標準化協議提供額外工具。這些工具也可以在 GitHub Copilot 等 MCP 相容客戶端中使用。詳見 [MCP_USAGE_EXAMPLES.md](MCP_USAGE_EXAMPLES.md)。
 
 ## 📋 基本指令
 
@@ -165,6 +178,66 @@
 ## 📄 授權
 
 詳見 [LICENSE.txt](LICENSE.txt)
+
+---
+
+## 🔧 MCP (Model Context Protocol) 整合
+
+本專案整合了 **Model Context Protocol (MCP)** 伺服器，提供標準化的工具接口。MCP 是一個開放協議，讓 AI 應用程式能夠安全地連接到外部資源和工具。
+
+### MCP 功能
+
+- 🧮 **計算工具** - 執行數學運算
+- 📊 **Bot 資訊** - 取得 Bot 功能和服務資訊
+- 🌤️ **天氣查詢** - 模擬天氣數據
+- 🌐 **HTTP 客戶端** - 從外部 API 獲取數據
+
+### 使用 MCP 工具
+
+#### 在 Telegram Bot 中：
+```
+/mcp_info                    # 取得 Bot 資訊
+/mcp_calc add 25 17          # 計算 25 + 17
+/mcp_weather 台北            # 查詢天氣
+/mcp_fetch https://api.example.com/data  # 獲取外部數據
+```
+
+#### 在 GitHub Copilot 中：
+
+1. 配置 VS Code `settings.json`：
+```json
+{
+  "github.copilot.advanced": {
+    "mcpServers": {
+      "tg-gemini": {
+        "command": "node",
+        "args": ["/path/to/tg-gemini-bot/mcp-server/server.js"]
+      }
+    }
+  }
+}
+```
+
+2. 在 Copilot Chat 中使用：
+```
+使用 MCP 工具計算 123 + 456
+使用 MCP 工具獲取 Bot 的詳細資訊
+使用 MCP 工具從 API 獲取數據
+```
+
+### MCP 相關文件
+
+- 📖 [MCP Server README](mcp-server/README.md) - MCP 伺服器完整說明
+- 📚 [MCP 使用範例](MCP_USAGE_EXAMPLES.md) - 詳細使用指南和範例
+- 🌐 [MCP 官方文檔](https://modelcontextprotocol.io/) - 協議規範
+
+### 安裝 MCP Server
+
+```bash
+cd mcp-server
+npm install
+npm start  # 測試伺服器
+```
 
 ---
 
