@@ -231,7 +231,23 @@
 - 📚 [MCP 使用範例](MCP_USAGE_EXAMPLES.md) - 詳細使用指南和範例
 - 🌐 [MCP 官方文檔](https://modelcontextprotocol.io/) - 協議規範
 
-### 安裝 MCP Server
+### MCP 部署模式
+
+#### 模式 1：使用外部 MCP 伺服器（預設，推薦）
+
+Bot 預設使用 HTTP 連接到外部 MCP 伺服器，無需安裝 Node.js：
+
+- **預設伺服器**：`https://cwadayi-mcp-2.hf.space`
+- **自訂伺服器**：設置環境變數 `MCP_SERVER_URL`
+- **優點**：部署簡單，適合 Vercel 等 Serverless 平台
+- **適用於**：生產環境、Vercel 部署
+
+#### 模式 2：本地 MCP 伺服器（選用）
+
+僅在以下情況需要本地 Node.js 伺服器：
+- GitHub Copilot 整合（VS Code 擴展）
+- 本地開發和測試
+- 自定義 MCP 工具開發
 
 #### 方法 1：自動設定（推薦）
 
@@ -253,14 +269,54 @@ npm install
 npm start  # 測試伺服器
 ```
 
+### 配置環境變數
+
+**重要說明**：`MCP_SERVER_URL` 用於**地震資料庫搜尋**（Gradio API），不用於基本 MCP 工具（計算機等）。
+
+```bash
+# 地震資料庫 MCP 伺服器（選用，預設已設定）
+MCP_SERVER_URL=https://cwadayi-mcp-2.hf.space
+
+# 網頁搜尋 MCP 伺服器（選用）
+MCP_WEB_SEARCH_URL=https://your-search-server.com
+```
+
+### MCP 工具運行模式
+
+本 Bot 的 MCP 工具有三種運行模式：
+
+1. **Python 簡化版**（預設，無需 Node.js）
+   - ✅ 適用於 Vercel、Heroku 等 Serverless 平台
+   - ✅ 自動啟用，無需配置
+   - 📦 包含：計算機、Bot 資訊、天氣查詢、HTTP 請求
+
+2. **Node.js 完整版**（本地開發/自定義）
+   - 🔧 需要安裝 Node.js >= 18.0.0
+   - 🎯 提供完整 MCP 協議支援
+   - 🔄 自動檢測並啟用（如果可用）
+
+3. **外部 API 整合**
+   - 🌍 地震資料庫：`MCP_SERVER_URL` (Gradio API)
+   - 🔍 網頁搜尋：`MCP_WEB_SEARCH_URL` (MCP 協議)
+
 ### 疑難排解
 
-#### MCP 錯誤：Node.js not found
+#### MCP 工具無回應
 
-如果您看到此錯誤訊息，可能是以下情況之一：
+基本 MCP 工具（計算機、天氣等）：
+- ✅ **無需配置**，使用內建 Python 實現
+- 如看到錯誤，請檢查指令格式是否正確
 
-1. **Node.js 未安裝**：請從 [nodejs.org](https://nodejs.org/) 安裝 Node.js >= 18.0.0
-2. **MCP 伺服器依賴未安裝**：執行 `cd mcp-server && ./setup.sh` 或 `cd mcp-server && npm install`
+地震資料查詢無結果：
+1. 確認 `MCP_SERVER_URL` 設置正確（預設：`https://cwadayi-mcp-2.hf.space`）
+2. 檢查網路連線狀態
+3. 啟用 `IS_DEBUG_MODE=1` 查看詳細日誌
+
+#### Node.js 相關（選用功能）
+
+- ⚠️ 看到 "Node.js not found"？**可以忽略**，Bot 會自動使用 Python 版本
+- 🔧 如需 Node.js 完整功能，參考上方"模式 2：本地 MCP 伺服器"安裝步驟
+- ✅ Vercel 部署：無需 Node.js，Python 版本即可完整運行
 
 ---
 

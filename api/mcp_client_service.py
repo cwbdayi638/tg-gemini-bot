@@ -1,22 +1,23 @@
 """
 MCP Client Service for Telegram Bot
 
-This module provides a Python client to interact with the MCP server.
-It allows the Telegram bot to call MCP tools programmatically.
+This module provides a Python client to interact with MCP tools.
+When Node.js is not available, it falls back to simple Python implementations.
 """
 
-import subprocess
 import json
 import os
+import subprocess
+import requests
 from typing import Dict, Any, Optional
+from datetime import datetime
 
 # Configuration constants
 MCP_CALL_TIMEOUT = 30  # Timeout for MCP tool calls in seconds
-MCP_SERVER_HTTP_TIMEOUT = 10  # Should match server.js timeout setting
 
 
 class MCPClient:
-    """Client for interacting with the MCP server."""
+    """Client for interacting with MCP tools (Node.js or Python fallback)."""
     
     def __init__(self, server_path: Optional[str] = None):
         """
@@ -33,49 +34,28 @@ class MCPClient:
             server_path = os.path.join(project_root, "mcp-server", "server.js")
         
         self.server_path = server_path
-        self._validate_server()
+        self.nodejs_available = self._check_nodejs()
     
-    def _validate_server(self):
-        """Validate that the MCP server exists and Node.js is available."""
-        if not os.path.exists(self.server_path):
-            raise FileNotFoundError(f"MCP server not found at: {self.server_path}")
-        
-        # Check if Node.js is available
+    def _check_nodejs(self) -> bool:
+        """Check if Node.js is available without raising errors."""
         try:
+            # Check if server file exists
+            if not os.path.exists(self.server_path):
+                return False
+            
+            # Check if Node.js is available
             result = subprocess.run(
                 ["node", "--version"],
                 capture_output=True,
                 text=True,
                 timeout=5
             )
-            if result.returncode != 0:
-                raise RuntimeError("Node.js not available")
-        except (subprocess.TimeoutExpired, FileNotFoundError):
-            raise RuntimeError("Node.js not found. Please install Node.js >= 18.0.0")
-
-        # Check if npm dependencies are installed
-        server_dir = os.path.dirname(self.server_path)
-        node_modules_path = os.path.join(server_dir, "node_modules")
-        if not os.path.exists(node_modules_path):
-            raise RuntimeError(
-                f"MCP server dependencies not installed. "
-                f"Please run: cd {server_dir} && npm install"
-            )
+            return result.returncode == 0
+        except:
+            return False
     
-    def call_tool(self, tool_name: str, arguments: Dict[str, Any]) -> str:
-        """
-        Call an MCP tool.
-        
-        Args:
-            tool_name: Name of the tool to call
-            arguments: Dictionary of arguments for the tool
-            
-        Returns:
-            str: The tool's response text
-            
-        Raises:
-            RuntimeError: If the tool call fails
-        """
+    def _call_nodejs_tool(self, tool_name: str, arguments: Dict[str, Any]) -> str:
+        """Call tool via Node.js MCP server."""
         # Prepare the MCP request
         request = {
             "jsonrpc": "2.0",
@@ -105,30 +85,160 @@ class MCPClient:
                 raise RuntimeError(f"MCP server error: {error_msg}")
             
             # Parse the response
-            try:
-                # MCP server might output debug info to stderr, actual response is in stdout
-                response = json.loads(result.stdout)
-                
-                # Extract content from MCP response
-                if "content" in response and isinstance(response["content"], list):
-                    # Combine all text content
-                    texts = []
-                    for item in response["content"]:
-                        if isinstance(item, dict) and "text" in item:
-                            texts.append(item["text"])
-                    return "\n".join(texts)
-                elif "error" in response:
-                    raise RuntimeError(f"Tool error: {response['error']}")
-                else:
-                    return str(response)
-            except json.JSONDecodeError as e:
-                # If not JSON, return raw output
-                return result.stdout if result.stdout else result.stderr
+            response = json.loads(result.stdout)
+            
+            # Extract content from MCP response
+            if "content" in response and isinstance(response["content"], list):
+                texts = []
+                for item in response["content"]:
+                    if isinstance(item, dict) and "text" in item:
+                        texts.append(item["text"])
+                return "\n".join(texts)
+            elif "error" in response:
+                raise RuntimeError(f"Tool error: {response['error']}")
+            else:
+                return str(response)
                 
         except subprocess.TimeoutExpired:
             raise RuntimeError("MCP tool call timed out")
         except Exception as e:
             raise RuntimeError(f"Failed to call MCP tool: {e}")
+    
+    def _call_python_fallback(self, tool_name: str, arguments: Dict[str, Any]) -> str:
+        """Fallback Python implementation when Node.js is unavailable."""
+        if tool_name == "calculate":
+            return self._calculate(arguments)
+        elif tool_name == "get_bot_info":
+            return self._get_bot_info(arguments)
+        elif tool_name == "get_weather":
+            return self._get_weather(arguments)
+        elif tool_name == "fetch_url":
+            return self._fetch_url(arguments)
+        else:
+            raise RuntimeError(f"Unknown tool: {tool_name}")
+    
+    def _calculate(self, args: Dict[str, Any]) -> str:
+        """Simple calculator implementation."""
+        operation = args.get("operation")
+        a = float(args.get("a", 0))
+        b = float(args.get("b", 0))
+        
+        if operation == "add":
+            result = a + b
+            return f"🔢 計算結果：{a} + {b} = {result}"
+        elif operation == "subtract":
+            result = a - b
+            return f"🔢 計算結果：{a} - {b} = {result}"
+        elif operation == "multiply":
+            result = a * b
+            return f"🔢 計算結果：{a} × {b} = {result}"
+        elif operation == "divide":
+            if b == 0:
+                return "❌ 錯誤：除數不能為零"
+            result = a / b
+            return f"🔢 計算結果：{a} ÷ {b} = {result}"
+        else:
+            return f"❌ 不支援的運算：{operation}"
+    
+    def _get_bot_info(self, args: Dict[str, Any]) -> str:
+        """Return bot information."""
+        detail_level = args.get("detail_level", "basic")
+        
+        info = """🤖 Telegram Bot 資訊
+
+📋 **基本功能**：
+• AI 對話 - 使用 Google Gemini API
+• 地震查詢 - 台灣地震資料
+• MCP 工具 - 計算機、天氣等
+
+⚙️ **MCP 狀態**：
+• 運行模式：Python 簡化版（Node.js 不可用）
+• 可用工具：計算機、Bot 資訊、天氣查詢、URL 獲取
+
+💡 **提示**：安裝 Node.js 以解鎖完整 MCP 功能"""
+        
+        if detail_level == "detailed":
+            info += """
+
+📦 **完整功能列表**：
+/help - 顯示幫助
+/new - 開始新對話
+/eq_latest - 最新地震資訊
+/mcp_calc - 數學計算
+/mcp_weather - 天氣查詢
+/mcp_info - Bot 資訊"""
+        
+        return info
+    
+    def _get_weather(self, args: Dict[str, Any]) -> str:
+        """Simulated weather information."""
+        location = args.get("location", "未知地點")
+        return f"""🌤️ {location} 天氣資訊（模擬）
+
+📅 日期：{datetime.now().strftime("%Y-%m-%d")}
+🌡️ 溫度：22°C
+💧 濕度：65%
+🌥️ 天氣：多雲
+
+⚠️ 注意：這是模擬數據，請使用專業天氣服務獲取實際天氣資訊"""
+    
+    def _fetch_url(self, args: Dict[str, Any]) -> str:
+        """Fetch data from a URL."""
+        url = args.get("url")
+        method = args.get("method", "GET").upper()
+        
+        if not url:
+            return "❌ 錯誤：未提供 URL"
+        
+        try:
+            if method == "GET":
+                response = requests.get(url, timeout=10)
+            elif method == "POST":
+                body = args.get("body", "")
+                headers = args.get("headers", {})
+                response = requests.post(url, data=body, headers=headers, timeout=10)
+            else:
+                return f"❌ 不支援的 HTTP 方法：{method}"
+            
+            response.raise_for_status()
+            
+            # Try to format JSON response
+            try:
+                data = response.json()
+                return f"✅ 請求成功\n\n```json\n{json.dumps(data, indent=2, ensure_ascii=False)}\n```"
+            except:
+                # Return raw text (truncate if too long)
+                text = response.text[:1000]
+                if len(response.text) > 1000:
+                    text += "\n...(已截斷)"
+                return f"✅ 請求成功\n\n{text}"
+                
+        except requests.exceptions.RequestException as e:
+            return f"❌ 請求失敗：{e}"
+    
+    def call_tool(self, tool_name: str, arguments: Dict[str, Any]) -> str:
+        """
+        Call an MCP tool (Node.js preferred, Python fallback).
+        
+        Args:
+            tool_name: Name of the tool to call
+            arguments: Dictionary of arguments for the tool
+            
+        Returns:
+            str: The tool's response text
+            
+        Raises:
+            RuntimeError: If the tool call fails
+        """
+        if self.nodejs_available:
+            try:
+                return self._call_nodejs_tool(tool_name, arguments)
+            except Exception:
+                # If Node.js call fails, silently fall back to Python
+                return self._call_python_fallback(tool_name, arguments)
+        else:
+            # Use Python fallback directly
+            return self._call_python_fallback(tool_name, arguments)
 
 
 # Global MCP client instance
