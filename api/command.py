@@ -35,39 +35,7 @@ except ImportError as e:
     print(f"Warning: Web search service not available: {e}")
     WEB_SEARCH_AVAILABLE = False
 
-# Import MCP web search service
-try:
-    from .mcp_web_search_service import mcp_web_search, format_mcp_search_results
-    from .config import MCP_WEB_SEARCH_URL
-    MCP_WEB_SEARCH_AVAILABLE = bool(MCP_WEB_SEARCH_URL)
-except ImportError as e:
-    print(f"Warning: MCP web search service not available: {e}")
-    MCP_WEB_SEARCH_AVAILABLE = False
 
-# Import MCP client service
-try:
-    from .mcp_client_service import get_bot_info, calculate, get_weather, fetch_url
-    MCP_CLIENT_AVAILABLE = True
-except ImportError as e:
-    print(f"Warning: MCP client service not available: {e}")
-    MCP_CLIENT_AVAILABLE = False
-
-# Import AI news service
-try:
-    from .ai_news_service import (
-        get_latest_news_text, 
-        search_news_text, 
-        get_news_from_source_text, 
-        list_sources_text,
-        POPULAR_SOURCES
-    )
-    AI_NEWS_AVAILABLE = True
-except ImportError as e:
-    print(f"Warning: AI news service not available: {e}")
-    AI_NEWS_AVAILABLE = False
-
-# Default search engines for MCP web search
-DEFAULT_MCP_SEARCH_ENGINES = ["bing", "duckduckgo"]
 
 
 def help():
@@ -90,44 +58,13 @@ def help():
         )
         help_message = help_message + earthquake_commands
     
-    if WEB_SEARCH_AVAILABLE or MCP_WEB_SEARCH_AVAILABLE:
+    if WEB_SEARCH_AVAILABLE:
         web_search_commands = (
             "\n\n🔍 網頁搜尋：\n"
             "/search <關鍵字> - 搜尋網頁\n"
             "/websearch <關鍵字> - 搜尋網頁（別名）"
         )
-        if MCP_WEB_SEARCH_AVAILABLE:
-            web_search_commands += "\n（已啟用 MCP 增強搜尋）"
         help_message = help_message + web_search_commands
-    
-    if MCP_CLIENT_AVAILABLE:
-        mcp_commands = (
-            "\n\n🔧 MCP 工具：\n"
-            "/mcp_info - 取得 Bot 資訊\n"
-            "/mcp_calc <運算> <數字1> <數字2> - 計算機\n"
-            "  範例：/mcp_calc add 25 17\n"
-            "  支援：add, subtract, multiply, divide\n"
-            "/mcp_weather <地點> - 查詢天氣（模擬）\n"
-            "/mcp_fetch <URL> - 從外部 API 獲取數據"
-        )
-        help_message = help_message + mcp_commands
-    
-    if AI_NEWS_AVAILABLE:
-        ai_news_commands = (
-            "\n\n📰 AI 新聞聚合器：\n"
-            "/ai_news_latest [數量] - 獲取最新 AI 新聞\n"
-            "  範例：/ai_news_latest 10\n"
-            "/ai_news_search <關鍵字> [數量] - 搜尋 AI 新聞\n"
-            "  範例：/ai_news_search GPT-4 15\n"
-            "/ai_news_source <來源名稱> [數量] - 從特定來源獲取新聞\n"
-            "  範例：/ai_news_source OpenAI Blog 5\n"
-            "/ai_news_sources [類別] - 列出可用的新聞來源\n"
-            "  範例：/ai_news_sources all\n"
-            "  支援類別：top（熱門）、all（全部）\n"
-            "來源包括：OpenAI、DeepMind、Google AI、Hugging Face、\n"
-            "TechCrunch、MIT Tech Review、arXiv 等 150+ 來源"
-        )
-        help_message = help_message + ai_news_commands
     
     return help_message
 
@@ -396,16 +333,7 @@ def perform_web_search(query: str):
     if not query or not query.strip():
         return "請提供搜尋關鍵字，例如：/search Python 教學"
     
-    # Try MCP web search first if available
-    if MCP_WEB_SEARCH_AVAILABLE:
-        try:
-            results = mcp_web_search(query.strip(), limit=5, engines=DEFAULT_MCP_SEARCH_ENGINES)
-            if results:
-                return format_mcp_search_results(results, query.strip())
-        except Exception as e:
-            print(f"MCP web search failed: {e}")
-    
-    # Fallback to built-in web search
+    # Use built-in web search
     if not WEB_SEARCH_AVAILABLE:
         return "網頁搜尋服務無法使用。"
     
@@ -416,212 +344,6 @@ def perform_web_search(query: str):
     except Exception as e:
         return f"❌ 網頁搜尋失敗：{e}"
 
-
-def mcp_get_info():
-    """取得 Bot 詳細資訊（透過 MCP）。"""
-    if not MCP_CLIENT_AVAILABLE:
-        return "MCP 客戶端服務無法使用。"
-    try:
-        return get_bot_info(detailed=True)
-    except Exception as e:
-        return f"❌ 取得 Bot 資訊失敗：{e}"
-
-
-def mcp_calculate(args: str):
-    """執行計算（透過 MCP）。"""
-    if not MCP_CLIENT_AVAILABLE:
-        return "MCP 客戶端服務無法使用。"
-    
-    if not args or not args.strip():
-        return (
-            "請提供計算參數：運算 數字1 數字2\n\n"
-            "格式：/mcp_calc <運算> <數字1> <數字2>\n"
-            "範例：/mcp_calc add 25 17\n\n"
-            "支援的運算：\n"
-            "- add（加）\n"
-            "- subtract（減）\n"
-            "- multiply（乘）\n"
-            "- divide（除）"
-        )
-    
-    parts = args.strip().split()
-    if len(parts) < 3:
-        return (
-            "參數不足！需要提供：運算、數字1、數字2\n\n"
-            "格式：/mcp_calc <運算> <數字1> <數字2>\n"
-            "範例：/mcp_calc add 25 17"
-        )
-    
-    operation = parts[0]
-    valid_operations = ["add", "subtract", "multiply", "divide"]
-    if operation not in valid_operations:
-        return f"❌ 不支援的運算：{operation}\n支援的運算：{', '.join(valid_operations)}"
-    
-    try:
-        num1 = float(parts[1])
-        num2 = float(parts[2])
-    except ValueError:
-        return "❌ 數字格式錯誤！請輸入有效的數字。"
-    
-    try:
-        result = calculate(operation, num1, num2)
-        return f"🔢 {result}"
-    except Exception as e:
-        return f"❌ 計算失敗：{e}"
-
-
-def mcp_get_weather(location: str):
-    """查詢天氣（透過 MCP 模擬）。"""
-    if not MCP_CLIENT_AVAILABLE:
-        return "MCP 客戶端服務無法使用。"
-    
-    if not location or not location.strip():
-        return "請提供地點名稱，例如：/mcp_weather 台北"
-    
-    try:
-        result = get_weather(location.strip())
-        return f"🌤️ {result}"
-    except Exception as e:
-        return f"❌ 查詢天氣失敗：{e}"
-
-
-def mcp_fetch_url(url: str):
-    """從外部 URL 獲取數據（透過 MCP）。"""
-    if not MCP_CLIENT_AVAILABLE:
-        return "MCP 客戶端服務無法使用。"
-    
-    if not url or not url.strip():
-        return "請提供 URL，例如：/mcp_fetch https://api.example.com/data"
-    
-    url = url.strip()
-    if not url.startswith(("http://", "https://")):
-        return "❌ URL 必須以 http:// 或 https:// 開頭"
-    
-    try:
-        result = fetch_url(url)
-        return f"🌐 {result}"
-    except Exception as e:
-        return f"❌ 獲取數據失敗：{e}"
-
-
-def ai_news_latest(args: str):
-    """獲取最新 AI 新聞。"""
-    if not AI_NEWS_AVAILABLE:
-        return "AI 新聞聚合器服務無法使用。"
-    
-    # Parse max_articles argument
-    max_articles = 15  # default
-    if args and args.strip():
-        try:
-            max_articles = int(args.strip())
-            if max_articles < 1 or max_articles > 50:
-                return "❌ 文章數量必須在 1 到 50 之間"
-        except ValueError:
-            return "❌ 文章數量必須是數字，例如：/ai_news_latest 10"
-    
-    try:
-        return get_latest_news_text(max_articles)
-    except Exception as e:
-        return f"❌ 獲取最新新聞失敗：{e}"
-
-
-def ai_news_search(args: str):
-    """搜尋 AI 新聞。"""
-    if not AI_NEWS_AVAILABLE:
-        return "AI 新聞聚合器服務無法使用。"
-    
-    if not args or not args.strip():
-        return (
-            "請提供搜尋關鍵字\n\n"
-            "格式：/ai_news_search <關鍵字> [數量]\n"
-            "範例：/ai_news_search GPT-4 15\n"
-            "範例：/ai_news_search machine learning"
-        )
-    
-    parts = args.strip().split(maxsplit=1)
-    query = parts[0]
-    max_results = 20  # default
-    
-    # Check if there's a second part that might be the number
-    if len(parts) > 1:
-        # Try to extract number from the end
-        words = args.strip().split()
-        if words[-1].isdigit():
-            try:
-                max_results = int(words[-1])
-                query = ' '.join(words[:-1])
-                if max_results < 1 or max_results > 50:
-                    return "❌ 結果數量必須在 1 到 50 之間"
-            except ValueError:
-                query = args.strip()
-        else:
-            query = args.strip()
-    
-    try:
-        return search_news_text(query, max_results)
-    except Exception as e:
-        return f"❌ 搜尋新聞失敗：{e}"
-
-
-def ai_news_source(args: str):
-    """從特定來源獲取 AI 新聞。"""
-    if not AI_NEWS_AVAILABLE:
-        return "AI 新聞聚合器服務無法使用。"
-    
-    if not args or not args.strip():
-        popular_sources_list = "\n  • ".join(POPULAR_SOURCES[:10])
-        return (
-            "請提供來源名稱\n\n"
-            "格式：/ai_news_source <來源名稱> [數量]\n"
-            "範例：/ai_news_source OpenAI Blog 5\n\n"
-            "熱門來源：\n"
-            f"  • {popular_sources_list}\n"
-            f"  • ... 等 150+ 來源\n\n"
-            "使用 /ai_news_sources 查看完整來源列表"
-        )
-    
-    # Parse arguments
-    parts = args.strip().rsplit(maxsplit=1)
-    source_name = parts[0]
-    max_articles = 10  # default
-    
-    # Check if last part is a number
-    if len(parts) > 1 and parts[-1].isdigit():
-        try:
-            max_articles = int(parts[-1])
-            if max_articles < 1 or max_articles > 50:
-                return "❌ 文章數量必須在 1 到 50 之間"
-        except ValueError:
-            source_name = args.strip()
-    else:
-        source_name = args.strip()
-    
-    try:
-        return get_news_from_source_text(source_name, max_articles)
-    except Exception as e:
-        return f"❌ 從來源獲取新聞失敗：{e}"
-
-
-def ai_news_sources(args: str):
-    """列出可用的新聞來源。"""
-    if not AI_NEWS_AVAILABLE:
-        return "AI 新聞聚合器服務無法使用。"
-    
-    # Parse category argument
-    category = "top"  # default
-    if args and args.strip():
-        category = args.strip().lower()
-        if category not in ["top", "all"]:
-            return (
-                "❌ 類別必須是 'top' 或 'all'\n\n"
-                "範例：/ai_news_sources top\n"
-                "範例：/ai_news_sources all"
-            )
-    
-    try:
-        return list_sources_text(category)
-    except Exception as e:
-        return f"❌ 獲取來源列表失敗：{e}"
 
 
 def speed_test(id):
@@ -682,23 +404,6 @@ def excute_command(from_id, command, from_type, chat_id):
     elif command.startswith("eq_map"):
         return get_earthquake_map()
     
-    # AI 新聞聚合器指令 (must come before generic "ai" command)
-    elif command.startswith("ai_news_latest"):
-        args = command[15:].strip()  # 移除 "ai_news_latest" 前綴 (15 characters)
-        return ai_news_latest(args)
-    
-    elif command.startswith("ai_news_search"):
-        args = command[15:].strip()  # 移除 "ai_news_search" 前綴 (15 characters)
-        return ai_news_search(args)
-    
-    elif command.startswith("ai_news_source"):
-        args = command[15:].strip()  # 移除 "ai_news_source" 前綴 (15 characters)
-        return ai_news_source(args)
-    
-    elif command.startswith("ai_news_sources"):
-        args = command[16:].strip()  # 移除 "ai_news_sources" 前綴 (16 characters)
-        return ai_news_sources(args)
-    
     elif command.startswith("ai"):
         # 擷取問題
         question = command[2:].strip()  # 移除 "ai" 前綴
@@ -723,22 +428,6 @@ def excute_command(from_id, command, from_type, chat_id):
             query = command[6:].strip()  # 移除 "search" 前綴
         return perform_web_search(query)
     
-    # MCP 工具指令
-    elif command.startswith("mcp_info"):
-        return mcp_get_info()
-    
-    elif command.startswith("mcp_calc"):
-        args = command[8:].strip()  # 移除 "mcp_calc" 前綴
-        return mcp_calculate(args)
-    
-    elif command.startswith("mcp_weather"):
-        location = command[11:].strip()  # 移除 "mcp_weather" 前綴
-        return mcp_get_weather(location)
-    
-    elif command.startswith("mcp_fetch"):
-        url = command[9:].strip()  # 移除 "mcp_fetch" 前綴
-        return mcp_fetch_url(url)
-
     elif command in ["get_allowed_users", "get_allowed_groups", "get_api_key"]:
         if not is_admin(from_id):
             return admin_auch_info
