@@ -10,6 +10,10 @@ from .config import MCP_SERVER_URL
 # Ollama server configuration
 OLLAMA_BASE_URL = "https://fgs.zeabur.app"
 OLLAMA_MODEL = "smollm:135m"
+OLLAMA_PROMPT_TEMPLATE = "Context:\n{context}\n\nQuestion: {prompt}\n\nPlease provide a concise and informative answer based on the context provided."
+
+# Track if model has been pulled
+_ollama_model_pulled = False
 
 # Tool function for earthquake search
 def call_mcp_earthquake_search(
@@ -124,18 +128,23 @@ def _should_search_earthquakes(question: str) -> bool:
 
 def _call_ollama_llm(prompt: str, context: str = "") -> str:
     """Call Ollama LLM for text generation."""
+    global _ollama_model_pulled
+    
     try:
-        # First, ensure the model is pulled
-        pull_url = f"{OLLAMA_BASE_URL}/api/pull"
-        pull_payload = {"name": OLLAMA_MODEL}
-        
-        print(f"--- Ensuring Ollama model {OLLAMA_MODEL} is available ---")
-        try:
-            pull_response = requests.post(pull_url, json=pull_payload, timeout=30)
-            # Ollama pull endpoint returns streaming responses, we just need to ensure it starts
-            print(f"Model pull initiated: {pull_response.status_code}")
-        except Exception as e:
-            print(f"Warning: Could not verify model availability: {e}")
+        # Only pull the model once per session
+        if not _ollama_model_pulled:
+            pull_url = f"{OLLAMA_BASE_URL}/api/pull"
+            pull_payload = {"name": OLLAMA_MODEL}
+            
+            print(f"--- Ensuring Ollama model {OLLAMA_MODEL} is available ---")
+            try:
+                pull_response = requests.post(pull_url, json=pull_payload, timeout=30)
+                # Ollama pull endpoint returns streaming responses, we just need to ensure it starts
+                print(f"Model pull initiated: {pull_response.status_code}")
+                _ollama_model_pulled = True
+            except Exception as e:
+                print(f"Warning: Could not verify model availability: {e}")
+                # Continue anyway - model might already be available
         
         # Generate response using Ollama
         generate_url = f"{OLLAMA_BASE_URL}/api/generate"
@@ -143,7 +152,7 @@ def _call_ollama_llm(prompt: str, context: str = "") -> str:
         # Combine context and prompt if context is provided
         full_prompt = prompt
         if context:
-            full_prompt = f"Context:\n{context}\n\nQuestion: {prompt}\n\nPlease provide a concise and informative answer based on the context provided."
+            full_prompt = OLLAMA_PROMPT_TEMPLATE.format(context=context, prompt=prompt)
         
         generate_payload = {
             "model": OLLAMA_MODEL,
@@ -161,6 +170,9 @@ def _call_ollama_llm(prompt: str, context: str = "") -> str:
         print(f"--- Ollama API returned successfully ---")
         return generated_text.strip()
         
+    except requests.exceptions.Timeout as e:
+        print(f"Timeout calling Ollama API: {e}")
+        return f"Error: Request timed out. The Ollama server took too long to respond. Please try again later."
     except requests.exceptions.RequestException as e:
         print(f"Error calling Ollama API: {e}")
         return f"Error: Could not connect to Ollama server. {str(e)}"
