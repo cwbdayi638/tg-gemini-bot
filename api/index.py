@@ -9,7 +9,10 @@ app = Flask(__name__)
 
 
 def require_token(f):
-    """Decorator to require x-access-token header for API endpoints"""
+    """Decorator to require authentication token for API endpoints
+    
+    Supports both x-access-token (custom) and X-Telegram-Bot-Api-Secret-Token (Telegram standard) headers.
+    """
     @wraps(f)
     def decorated_function(*args, **kwargs):
         # If API_ACCESS_TOKEN is not set, skip authentication
@@ -20,7 +23,7 @@ def require_token(f):
         token = request.headers.get('x-access-token') or request.headers.get('X-Telegram-Bot-Api-Secret-Token')
         
         if not token or token != API_ACCESS_TOKEN:
-            return jsonify({'error': 'Unauthorized', 'message': 'Invalid or missing x-access-token'}), 401
+            return jsonify({'error': 'Unauthorized', 'message': 'Invalid or missing authentication token'}), 401
         
         return f(*args, **kwargs)
     return decorated_function
