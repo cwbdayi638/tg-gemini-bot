@@ -56,6 +56,7 @@
 | 变量 | 必填 | 描述 |
 | --- | --- | --- |
 | BOT_TOKEN | ✅ 是 | 您的 Telegram 机器人 Token（从 [@BotFather](https://t.me/BotFather) 获取） |
+| API_ACCESS_TOKEN | ❌ 否 | API 访问令牌，用于保护 Webhook 端点。若设置此值，所有对 Webhook 的 POST 请求必须在 HTTP 头中包含 `x-access-token` |
 
 ### 可选设置
 

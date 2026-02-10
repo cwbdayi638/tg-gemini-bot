@@ -56,6 +56,7 @@ Integrated real-time earthquake data from Taiwan Central Weather Administration 
 | Variable | Required | Description |
 | --- | --- | --- |
 | BOT_TOKEN | ✅ Yes | Your Telegram bot token (get from [@BotFather](https://t.me/BotFather)) |
+| API_ACCESS_TOKEN | ❌ No | API access token for webhook endpoint protection. If set, all POST requests to webhook must include `x-access-token` header |
 
 ### Optional Configuration
 
