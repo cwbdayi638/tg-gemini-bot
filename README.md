@@ -10,6 +10,7 @@
 - **💬 AI 對話**：整合 Google Gemini AI，提供智慧對話和圖片分析功能
 - **🔍 智慧地震查詢**：使用自然語言查詢地震資料
 - **🌐 網頁搜尋**：整合網頁搜尋功能
+- **📰 AI 新聞聚合器**：從 150+ 來源獲取最新 AI/ML/資料科學新聞
 - **🔧 MCP 工具**：提供 Model Context Protocol 工具，可用於計算、資料獲取等功能
 
 ## 🚀 功能詳情
@@ -47,6 +48,35 @@
 
 - `/search <關鍵字>` - 搜尋網頁
 - `/websearch <關鍵字>` - 搜尋網頁（別名）
+
+### 📰 AI 新聞聚合器
+
+整合 Hugging Face AI 新聞聚合器，從 150+ 精選來源獲取最新的 AI、機器學習和資料科學新聞：
+
+**獲取新聞：**
+- `/ai_news_latest [數量]` - 獲取最新 AI 新聞（預設 15 篇）
+  - 範例：`/ai_news_latest 10`
+- `/ai_news_search <關鍵字> [數量]` - 搜尋特定主題的 AI 新聞
+  - 範例：`/ai_news_search GPT-4 15`
+  - 範例：`/ai_news_search machine learning`
+- `/ai_news_source <來源名稱> [數量]` - 從特定來源獲取新聞
+  - 範例：`/ai_news_source OpenAI Blog 5`
+  - 範例：`/ai_news_source DeepMind Blog`
+
+**管理來源：**
+- `/ai_news_sources [類別]` - 列出可用的新聞來源
+  - 範例：`/ai_news_sources top` - 顯示熱門來源
+  - 範例：`/ai_news_sources all` - 顯示全部來源
+
+**新聞來源包括：**
+- 研究實驗室：OpenAI、DeepMind、Google AI、NVIDIA、Microsoft Research
+- 科技新聞：TechCrunch、The Verge、MIT Technology Review、Ars Technica
+- 學術資源：arXiv (cs.LG, cs.CV, cs.CL)
+- 產業部落格：Hugging Face、TensorFlow、LangChain、PyTorch
+- 社群：Reddit (r/MachineLearning, r/artificial)、Medium、Substack
+
+**資料來源：**
+- [AI News Aggregator](https://huggingface.co/spaces/cwbdayi/ai-news-aggregator) (Hugging Face Space)
 
 ### 🔧 MCP 工具
 
@@ -87,6 +117,7 @@
 | CWA_API_KEY | ❌ 否 | 台灣中央氣象署 API 金鑰，用於存取顯著地震資料。從 [CWA 開放資料平台](https://opendata.cwa.gov.tw/) 取得 |
 | MCP_SERVER_URL | ❌ 否 | MCP 伺服器 URL，用於進階地震資料庫搜尋（預設：`https://cwadayi-mcp-2.hf.space`） |
 | MCP_WEB_SEARCH_URL | ❌ 否 | MCP 網頁搜尋伺服器 URL，用於增強網頁搜尋功能 |
+| AI_NEWS_AGGREGATOR_URL | ❌ 否 | AI 新聞聚合器 Hugging Face Space 名稱（預設：`cwbdayi/ai-news-aggregator`） |
 | ALLOWED_USERS | ❌ 否 | 允許使用的用戶名或 ID（支援正則表達式，多個值用空格或逗號分隔） |
 | ALLOWED_GROUPS | ❌ 否 | 允許使用的群組 ID 或用戶名（多個值用空格或逗號分隔） |
 | ADMIN_ID | ❌ 否 | 管理員的 Telegram ID，用於執行管理員指令 |
@@ -163,6 +194,35 @@
 ```
 用戶：/ai 台灣最高的山是什麼？
 機器人：玉山，海拔 3952 公尺，是台灣的最高峰。
+```
+
+### AI 新聞查詢
+```
+用戶：/ai_news_latest 5
+機器人：🤖 AI 最新新聞 (最多 5 篇)
+========================================
+
+📰 OpenAI 發布新版 GPT-4 Turbo
+來源：OpenAI Blog
+摘要：OpenAI 今天宣布推出 GPT-4 Turbo...
+連結：https://...
+
+📰 Google DeepMind 的最新研究突破
+來源：DeepMind Blog
+摘要：DeepMind 研究團隊在蛋白質摺疊方面取得重大突破...
+...
+
+用戶：/ai_news_search transformer 10
+機器人：🔍 搜尋結果：「transformer」
+========================================
+
+找到 10 篇相關新聞...
+
+用戶：/ai_news_source OpenAI Blog 3
+機器人：📡 新聞來源：OpenAI Blog
+========================================
+
+最新 3 篇來自 OpenAI Blog 的文章...
 ```
 
 ## 🔐 安全功能

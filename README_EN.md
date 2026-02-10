@@ -10,6 +10,8 @@
 - **💬 AI Conversation**: Integrated Google Gemini AI for intelligent conversation and image analysis
 - **🔍 Smart Earthquake Query**: Use natural language to query earthquake data
 - **🌐 Web Search**: Integrated web search functionality
+- **📰 AI News Aggregator**: Get latest AI/ML/Data Science news from 150+ sources
+- **🔧 MCP Tools**: Model Context Protocol tools for calculations, data fetching, etc.
 
 ## 🚀 Feature Details
 
@@ -41,6 +43,47 @@ Integrated real-time earthquake data from Taiwan Central Weather Administration 
 - `/search <query>` - Search the web
 - `/websearch <query>` - Search the web (alias)
 
+### 📰 AI News Aggregator
+
+Integrated with Hugging Face AI News Aggregator, get latest AI, Machine Learning, and Data Science news from 150+ curated sources:
+
+**Get News:**
+- `/ai_news_latest [count]` - Get latest AI news (default 15 articles)
+  - Example: `/ai_news_latest 10`
+- `/ai_news_search <query> [count]` - Search AI news by keywords
+  - Example: `/ai_news_search GPT-4 15`
+  - Example: `/ai_news_search machine learning`
+- `/ai_news_source <source_name> [count]` - Get news from specific source
+  - Example: `/ai_news_source OpenAI Blog 5`
+  - Example: `/ai_news_source DeepMind Blog`
+
+**Manage Sources:**
+- `/ai_news_sources [category]` - List available news sources
+  - Example: `/ai_news_sources top` - Show popular sources
+  - Example: `/ai_news_sources all` - Show all sources
+
+**News Sources Include:**
+- Research Labs: OpenAI, DeepMind, Google AI, NVIDIA, Microsoft Research
+- Tech News: TechCrunch, The Verge, MIT Technology Review, Ars Technica
+- Academic: arXiv (cs.LG, cs.CV, cs.CL)
+- Industry Blogs: Hugging Face, TensorFlow, LangChain, PyTorch
+- Communities: Reddit (r/MachineLearning, r/artificial), Medium, Substack
+
+**Data Source:**
+- [AI News Aggregator](https://huggingface.co/spaces/cwbdayi/ai-news-aggregator) (Hugging Face Space)
+
+### 🔧 MCP Tools
+
+Based on [Model Context Protocol (MCP)](https://modelcontextprotocol.io/):
+
+- `/mcp_info` - Get detailed bot information
+- `/mcp_calc <operation> <num1> <num2>` - Mathematical calculations (supports add, subtract, multiply, divide)
+  - Example: `/mcp_calc add 25 17`
+- `/mcp_weather <location>` - Query weather information (simulated)
+- `/mcp_fetch <URL>` - Fetch data from external API
+
+💡 **MCP Features**: This bot integrates an MCP server that provides additional tools through a standardized protocol. These tools can also be used in MCP-compatible clients like GitHub Copilot. See [MCP_USAGE_EXAMPLES.md](MCP_USAGE_EXAMPLES.md).
+
 ## 📋 Basic Commands
 
 - `/help` or `/start` - Show help information and available commands
@@ -68,6 +111,7 @@ Integrated real-time earthquake data from Taiwan Central Weather Administration 
 | CWA_API_KEY | ❌ No | Taiwan Central Weather Administration API key for significant earthquake data. Get from [CWA Open Data Platform](https://opendata.cwa.gov.tw/) |
 | MCP_SERVER_URL | ❌ No | MCP server URL for advanced earthquake database search (default: `https://cwadayi-mcp-2.hf.space`) |
 | MCP_WEB_SEARCH_URL | ❌ No | MCP web search server URL for enhanced web search features |
+| AI_NEWS_AGGREGATOR_URL | ❌ No | AI News Aggregator Hugging Face Space name (default: `cwbdayi/ai-news-aggregator`) |
 | ALLOWED_USERS | ❌ No | Allowed usernames or IDs (supports regex, separate multiple values with space or comma) |
 | ALLOWED_GROUPS | ❌ No | Allowed group IDs or usernames (separate multiple values with space or comma) |
 | ADMIN_ID | ❌ No | Telegram ID for admin commands |
