@@ -28,9 +28,9 @@ Integrated real-time earthquake data from Taiwan Central Weather Administration 
 - `/eq_map` - Link to external earthquake query service
 
 **AI Smart Assistant:**
-- `/eq_ai <question>` - Query earthquake data using AI
-  - Example: `/eq_ai Were there any earthquakes in Hualien yesterday?`
-  - Example: `/eq_ai What earthquakes above magnitude 6 occurred in April 2024?`
+- `/ai <question>` - Ask general questions answered by Ollama
+  - Example: `/ai What is the highest mountain in Taiwan?`
+  - Example: `/ai Give me a short travel tip for Taipei`
 
 **Data Sources:**
 - Taiwan Central Weather Administration Open Data Platform
@@ -128,14 +128,10 @@ User: Hello, please introduce Taiwan's earthquake situation
 Bot: Taiwan is located on the Pacific Ring of Fire, an area with frequent seismic activity...
 ```
 
-### Smart Earthquake Query
+### AI Q&A
 ```
-User: /eq_ai Were there any earthquakes in Hualien yesterday?
-Bot: 🌍 Earthquake Search Results (2024-02-05 to 2024-02-05, M≥4.5):
-Found 1 earthquake(s):
-1. Time: 2024-02-05 15:30:00
-   Location: Hualien County Offshore
-   Magnitude: M5.2 | Depth: 12 km
+User: /ai What is the highest mountain in Taiwan?
+Bot: Yushan (Jade Mountain) at 3,952 meters is the tallest peak in Taiwan.
 ```
 
 ## 🔐 Security Features

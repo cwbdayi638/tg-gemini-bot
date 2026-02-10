@@ -67,7 +67,7 @@ def help():
             "/eq_alert - 中央氣象署地震速報\n"
             "/eq_significant - 中央氣象署過去 7 天顯著地震\n"
             "/eq_map - 地震查詢服務連結\n"
-            "/eq_ai <問題> - AI 智慧地震查詢\n"
+            "/ai <問題> - AI 智慧問答（Ollama）\n"
             "/eq_query <起始日期> <結束日期> <最小規模> - 查詢全球地震\n"
             "  範例：/eq_query 2024-07-01 2024-07-07 5.0\n"
             "/eq_tw_query <條件> - 台灣地震目錄查詢（含互動式地圖）\n"
@@ -193,12 +193,12 @@ def get_earthquake_map():
     """取得地震查詢服務連結。"""
     return f"🗺️ 外部地震查詢服務\n\n請造訪：\n{MCP_SERVER_URL}"
 
-def process_earthquake_ai(question: str):
-    """處理 AI 地震查詢。"""
+def process_ai_question(question: str):
+    """處理一般 AI 問答。"""
     if not SERVICES_AVAILABLE:
         return "AI 服務無法使用。"
     if not question:
-        return "請提供問題，例如：/eq_ai 台灣最高的山是什麼？"
+        return "請提供問題，例如：/ai 台灣最高的山是什麼？"
     return generate_ai_text(question)
 
 def process_earthquake_query(args: str, chat_id=None):
@@ -531,10 +531,10 @@ def excute_command(from_id, command, from_type, chat_id):
     elif command.startswith("eq_map"):
         return get_earthquake_map()
     
-    elif command.startswith("eq_ai"):
+    elif command.startswith("ai"):
         # 擷取問題
-        question = command[5:].strip()  # 移除 "eq_ai" 前綴
-        return process_earthquake_ai(question)
+        question = command[2:].strip()  # 移除 "ai" 前綴
+        return process_ai_question(question)
     
     elif command.startswith("eq_query"):
         # 擷取查詢參數
