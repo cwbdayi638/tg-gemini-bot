@@ -56,6 +56,7 @@ Integrated real-time earthquake data from Taiwan Central Weather Administration 
 | Variable | Required | Description |
 | --- | --- | --- |
 | BOT_TOKEN | ✅ Yes | Your Telegram bot token (get from [@BotFather](https://t.me/BotFather)) |
+| API_ACCESS_TOKEN | ❌ No | API access token for webhook endpoint protection. When set, use with Telegram's `secret_token` parameter in setWebhook for automatic authentication |
 
 ### Optional Configuration
 
@@ -88,9 +89,18 @@ Integrated real-time earthquake data from Taiwan Central Weather Administration 
 
 3. **Set up Webhook**:
    After deployment, visit the following URL to set up Telegram Webhook:
+   
+   **Basic Setup (No Authentication)**:
    ```
    https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook?url=<YOUR_VERCEL_URL>
    ```
+   
+   **With Token Authentication (Recommended)**:
+   If you've set the `API_ACCESS_TOKEN` environment variable, add the `secret_token` parameter when setting up the webhook:
+   ```
+   https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook?url=<YOUR_VERCEL_URL>&secret_token=<YOUR_API_ACCESS_TOKEN>
+   ```
+   Telegram will automatically include the `X-Telegram-Bot-Api-Secret-Token` header in every request for verification, enhancing security.
 
 ### Deploy with Docker
 

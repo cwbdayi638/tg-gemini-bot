@@ -47,6 +47,10 @@ ADMIN_ID = os.getenv("ADMIN_ID", "1234567890")
 #Determines whether to verify identity. If 0, anyone can use the bot. It is enabled by default.
 AUCH_ENABLE = os.getenv("AUCH_ENABLE", "1")
 
+# API Access Token for webhook endpoint authentication (optional)
+# If set, all POST/GET requests to the webhook must include a valid token header
+API_ACCESS_TOKEN = os.getenv("API_ACCESS_TOKEN", "")
+
 #"1"to use the same chat history in the group, "2"to record chat history individually for each person
 GROUP_MODE = os.getenv("GROUP_MODE=", "1")
 
