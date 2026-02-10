@@ -64,7 +64,7 @@ def create_taiwan_eq_map(df: pd.DataFrame, title: str = "台灣地震分布圖")
         size_max=22,
     )
 
-    # ----- plotly.graph_objects trace (simple markers without color scale) -----
+    # ----- plotly.graph_objects trace (simple gray markers with magnitude-based sizing) -----
     fig.add_trace(
         go.Scattergeo(
             lat=work["lat"],
