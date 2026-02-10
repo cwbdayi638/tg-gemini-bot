@@ -1,5 +1,6 @@
 # ai_service.py - Enhanced AI service for earthquake queries
 import json
+import os
 import re
 import requests
 from datetime import datetime, timedelta
@@ -8,8 +9,8 @@ from gradio_client import Client
 from .config import MCP_SERVER_URL
 
 # Ollama server configuration
-OLLAMA_BASE_URL = "http://ollama.zeabur.internal:11434"
-OLLAMA_MODEL = "gemma3:270m"
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama.zeabur.internal:11434")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "gemma3:270m")
 OLLAMA_PROMPT_TEMPLATE = "Context:\n{context}\n\nQuestion: {prompt}\n\nPlease provide a concise and informative answer based on the context provided."
 
 # Track if model has been pulled
@@ -157,7 +158,13 @@ def _call_ollama_llm(prompt: str, context: str = "") -> str:
         generate_payload = {
             "model": OLLAMA_MODEL,
             "prompt": full_prompt,
-            "stream": False
+            "stream": False,
+            "options": {
+                "temperature": 0.7,
+                "top_p": 0.9,
+                "top_k": 40,
+                "num_predict": 256,
+            }
         }
         
         print(f"--- Calling Ollama API at {generate_url} ---")
