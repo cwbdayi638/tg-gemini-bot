@@ -52,7 +52,7 @@ class MCPClient:
                 raise RuntimeError("Node.js not available")
         except (subprocess.TimeoutExpired, FileNotFoundError):
             raise RuntimeError("Node.js not found. Please install Node.js >= 18.0.0")
-        
+
         # Check if npm dependencies are installed
         server_dir = os.path.dirname(self.server_path)
         node_modules_path = os.path.join(server_dir, "node_modules")
