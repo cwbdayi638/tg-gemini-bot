@@ -185,11 +185,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           throw new Error(`不支持的操作: ${operation}`);
       }
       
+      // Map operation names to symbols for better readability
+      const opSymbols = {
+        "add": "+",
+        "subtract": "-",
+        "multiply": "×",
+        "divide": "÷"
+      };
+      const symbol = opSymbols[operation] || operation;
+      
       return {
         content: [
           {
             type: "text",
-            text: `計算結果: ${a} ${operation} ${b} = ${result}`,
+            text: `計算結果: ${a} ${symbol} ${b} = ${result}`,
           },
         ],
       };

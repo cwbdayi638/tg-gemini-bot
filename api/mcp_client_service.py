@@ -10,6 +10,10 @@ import json
 import os
 from typing import Dict, Any, Optional
 
+# Configuration constants
+MCP_CALL_TIMEOUT = 30  # Timeout for MCP tool calls in seconds
+MCP_SERVER_HTTP_TIMEOUT = 10  # Should match server.js timeout setting
+
 
 class MCPClient:
     """Client for interacting with the MCP server."""
@@ -84,7 +88,7 @@ class MCPClient:
                 input=request_json,
                 capture_output=True,
                 text=True,
-                timeout=30  # 30 second timeout
+                timeout=MCP_CALL_TIMEOUT
             )
             
             if result.returncode != 0:
