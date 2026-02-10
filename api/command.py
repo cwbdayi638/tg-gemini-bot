@@ -44,6 +44,14 @@ except ImportError as e:
     print(f"Warning: MCP web search service not available: {e}")
     MCP_WEB_SEARCH_AVAILABLE = False
 
+# Import MCP client service
+try:
+    from .mcp_client_service import get_bot_info, calculate, get_weather, fetch_url
+    MCP_CLIENT_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: MCP client service not available: {e}")
+    MCP_CLIENT_AVAILABLE = False
+
 # Default search engines for MCP web search
 DEFAULT_MCP_SEARCH_ENGINES = ["bing", "duckduckgo"]
 
@@ -77,6 +85,18 @@ def help():
         if MCP_WEB_SEARCH_AVAILABLE:
             web_search_commands += "\n（已啟用 MCP 增強搜尋）"
         help_message = help_message + web_search_commands
+    
+    if MCP_CLIENT_AVAILABLE:
+        mcp_commands = (
+            "\n\n🔧 MCP 工具：\n"
+            "/mcp_info - 取得 Bot 資訊\n"
+            "/mcp_calc <運算> <數字1> <數字2> - 計算機\n"
+            "  範例：/mcp_calc add 25 17\n"
+            "  支援：add, subtract, multiply, divide\n"
+            "/mcp_weather <地點> - 查詢天氣（模擬）\n"
+            "/mcp_fetch <URL> - 從外部 API 獲取數據"
+        )
+        help_message = help_message + mcp_commands
     
     return help_message
 
@@ -366,6 +386,93 @@ def perform_web_search(query: str):
         return f"❌ 網頁搜尋失敗：{e}"
 
 
+def mcp_get_info():
+    """取得 Bot 詳細資訊（透過 MCP）。"""
+    if not MCP_CLIENT_AVAILABLE:
+        return "MCP 客戶端服務無法使用。"
+    try:
+        return get_bot_info(detailed=True)
+    except Exception as e:
+        return f"❌ 取得 Bot 資訊失敗：{e}"
+
+
+def mcp_calculate(args: str):
+    """執行計算（透過 MCP）。"""
+    if not MCP_CLIENT_AVAILABLE:
+        return "MCP 客戶端服務無法使用。"
+    
+    if not args or not args.strip():
+        return (
+            "請提供計算參數：運算 數字1 數字2\n\n"
+            "格式：/mcp_calc <運算> <數字1> <數字2>\n"
+            "範例：/mcp_calc add 25 17\n\n"
+            "支援的運算：\n"
+            "- add（加）\n"
+            "- subtract（減）\n"
+            "- multiply（乘）\n"
+            "- divide（除）"
+        )
+    
+    parts = args.strip().split()
+    if len(parts) < 3:
+        return (
+            "參數不足！需要提供：運算、數字1、數字2\n\n"
+            "格式：/mcp_calc <運算> <數字1> <數字2>\n"
+            "範例：/mcp_calc add 25 17"
+        )
+    
+    operation = parts[0]
+    valid_operations = ["add", "subtract", "multiply", "divide"]
+    if operation not in valid_operations:
+        return f"❌ 不支援的運算：{operation}\n支援的運算：{', '.join(valid_operations)}"
+    
+    try:
+        num1 = float(parts[1])
+        num2 = float(parts[2])
+    except ValueError:
+        return "❌ 數字格式錯誤！請輸入有效的數字。"
+    
+    try:
+        result = calculate(operation, num1, num2)
+        return f"🔢 {result}"
+    except Exception as e:
+        return f"❌ 計算失敗：{e}"
+
+
+def mcp_get_weather(location: str):
+    """查詢天氣（透過 MCP 模擬）。"""
+    if not MCP_CLIENT_AVAILABLE:
+        return "MCP 客戶端服務無法使用。"
+    
+    if not location or not location.strip():
+        return "請提供地點名稱，例如：/mcp_weather 台北"
+    
+    try:
+        result = get_weather(location.strip())
+        return f"🌤️ {result}"
+    except Exception as e:
+        return f"❌ 查詢天氣失敗：{e}"
+
+
+def mcp_fetch_url(url: str):
+    """從外部 URL 獲取數據（透過 MCP）。"""
+    if not MCP_CLIENT_AVAILABLE:
+        return "MCP 客戶端服務無法使用。"
+    
+    if not url or not url.strip():
+        return "請提供 URL，例如：/mcp_fetch https://api.example.com/data"
+    
+    url = url.strip()
+    if not url.startswith(("http://", "https://")):
+        return "❌ URL 必須以 http:// 或 https:// 開頭"
+    
+    try:
+        result = fetch_url(url)
+        return f"🌐 {result}"
+    except Exception as e:
+        return f"❌ 獲取數據失敗：{e}"
+
+
 def speed_test(id):
     """速度測試指令（彩蛋）。"""
     send_message(id, "開始測速")
@@ -447,6 +554,22 @@ def excute_command(from_id, command, from_type, chat_id):
         else:
             query = command[6:].strip()  # 移除 "search" 前綴
         return perform_web_search(query)
+    
+    # MCP 工具指令
+    elif command.startswith("mcp_info"):
+        return mcp_get_info()
+    
+    elif command.startswith("mcp_calc"):
+        args = command[8:].strip()  # 移除 "mcp_calc" 前綴
+        return mcp_calculate(args)
+    
+    elif command.startswith("mcp_weather"):
+        location = command[11:].strip()  # 移除 "mcp_weather" 前綴
+        return mcp_get_weather(location)
+    
+    elif command.startswith("mcp_fetch"):
+        url = command[9:].strip()  # 移除 "mcp_fetch" 前綴
+        return mcp_fetch_url(url)
 
     elif command in ["get_allowed_users", "get_allowed_groups", "get_api_key"]:
         if not is_admin(from_id):
