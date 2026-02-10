@@ -10,6 +10,8 @@
 - **💬 AI 对话**：整合 Google Gemini AI，提供智能对话和图片分析功能
 - **🔍 智能地震查询**：使用自然语言查询地震数据
 - **🌐 网页搜索**：整合网页搜索功能
+- **📰 AI 新闻聚合器**：从 150+ 来源获取最新 AI/ML/数据科学新闻
+- **🔧 MCP 工具**：提供 Model Context Protocol 工具，可用于计算、数据获取等功能
 
 ## 🚀 功能详情
 
@@ -41,6 +43,47 @@
 - `/search <关键字>` - 搜索网页
 - `/websearch <关键字>` - 搜索网页（别名）
 
+### 📰 AI 新闻聚合器
+
+整合 Hugging Face AI 新闻聚合器，从 150+ 精选来源获取最新的 AI、机器学习和数据科学新闻：
+
+**获取新闻：**
+- `/ai_news_latest [数量]` - 获取最新 AI 新闻（默认 15 篇）
+  - 范例：`/ai_news_latest 10`
+- `/ai_news_search <关键字> [数量]` - 搜索特定主题的 AI 新闻
+  - 范例：`/ai_news_search GPT-4 15`
+  - 范例：`/ai_news_search machine learning`
+- `/ai_news_source <来源名称> [数量]` - 从特定来源获取新闻
+  - 范例：`/ai_news_source OpenAI Blog 5`
+  - 范例：`/ai_news_source DeepMind Blog`
+
+**管理来源：**
+- `/ai_news_sources [类别]` - 列出可用的新闻来源
+  - 范例：`/ai_news_sources top` - 显示热门来源
+  - 范例：`/ai_news_sources all` - 显示全部来源
+
+**新闻来源包括：**
+- 研究实验室：OpenAI、DeepMind、Google AI、NVIDIA、Microsoft Research
+- 科技新闻：TechCrunch、The Verge、MIT Technology Review、Ars Technica
+- 学术资源：arXiv (cs.LG, cs.CV, cs.CL)
+- 产业博客：Hugging Face、TensorFlow、LangChain、PyTorch
+- 社群：Reddit (r/MachineLearning, r/artificial)、Medium、Substack
+
+**数据来源：**
+- [AI News Aggregator](https://huggingface.co/spaces/cwbdayi/ai-news-aggregator) (Hugging Face Space)
+
+### 🔧 MCP 工具
+
+基于 [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) 的扩展功能：
+
+- `/mcp_info` - 获取 Bot 详细信息
+- `/mcp_calc <运算> <数字1> <数字2>` - 数学计算（支持 add, subtract, multiply, divide）
+  - 范例：`/mcp_calc add 25 17`
+- `/mcp_weather <地点>` - 查询天气信息（模拟）
+- `/mcp_fetch <URL>` - 从外部 API 获取数据
+
+💡 **MCP 功能说明**：本 Bot 整合了 MCP 服务器，可通过标准化协议提供额外工具。这些工具也可以在 GitHub Copilot 等 MCP 兼容客户端中使用。详见 [MCP_USAGE_EXAMPLES.md](MCP_USAGE_EXAMPLES.md)。
+
 ## 📋 基本指令
 
 - `/help` 或 `/start` - 显示帮助信息和可用指令
@@ -68,6 +111,7 @@
 | CWA_API_KEY | ❌ 否 | 台湾中央气象署 API 密钥，用于访问显著地震数据。从 [CWA 开放数据平台](https://opendata.cwa.gov.tw/) 获取 |
 | MCP_SERVER_URL | ❌ 否 | MCP 服务器 URL，用于高级地震数据库搜索（默认：`https://cwadayi-mcp-2.hf.space`） |
 | MCP_WEB_SEARCH_URL | ❌ 否 | MCP 网页搜索服务器 URL，用于增强网页搜索功能 |
+| AI_NEWS_AGGREGATOR_URL | ❌ 否 | AI 新闻聚合器 Hugging Face Space 名称（默认：`cwbdayi/ai-news-aggregator`） |
 | ALLOWED_USERS | ❌ 否 | 允许使用的用户名或 ID（支持正则表达式，多个值用空格或逗号分隔） |
 | ALLOWED_GROUPS | ❌ 否 | 允许使用的群组 ID 或用户名（多个值用空格或逗号分隔） |
 | ADMIN_ID | ❌ 否 | 管理员的 Telegram ID，用于执行管理员指令 |

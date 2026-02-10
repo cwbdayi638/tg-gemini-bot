@@ -52,6 +52,20 @@ except ImportError as e:
     print(f"Warning: MCP client service not available: {e}")
     MCP_CLIENT_AVAILABLE = False
 
+# Import AI news service
+try:
+    from .ai_news_service import (
+        get_latest_news_text, 
+        search_news_text, 
+        get_news_from_source_text, 
+        list_sources_text,
+        POPULAR_SOURCES
+    )
+    AI_NEWS_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: AI news service not available: {e}")
+    AI_NEWS_AVAILABLE = False
+
 # Default search engines for MCP web search
 DEFAULT_MCP_SEARCH_ENGINES = ["bing", "duckduckgo"]
 
@@ -97,6 +111,23 @@ def help():
             "/mcp_fetch <URL> - 從外部 API 獲取數據"
         )
         help_message = help_message + mcp_commands
+    
+    if AI_NEWS_AVAILABLE:
+        ai_news_commands = (
+            "\n\n📰 AI 新聞聚合器：\n"
+            "/ai_news_latest [數量] - 獲取最新 AI 新聞\n"
+            "  範例：/ai_news_latest 10\n"
+            "/ai_news_search <關鍵字> [數量] - 搜尋 AI 新聞\n"
+            "  範例：/ai_news_search GPT-4 15\n"
+            "/ai_news_source <來源名稱> [數量] - 從特定來源獲取新聞\n"
+            "  範例：/ai_news_source OpenAI Blog 5\n"
+            "/ai_news_sources [類別] - 列出可用的新聞來源\n"
+            "  範例：/ai_news_sources all\n"
+            "  支援類別：top（熱門）、all（全部）\n"
+            "來源包括：OpenAI、DeepMind、Google AI、Hugging Face、\n"
+            "TechCrunch、MIT Tech Review、arXiv 等 150+ 來源"
+        )
+        help_message = help_message + ai_news_commands
     
     return help_message
 
@@ -473,6 +504,126 @@ def mcp_fetch_url(url: str):
         return f"❌ 獲取數據失敗：{e}"
 
 
+def ai_news_latest(args: str):
+    """獲取最新 AI 新聞。"""
+    if not AI_NEWS_AVAILABLE:
+        return "AI 新聞聚合器服務無法使用。"
+    
+    # Parse max_articles argument
+    max_articles = 15  # default
+    if args and args.strip():
+        try:
+            max_articles = int(args.strip())
+            if max_articles < 1 or max_articles > 50:
+                return "❌ 文章數量必須在 1 到 50 之間"
+        except ValueError:
+            return "❌ 文章數量必須是數字，例如：/ai_news_latest 10"
+    
+    try:
+        return get_latest_news_text(max_articles)
+    except Exception as e:
+        return f"❌ 獲取最新新聞失敗：{e}"
+
+
+def ai_news_search(args: str):
+    """搜尋 AI 新聞。"""
+    if not AI_NEWS_AVAILABLE:
+        return "AI 新聞聚合器服務無法使用。"
+    
+    if not args or not args.strip():
+        return (
+            "請提供搜尋關鍵字\n\n"
+            "格式：/ai_news_search <關鍵字> [數量]\n"
+            "範例：/ai_news_search GPT-4 15\n"
+            "範例：/ai_news_search machine learning"
+        )
+    
+    parts = args.strip().split(maxsplit=1)
+    query = parts[0]
+    max_results = 20  # default
+    
+    # Check if there's a second part that might be the number
+    if len(parts) > 1:
+        # Try to extract number from the end
+        words = args.strip().split()
+        if words[-1].isdigit():
+            try:
+                max_results = int(words[-1])
+                query = ' '.join(words[:-1])
+                if max_results < 1 or max_results > 50:
+                    return "❌ 結果數量必須在 1 到 50 之間"
+            except ValueError:
+                query = args.strip()
+        else:
+            query = args.strip()
+    
+    try:
+        return search_news_text(query, max_results)
+    except Exception as e:
+        return f"❌ 搜尋新聞失敗：{e}"
+
+
+def ai_news_source(args: str):
+    """從特定來源獲取 AI 新聞。"""
+    if not AI_NEWS_AVAILABLE:
+        return "AI 新聞聚合器服務無法使用。"
+    
+    if not args or not args.strip():
+        popular_sources_list = "\n  • ".join(POPULAR_SOURCES[:10])
+        return (
+            "請提供來源名稱\n\n"
+            "格式：/ai_news_source <來源名稱> [數量]\n"
+            "範例：/ai_news_source OpenAI Blog 5\n\n"
+            "熱門來源：\n"
+            f"  • {popular_sources_list}\n"
+            f"  • ... 等 150+ 來源\n\n"
+            "使用 /ai_news_sources 查看完整來源列表"
+        )
+    
+    # Parse arguments
+    parts = args.strip().rsplit(maxsplit=1)
+    source_name = parts[0]
+    max_articles = 10  # default
+    
+    # Check if last part is a number
+    if len(parts) > 1 and parts[-1].isdigit():
+        try:
+            max_articles = int(parts[-1])
+            if max_articles < 1 or max_articles > 50:
+                return "❌ 文章數量必須在 1 到 50 之間"
+        except ValueError:
+            source_name = args.strip()
+    else:
+        source_name = args.strip()
+    
+    try:
+        return get_news_from_source_text(source_name, max_articles)
+    except Exception as e:
+        return f"❌ 從來源獲取新聞失敗：{e}"
+
+
+def ai_news_sources(args: str):
+    """列出可用的新聞來源。"""
+    if not AI_NEWS_AVAILABLE:
+        return "AI 新聞聚合器服務無法使用。"
+    
+    # Parse category argument
+    category = "top"  # default
+    if args and args.strip():
+        category = args.strip().lower()
+        if category not in ["top", "all"]:
+            return (
+                "❌ 類別必須是 'top' 或 'all'\n\n"
+                "範例：/ai_news_sources top\n"
+                "範例：/ai_news_sources all"
+            )
+    
+    try:
+        return list_sources_text(category)
+    except Exception as e:
+        return f"❌ 獲取來源列表失敗：{e}"
+
+
 def speed_test(id):
     """速度測試指令（彩蛋）。"""
     send_message(id, "開始測速")
@@ -530,6 +681,23 @@ def excute_command(from_id, command, from_type, chat_id):
     
     elif command.startswith("eq_map"):
         return get_earthquake_map()
+    
+    # AI 新聞聚合器指令 (must come before generic "ai" command)
+    elif command.startswith("ai_news_latest"):
+        args = command[15:].strip()  # 移除 "ai_news_latest" 前綴 (15 characters)
+        return ai_news_latest(args)
+    
+    elif command.startswith("ai_news_search"):
+        args = command[15:].strip()  # 移除 "ai_news_search" 前綴 (15 characters)
+        return ai_news_search(args)
+    
+    elif command.startswith("ai_news_source"):
+        args = command[15:].strip()  # 移除 "ai_news_source" 前綴 (15 characters)
+        return ai_news_source(args)
+    
+    elif command.startswith("ai_news_sources"):
+        args = command[16:].strip()  # 移除 "ai_news_sources" 前綴 (16 characters)
+        return ai_news_sources(args)
     
     elif command.startswith("ai"):
         # 擷取問題
