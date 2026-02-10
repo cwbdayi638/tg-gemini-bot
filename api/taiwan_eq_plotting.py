@@ -96,7 +96,7 @@ def create_taiwan_eq_map(df: pd.DataFrame, title: str = "台灣地震分布圖")
     )
 
     fig.update_layout(
-        margin=dict(l=0, r=0, t=0, b=0),
+        margin=dict(l=0, r=0, t=10, b=0),
         legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
         width=900,
         height=700,
