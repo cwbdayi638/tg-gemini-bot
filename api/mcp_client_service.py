@@ -52,6 +52,15 @@ class MCPClient:
                 raise RuntimeError("Node.js not available")
         except (subprocess.TimeoutExpired, FileNotFoundError):
             raise RuntimeError("Node.js not found. Please install Node.js >= 18.0.0")
+
+        # Check if npm dependencies are installed
+        server_dir = os.path.dirname(self.server_path)
+        node_modules_path = os.path.join(server_dir, "node_modules")
+        if not os.path.exists(node_modules_path):
+            raise RuntimeError(
+                f"MCP server dependencies not installed. "
+                f"Please run: cd {server_dir} && npm install"
+            )
     
     def call_tool(self, tool_name: str, arguments: Dict[str, Any]) -> str:
         """

@@ -233,11 +233,34 @@
 
 ### 安裝 MCP Server
 
+#### 方法 1：自動設定（推薦）
+
+```bash
+cd mcp-server
+./setup.sh
+```
+
+設定腳本會：
+- 檢查是否安裝 Node.js >= 18.0.0
+- 檢查是否有 npm
+- 自動安裝所有依賴套件
+
+#### 方法 2：手動設定
+
 ```bash
 cd mcp-server
 npm install
 npm start  # 測試伺服器
 ```
+
+### 疑難排解
+
+#### MCP 錯誤：Node.js not found
+
+如果您看到此錯誤訊息，可能是以下情況之一：
+
+1. **Node.js 未安裝**：請從 [nodejs.org](https://nodejs.org/) 安裝 Node.js >= 18.0.0
+2. **MCP 伺服器依賴未安裝**：執行 `cd mcp-server && ./setup.sh` 或 `cd mcp-server && npm install`
 
 ---
 

@@ -37,6 +37,20 @@ The MCP server extends the bot's functionality by providing standardized tools t
 
 ### Setup
 
+#### Option 1: Automated Setup (Recommended)
+
+```bash
+cd mcp-server
+./setup.sh
+```
+
+The setup script will:
+- Check if Node.js >= 18.0.0 is installed
+- Check if npm is available
+- Automatically install all dependencies
+
+#### Option 2: Manual Setup
+
 ```bash
 cd mcp-server
 npm install
