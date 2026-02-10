@@ -21,6 +21,9 @@ MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "https://cwadayi-mcp-2.hf.space")
 # MCP Web Search Server URL for news and web search (open-webSearch)
 MCP_WEB_SEARCH_URL = os.getenv("MCP_WEB_SEARCH_URL", "")
 
+# AI News Aggregator URL (Hugging Face Space)
+AI_NEWS_AGGREGATOR_URL = os.getenv("AI_NEWS_AGGREGATOR_URL", "cwbdayi/ai-news-aggregator")
+
 # Static directory for temporary files (e.g., generated maps)
 STATIC_DIR = os.getenv("STATIC_DIR", os.path.join(tempfile.gettempdir(), "static"))
 os.makedirs(STATIC_DIR, exist_ok=True)
