@@ -56,7 +56,7 @@
 | 变量 | 必填 | 描述 |
 | --- | --- | --- |
 | BOT_TOKEN | ✅ 是 | 您的 Telegram 机器人 Token（从 [@BotFather](https://t.me/BotFather) 获取） |
-| API_ACCESS_TOKEN | ❌ 否 | API 访问令牌，用于保护 Webhook 端点。若设置此值，所有对 Webhook 的 POST 请求必须在 HTTP 头中包含 `x-access-token` |
+| API_ACCESS_TOKEN | ❌ 否 | API 访问令牌，用于保护 Webhook 端点。设置后需要在 Telegram setWebhook 时使用 `secret_token` 参数，Telegram 会自动在请求头加入验证 |
 
 ### 可选设置
 
@@ -89,9 +89,18 @@
 
 3. **设置 Webhook**：
    部署完成后，访问以下网址设置 Telegram Webhook：
+   
+   **基本设置（无验证）**：
    ```
    https://api.telegram.org/bot<您的BOT_TOKEN>/setWebhook?url=<您的Vercel网址>
    ```
+   
+   **启用 Token 验证（推荐）**：
+   若您设置了 `API_ACCESS_TOKEN` 环境变量，需要在设置 webhook 时加入 `secret_token` 参数：
+   ```
+   https://api.telegram.org/bot<您的BOT_TOKEN>/setWebhook?url=<您的Vercel网址>&secret_token=<您的API_ACCESS_TOKEN>
+   ```
+   Telegram 会在每次请求时自动加入 `X-Telegram-Bot-Api-Secret-Token` 头进行验证，提高安全性。
 
 ### Docker 部署
 

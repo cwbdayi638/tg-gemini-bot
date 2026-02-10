@@ -16,8 +16,8 @@ def require_token(f):
         if not API_ACCESS_TOKEN:
             return f(*args, **kwargs)
         
-        # Check for x-access-token in headers
-        token = request.headers.get('x-access-token')
+        # Check for token in headers (support both custom and Telegram's secret token header)
+        token = request.headers.get('x-access-token') or request.headers.get('X-Telegram-Bot-Api-Secret-Token')
         
         if not token or token != API_ACCESS_TOKEN:
             return jsonify({'error': 'Unauthorized', 'message': 'Invalid or missing x-access-token'}), 401
