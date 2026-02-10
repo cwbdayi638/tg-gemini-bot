@@ -54,20 +54,17 @@ def create_taiwan_eq_map(df: pd.DataFrame, title: str = "台灣地震分布圖")
     # Marker sizes proportional to magnitude
     work["marker_size"] = (work["ML"] - work["ML"].min() + 1) * 6
 
-    # ----- plotly.express scatter_geo (magnitude colour) -----
+    # ----- plotly.express scatter_geo (no color, no title) -----
     fig = px.scatter_geo(
         work,
         lat="lat",
         lon="lon",
-        color="ML",
         size="marker_size",
         hover_name="label",
-        color_continuous_scale="YlOrRd",
         size_max=22,
-        title=title,
     )
 
-    # ----- plotly.graph_objects trace (depth overlay) -----
+    # ----- plotly.graph_objects trace (simple gray markers with magnitude-based sizing) -----
     fig.add_trace(
         go.Scattergeo(
             lat=work["lat"],
@@ -75,16 +72,7 @@ def create_taiwan_eq_map(df: pd.DataFrame, title: str = "台灣地震分布圖")
             mode="markers",
             marker=dict(
                 size=work["marker_size"],
-                color=work["depth"],
-                colorscale="Blues",
-                showscale=True,
-                colorbar=dict(
-                    title="深度 (km)",
-                    x=1.08,
-                    len=0.5,
-                    yanchor="bottom",
-                    y=0,
-                ),
+                color="gray",
                 opacity=0.4,
             ),
             text=work["label"],
@@ -108,10 +96,8 @@ def create_taiwan_eq_map(df: pd.DataFrame, title: str = "台灣地震分布圖")
     )
 
     fig.update_layout(
-        margin=dict(l=0, r=0, t=50, b=0),
-        title_font_size=16,
+        margin=dict(l=0, r=0, t=10, b=0),
         legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
-        coloraxis_colorbar=dict(title="規模 (ML)"),
         width=900,
         height=700,
     )
@@ -174,20 +160,7 @@ def create_taiwan_eq_folium_map(df: pd.DataFrame, title: str = "台灣地震分�
     # Create a MarkerCluster for better performance with many markers
     marker_cluster = MarkerCluster(name="地震事件").add_to(m)
 
-    # Define color scale based on magnitude
-    def get_color_by_magnitude(ml):
-        if ml < 3.0:
-            return "green"
-        elif ml < 4.0:
-            return "blue"
-        elif ml < 5.0:
-            return "yellow"
-        elif ml < 6.0:
-            return "orange"
-        else:
-            return "red"
-
-    # Iterate through earthquake events and add to map
+    # Iterate through earthquake events and add to map (no color coding)
     for idx, row in work.iterrows():
         try:
             lat = row["lat"]
@@ -233,8 +206,8 @@ def create_taiwan_eq_folium_map(df: pd.DataFrame, title: str = "台灣地震分�
             # Set circle size based on magnitude
             radius = mag_value * 1.5 + 2
             
-            # Get color based on magnitude
-            marker_color = get_color_by_magnitude(mag_value)
+            # Use simple gray color without color coding
+            marker_color = "gray"
 
             # Add CircleMarker to MarkerCluster
             folium.CircleMarker(
@@ -252,50 +225,6 @@ def create_taiwan_eq_folium_map(df: pd.DataFrame, title: str = "台灣地震分�
         except Exception as e:
             # Ignore errors for individual events
             print(f"處理事件時發生錯誤 (index {idx}, lat={lat if 'lat' in locals() else 'N/A'}, lon={lon if 'lon' in locals() else 'N/A'}): {e}")
-
-    # Add a title to the map using HTML
-    title_html = f'''
-    <div style="position: fixed; 
-                top: 10px; 
-                left: 50px; 
-                width: auto;
-                height: auto;
-                background-color: white;
-                border: 2px solid grey;
-                border-radius: 5px;
-                z-index: 9999;
-                font-size: 16px;
-                font-weight: bold;
-                padding: 10px;
-                font-family: Arial, 'Microsoft JhengHei', sans-serif;">
-        {title}
-    </div>
-    '''
-    m.get_root().html.add_child(folium.Element(title_html))
-    
-    # Add legend
-    legend_html = '''
-    <div style="position: fixed; 
-                bottom: 50px; 
-                left: 50px; 
-                width: 150px;
-                height: auto;
-                background-color: white;
-                border: 2px solid grey;
-                border-radius: 5px;
-                z-index: 9999;
-                font-size: 12px;
-                padding: 10px;
-                font-family: Arial, 'Microsoft JhengHei', sans-serif;">
-        <p style="margin: 0 0 5px 0; font-weight: bold;">規模圖例</p>
-        <p style="margin: 2px 0;"><span style="color: green;">●</span> ML < 3.0</p>
-        <p style="margin: 2px 0;"><span style="color: blue;">●</span> 3.0 ≤ ML < 4.0</p>
-        <p style="margin: 2px 0;"><span style="color: yellow;">●</span> 4.0 ≤ ML < 5.0</p>
-        <p style="margin: 2px 0;"><span style="color: orange;">●</span> 5.0 ≤ ML < 6.0</p>
-        <p style="margin: 2px 0;"><span style="color: red;">●</span> ML ≥ 6.0</p>
-    </div>
-    '''
-    m.get_root().html.add_child(folium.Element(legend_html))
 
     # Add layer control
     folium.LayerControl().add_to(m)
