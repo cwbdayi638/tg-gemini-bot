@@ -12,14 +12,21 @@ from typing import Dict, Any, Optional, List, Tuple
 import os
 
 
-# Configuration
-AI_NEWS_AGGREGATOR_URL = "cwbdayi/ai-news-aggregator"
+def _get_aggregator_url() -> str:
+    """Get the AI news aggregator URL from config or environment."""
+    try:
+        from .config import AI_NEWS_AGGREGATOR_URL
+        return AI_NEWS_AGGREGATOR_URL
+    except ImportError:
+        # Fallback if config is not available
+        return os.getenv("AI_NEWS_AGGREGATOR_URL", "cwbdayi/ai-news-aggregator")
 
 
 def _create_client() -> Client:
     """Create and return a Gradio client for the AI news aggregator."""
     try:
-        return Client(AI_NEWS_AGGREGATOR_URL)
+        aggregator_url = _get_aggregator_url()
+        return Client(aggregator_url)
     except Exception as e:
         raise RuntimeError(f"Failed to connect to AI news aggregator: {e}")
 

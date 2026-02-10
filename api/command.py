@@ -684,19 +684,19 @@ def excute_command(from_id, command, from_type, chat_id):
     
     # AI 新聞聚合器指令 (must come before generic "ai" command)
     elif command.startswith("ai_news_latest"):
-        args = command[14:].strip()  # 移除 "ai_news_latest" 前綴
+        args = command[15:].strip()  # 移除 "ai_news_latest" 前綴 (15 characters)
         return ai_news_latest(args)
     
     elif command.startswith("ai_news_search"):
-        args = command[14:].strip()  # 移除 "ai_news_search" 前綴
+        args = command[15:].strip()  # 移除 "ai_news_search" 前綴 (15 characters)
         return ai_news_search(args)
     
     elif command.startswith("ai_news_source"):
-        args = command[14:].strip()  # 移除 "ai_news_source" 前綴
+        args = command[15:].strip()  # 移除 "ai_news_source" 前綴 (15 characters)
         return ai_news_source(args)
     
     elif command.startswith("ai_news_sources"):
-        args = command[15:].strip()  # 移除 "ai_news_sources" 前綴
+        args = command[16:].strip()  # 移除 "ai_news_sources" 前綴 (16 characters)
         return ai_news_sources(args)
     
     elif command.startswith("ai"):
