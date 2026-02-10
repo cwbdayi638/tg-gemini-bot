@@ -1,10 +1,19 @@
 # ai_service.py - Enhanced AI service for earthquake queries
 import json
 import re
+import requests
 from datetime import datetime, timedelta
 from gradio_client import Client
 
 from .config import MCP_SERVER_URL
+
+# Ollama server configuration
+OLLAMA_BASE_URL = "https://fgs.zeabur.app"
+OLLAMA_MODEL = "smollm:135m"
+OLLAMA_PROMPT_TEMPLATE = "Context:\n{context}\n\nQuestion: {prompt}\n\nPlease provide a concise and informative answer based on the context provided."
+
+# Track if model has been pulled
+_ollama_model_pulled = False
 
 # Tool function for earthquake search
 def call_mcp_earthquake_search(
@@ -117,9 +126,63 @@ def _should_search_earthquakes(question: str) -> bool:
     ]
     return any(keyword in question.lower() for keyword in earthquake_keywords)
 
+def _call_ollama_llm(prompt: str, context: str = "") -> str:
+    """Call Ollama LLM for text generation."""
+    global _ollama_model_pulled
+    
+    try:
+        # Only pull the model once per session
+        if not _ollama_model_pulled:
+            pull_url = f"{OLLAMA_BASE_URL}/api/pull"
+            pull_payload = {"name": OLLAMA_MODEL}
+            
+            print(f"--- Ensuring Ollama model {OLLAMA_MODEL} is available ---")
+            try:
+                pull_response = requests.post(pull_url, json=pull_payload, timeout=30)
+                # Ollama pull endpoint returns streaming responses, we just need to ensure it starts
+                print(f"Model pull initiated: {pull_response.status_code}")
+                _ollama_model_pulled = True
+            except Exception as e:
+                print(f"Warning: Could not verify model availability: {e}")
+                # Continue anyway - model might already be available
+        
+        # Generate response using Ollama
+        generate_url = f"{OLLAMA_BASE_URL}/api/generate"
+        
+        # Combine context and prompt if context is provided
+        full_prompt = prompt
+        if context:
+            full_prompt = OLLAMA_PROMPT_TEMPLATE.format(context=context, prompt=prompt)
+        
+        generate_payload = {
+            "model": OLLAMA_MODEL,
+            "prompt": full_prompt,
+            "stream": False
+        }
+        
+        print(f"--- Calling Ollama API at {generate_url} ---")
+        response = requests.post(generate_url, json=generate_payload, timeout=60)
+        response.raise_for_status()
+        
+        result = response.json()
+        generated_text = result.get("response", "")
+        
+        print(f"--- Ollama API returned successfully ---")
+        return generated_text.strip()
+        
+    except requests.exceptions.Timeout as e:
+        print(f"Timeout calling Ollama API: {e}")
+        return f"Error: Request timed out. The Ollama server took too long to respond. Please try again later."
+    except requests.exceptions.RequestException as e:
+        print(f"Error calling Ollama API: {e}")
+        return f"Error: Could not connect to Ollama server. {str(e)}"
+    except Exception as e:
+        print(f"Unexpected error with Ollama: {e}")
+        return f"Error: {str(e)}"
+
 # Main AI text generation function
 def generate_ai_text(user_prompt: str) -> str:
-    """Generate AI response with earthquake search capability."""
+    """Generate AI response with earthquake search capability using Ollama LLM."""
     
     # Check if this is an earthquake-related question
     if _should_search_earthquakes(user_prompt):
@@ -138,53 +201,56 @@ def generate_ai_text(user_prompt: str) -> str:
             
             # Parse the JSON response
             if "no earthquake data matching" in earthquake_data.lower():
-                return f"🌍 I searched for earthquakes from {start_date} to {end_date} with magnitude ≥{min_magnitude}, but no matching earthquakes were found."
+                context = f"Searched for earthquakes from {start_date} to {end_date} with magnitude ≥{min_magnitude}, but no matching earthquakes were found."
+                return f"🌍 {_call_ollama_llm(user_prompt, context)}"
             
             try:
                 eq_list = json.loads(earthquake_data)
                 if not eq_list:
                     return f"🌍 No earthquakes found for the specified criteria."
                 
-                # Format the response
-                response = f"🌍 Earthquake Search Results ({start_date} to {end_date}, M≥{min_magnitude}):\n\n"
-                response += f"Found {len(eq_list)} earthquake(s):\n\n"
+                # Format earthquake data as context
+                context = f"Earthquake Search Results ({start_date} to {end_date}, M≥{min_magnitude}):\n\n"
+                context += f"Found {len(eq_list)} earthquake(s):\n\n"
                 
-                # Show up to 5 earthquakes
-                for i, eq in enumerate(eq_list[:5], 1):
+                # Include all earthquakes in context for LLM
+                for i, eq in enumerate(eq_list, 1):
                     time_str = eq.get('Time', 'Unknown')
                     location = eq.get('Location', 'Unknown')
                     magnitude = eq.get('Magnitude', 'N/A')
                     depth = eq.get('Depth', 'N/A')
                     
-                    response += f"{i}. Time: {time_str}\n"
-                    response += f"   Location: {location}\n"
-                    response += f"   Magnitude: M{magnitude} | Depth: {depth} km\n\n"
+                    context += f"{i}. Time: {time_str}, Location: {location}, Magnitude: M{magnitude}, Depth: {depth} km\n"
                 
-                if len(eq_list) > 5:
-                    response += f"... and {len(eq_list) - 5} more earthquake(s)."
+                # Use Ollama to generate a natural language response
+                llm_response = _call_ollama_llm(user_prompt, context)
                 
-                # Add interpretation for specific questions
-                if "largest" in user_prompt.lower() or "biggest" in user_prompt.lower() or "最大" in user_prompt:
-                    max_eq = max(eq_list, key=lambda x: float(x.get('Magnitude', 0)))
-                    response += f"\n\n📊 The largest earthquake was M{max_eq.get('Magnitude')} at {max_eq.get('Location')} on {max_eq.get('Time')}."
+                # Format the final response
+                response = f"🌍 {llm_response}"
                 
                 return response
                 
             except json.JSONDecodeError:
-                # If JSON parsing fails, return the raw data
-                return f"🌍 Earthquake data retrieved:\n\n{earthquake_data}"
+                # If JSON parsing fails, use LLM with raw data
+                llm_response = _call_ollama_llm(user_prompt, f"Earthquake data retrieved:\n{earthquake_data}")
+                return f"🌍 {llm_response}"
                 
         except Exception as e:
             print(f"Error processing earthquake question: {e}")
             return f"🤖 I encountered an error while searching for earthquake data: {e}\n\nPlease try using specific commands like /eq_latest or /eq_global instead."
     
-    # For non-earthquake questions, return a helpful message
-    response_text = (
-        f"🤖 I'm an assistant for this Telegram bot. You asked: '{user_prompt}'\n\n"
-        "I can help you with:\n"
-        "• Earthquake information (use /eq_latest, /eq_global, /eq_taiwan)\n"
-        "• Web search (use /search <query>)\n\n"
-        "For earthquake-specific questions, please mention 'earthquake' or '地震' in your question."
-    )
+    # For non-earthquake questions, use Ollama LLM directly
+    llm_response = _call_ollama_llm(user_prompt)
     
-    return response_text
+    if llm_response.startswith("Error:"):
+        # If Ollama fails, return a helpful message
+        response_text = (
+            f"🤖 I'm an assistant for this Telegram bot. You asked: '{user_prompt}'\n\n"
+            "I can help you with:\n"
+            "• Earthquake information (use /eq_latest, /eq_global, /eq_taiwan)\n"
+            "• Web search (use /search <query>)\n\n"
+            "For earthquake-specific questions, please mention 'earthquake' or '地震' in your question."
+        )
+        return response_text
+    
+    return f"🤖 {llm_response}"
