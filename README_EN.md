@@ -62,6 +62,8 @@ Integrated real-time earthquake data from Taiwan Central Weather Administration 
 | Variable | Required | Description |
 | --- | --- | --- |
 | GOOGLE_API_KEY | ❌ No | Google Gemini API key, enables AI conversation features |
+| OLLAMA_BASE_URL | ❌ No | Ollama server URL (default: `http://ollama.zeabur.internal:11434`), used for AI conversation |
+| OLLAMA_MODEL | ❌ No | Ollama model name (default: `gemma3:270m`), used for AI conversation |
 | CWA_API_KEY | ❌ No | Taiwan Central Weather Administration API key for significant earthquake data. Get from [CWA Open Data Platform](https://opendata.cwa.gov.tw/) |
 | MCP_SERVER_URL | ❌ No | MCP server URL for advanced earthquake database search (default: `https://cwadayi-mcp-2.hf.space`) |
 | MCP_WEB_SEARCH_URL | ❌ No | MCP web search server URL for enhanced web search features |

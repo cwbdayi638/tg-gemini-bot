@@ -81,6 +81,8 @@
 | 變數 | 必填 | 描述 |
 | --- | --- | --- |
 | GOOGLE_API_KEY | ❌ 否 | Google Gemini API 金鑰，啟用 AI 對話功能 |
+| OLLAMA_BASE_URL | ❌ 否 | Ollama 服務器 URL（預設：`http://ollama.zeabur.internal:11434`），用於 AI 對話功能 |
+| OLLAMA_MODEL | ❌ 否 | Ollama 模型名稱（預設：`gemma3:270m`），用於 AI 對話功能 |
 | CWA_API_KEY | ❌ 否 | 台灣中央氣象署 API 金鑰，用於存取顯著地震資料。從 [CWA 開放資料平台](https://opendata.cwa.gov.tw/) 取得 |
 | MCP_SERVER_URL | ❌ 否 | MCP 伺服器 URL，用於進階地震資料庫搜尋（預設：`https://cwadayi-mcp-2.hf.space`） |
 | MCP_WEB_SEARCH_URL | ❌ 否 | MCP 網頁搜尋伺服器 URL，用於增強網頁搜尋功能 |

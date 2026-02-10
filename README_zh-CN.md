@@ -62,6 +62,8 @@
 | 变量 | 必填 | 描述 |
 | --- | --- | --- |
 | GOOGLE_API_KEY | ❌ 否 | Google Gemini API 密钥，启用 AI 对话功能 |
+| OLLAMA_BASE_URL | ❌ 否 | Ollama 服务器 URL（默认：`http://ollama.zeabur.internal:11434`），用于 AI 对话功能 |
+| OLLAMA_MODEL | ❌ 否 | Ollama 模型名称（默认：`gemma3:270m`），用于 AI 对话功能 |
 | CWA_API_KEY | ❌ 否 | 台湾中央气象署 API 密钥，用于访问显著地震数据。从 [CWA 开放数据平台](https://opendata.cwa.gov.tw/) 获取 |
 | MCP_SERVER_URL | ❌ 否 | MCP 服务器 URL，用于高级地震数据库搜索（默认：`https://cwadayi-mcp-2.hf.space`） |
 | MCP_WEB_SEARCH_URL | ❌ 否 | MCP 网页搜索服务器 URL，用于增强网页搜索功能 |
