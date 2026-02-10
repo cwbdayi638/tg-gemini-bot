@@ -682,6 +682,23 @@ def excute_command(from_id, command, from_type, chat_id):
     elif command.startswith("eq_map"):
         return get_earthquake_map()
     
+    # AI 新聞聚合器指令 (must come before generic "ai" command)
+    elif command.startswith("ai_news_latest"):
+        args = command[14:].strip()  # 移除 "ai_news_latest" 前綴
+        return ai_news_latest(args)
+    
+    elif command.startswith("ai_news_search"):
+        args = command[14:].strip()  # 移除 "ai_news_search" 前綴
+        return ai_news_search(args)
+    
+    elif command.startswith("ai_news_source"):
+        args = command[14:].strip()  # 移除 "ai_news_source" 前綴
+        return ai_news_source(args)
+    
+    elif command.startswith("ai_news_sources"):
+        args = command[15:].strip()  # 移除 "ai_news_sources" 前綴
+        return ai_news_sources(args)
+    
     elif command.startswith("ai"):
         # 擷取問題
         question = command[2:].strip()  # 移除 "ai" 前綴
@@ -721,23 +738,6 @@ def excute_command(from_id, command, from_type, chat_id):
     elif command.startswith("mcp_fetch"):
         url = command[9:].strip()  # 移除 "mcp_fetch" 前綴
         return mcp_fetch_url(url)
-    
-    # AI 新聞聚合器指令
-    elif command.startswith("ai_news_latest"):
-        args = command[14:].strip()  # 移除 "ai_news_latest" 前綴
-        return ai_news_latest(args)
-    
-    elif command.startswith("ai_news_search"):
-        args = command[14:].strip()  # 移除 "ai_news_search" 前綴
-        return ai_news_search(args)
-    
-    elif command.startswith("ai_news_source"):
-        args = command[14:].strip()  # 移除 "ai_news_source" 前綴
-        return ai_news_source(args)
-    
-    elif command.startswith("ai_news_sources"):
-        args = command[15:].strip()  # 移除 "ai_news_sources" 前綴
-        return ai_news_sources(args)
 
     elif command in ["get_allowed_users", "get_allowed_groups", "get_api_key"]:
         if not is_admin(from_id):
