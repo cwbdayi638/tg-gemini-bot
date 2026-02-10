@@ -3,6 +3,13 @@ from io import BytesIO
 from typing import Optional
 from .config import new_chat_info, prompt_new_info, gemini_err_info, generation_config, safety_settings
 
+# Lazy import to avoid potential circular dependencies
+try:
+    from .ai_service import generate_ai_text
+    AI_SERVICE_AVAILABLE = True
+except ImportError:
+    AI_SERVICE_AVAILABLE = False
+
 # Fallback messages
 AI_NOT_AVAILABLE_MESSAGE = (
     "我是 Telegram 機器人助手。請使用以下方式使用我：\n\n"
@@ -35,10 +42,13 @@ class ChatConversation:
         
         # Try to use Ollama AI service for generating response
         try:
-            from .ai_service import generate_ai_text
+            if not AI_SERVICE_AVAILABLE:
+                raise ImportError("AI service is not available")
             response_text = generate_ai_text(text)
         except Exception as e:
-            print(f"Error calling Ollama AI: {e}")
+            # Truncate long messages for logging
+            text_preview = text[:50] + "..." if len(text) > 50 else text
+            print(f"Error calling Ollama AI for message \"{text_preview}\": {e}")
             response_text = AI_NOT_AVAILABLE_MESSAGE
         
         self.history.append({"role": "model", "parts": [{"text": response_text}]})
