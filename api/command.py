@@ -12,7 +12,7 @@ try:
     from .cwa_service import fetch_cwa_alarm_list, fetch_significant_earthquakes, fetch_latest_significant_earthquake
     from .usgs_service import fetch_global_last24h_text, fetch_taiwan_df_this_year, fetch_global_earthquakes_by_date
     from .plotting_service import create_and_save_map, create_global_earthquake_map
-    from .ai_service import generate_ai_text
+    from .ai_service import generate_ai_text, generate_disaster_prevention_advice
     SERVICES_AVAILABLE = True
 except ImportError as e:
     print(f"Warning: Some services not available: {e}")
@@ -113,6 +113,15 @@ def get_latest_earthquake():
         
         if latest_eq.get("ImageURL"):
             result += f"\n\n圖片：{latest_eq['ImageURL']}"
+        
+        # Generate disaster prevention advice for significant earthquakes
+        try:
+            advice = generate_disaster_prevention_advice(latest_eq)
+            if advice:
+                result += f"\n\n💡 防災建議：{advice}"
+        except Exception as e:
+            print(f"Failed to generate disaster prevention advice: {e}")
+            # Don't fail the whole command if advice generation fails
         
         return result
     except Exception as e:

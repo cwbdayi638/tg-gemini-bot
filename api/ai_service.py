@@ -13,8 +13,12 @@ OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama.zeabur.internal:11
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "gemma3:270m")
 OLLAMA_PROMPT_TEMPLATE = "Context:\n{context}\n\nQuestion: {prompt}\n\nPlease provide a concise and informative answer based on the context provided."
 
+# Model for disaster prevention advice
+OLLAMA_DISASTER_MODEL = os.getenv("OLLAMA_DISASTER_MODEL", "gemma3:120m")
+
 # Track if model has been pulled
 _ollama_model_pulled = False
+_disaster_model_pulled = False
 
 # Tool function for earthquake search
 def call_mcp_earthquake_search(
@@ -186,6 +190,90 @@ def _call_ollama_llm(prompt: str, context: str = "") -> str:
     except Exception as e:
         print(f"Unexpected error with Ollama: {e}")
         return f"Error: {str(e)}"
+
+def generate_disaster_prevention_advice(earthquake_data: dict) -> str:
+    """Generate a simple disaster prevention advice sentence for earthquake data using gemma3:120m."""
+    global _disaster_model_pulled
+    
+    try:
+        # Only pull the disaster model once per session
+        if not _disaster_model_pulled:
+            pull_url = f"{OLLAMA_BASE_URL}/api/pull"
+            pull_payload = {"name": OLLAMA_DISASTER_MODEL}
+            
+            print(f"--- Ensuring Ollama model {OLLAMA_DISASTER_MODEL} is available ---")
+            try:
+                pull_response = requests.post(pull_url, json=pull_payload, timeout=30)
+                print(f"Disaster model pull initiated: {pull_response.status_code}")
+                _disaster_model_pulled = True
+            except Exception as e:
+                print(f"Warning: Could not verify disaster model availability: {e}")
+                # Continue anyway - model might already be available
+        
+        # Prepare context about the earthquake
+        mag = earthquake_data.get('Magnitude', 'N/A')
+        depth = earthquake_data.get('Depth', 'N/A')
+        location = earthquake_data.get('Location', 'Unknown')
+        time_str = earthquake_data.get('TimeStr', 'Unknown')
+        
+        mag_str = f"{mag:.1f}" if isinstance(mag, (int, float)) and mag != 'N/A' else str(mag)
+        depth_str = f"{depth:.0f}" if isinstance(depth, (int, float)) and depth != 'N/A' else str(depth)
+        
+        context = (
+            f"An earthquake occurred in {location} at {time_str}. "
+            f"The magnitude was M{mag_str} with a depth of {depth_str} km."
+        )
+        
+        prompt = (
+            "Based on this earthquake data, provide ONE simple and practical disaster prevention advice "
+            "in Traditional Chinese (繁體中文). The advice should be concise (one sentence), "
+            "actionable, and appropriate for the earthquake's magnitude and depth. "
+            "Do not include any introductory phrases or explanations, just the advice itself."
+        )
+        
+        # Call Ollama with the disaster model
+        generate_url = f"{OLLAMA_BASE_URL}/api/generate"
+        full_prompt = f"{context}\n\n{prompt}"
+        
+        generate_payload = {
+            "model": OLLAMA_DISASTER_MODEL,
+            "prompt": full_prompt,
+            "stream": False,
+            "options": {
+                "temperature": 0.7,
+                "top_p": 0.9,
+                "top_k": 40,
+                "num_predict": 128,  # Shorter since we want just one sentence
+            }
+        }
+        
+        print(f"--- Calling Ollama API for disaster prevention advice ---")
+        response = requests.post(generate_url, json=generate_payload, timeout=60)
+        response.raise_for_status()
+        
+        result = response.json()
+        advice = result.get("response", "").strip()
+        
+        # Clean up the advice - remove any extra line breaks and trim
+        advice = " ".join(advice.split())
+        
+        # If advice is too long, take only the first sentence
+        if len(advice) > 200:
+            sentences = advice.split('。')
+            advice = sentences[0] + '。' if sentences else advice[:200]
+        
+        print(f"--- Disaster prevention advice generated successfully ---")
+        return advice
+        
+    except requests.exceptions.Timeout as e:
+        print(f"Timeout generating disaster prevention advice: {e}")
+        return "請保持冷靜，注意餘震，並確保周圍環境安全。"  # Fallback advice
+    except requests.exceptions.RequestException as e:
+        print(f"Error generating disaster prevention advice: {e}")
+        return "請保持冷靜，注意餘震，並確保周圍環境安全。"  # Fallback advice
+    except Exception as e:
+        print(f"Unexpected error generating disaster prevention advice: {e}")
+        return "請保持冷靜，注意餘震，並確保周圍環境安全。"  # Fallback advice
 
 # Main AI text generation function
 def generate_ai_text(user_prompt: str) -> str:
