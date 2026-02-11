@@ -249,7 +249,7 @@ def generate_disaster_prevention_advice(earthquake_data: dict) -> str:
                 "temperature": 0.7,
                 "top_p": 0.9,
                 "top_k": 40,
-                "num_predict": 256,  # Sufficient for Traditional Chinese sentence
+                "num_predict": 256,  # Token limit for Traditional Chinese (may still require truncation)
             }
         }
         
@@ -265,16 +265,13 @@ def generate_disaster_prevention_advice(earthquake_data: dict) -> str:
         
         # If advice is too long, take only the first sentence
         if len(advice) > 200:
-            # Check if original advice ends with Chinese period before any manipulation
-            original_ends_with_period = advice.rstrip().endswith('。')
             sentences = advice.split('。')
             # Filter out empty strings and get the first non-empty sentence
             non_empty_sentences = [s.strip() for s in sentences if s.strip()]
             if non_empty_sentences:
                 advice = non_empty_sentences[0]
-                # Add period only if the original first sentence had it
-                # (which means there was content after it in the original text)
-                if len(sentences) > 1 or original_ends_with_period:
+                # Add period if splitting produced multiple parts (meaning period existed)
+                if len(non_empty_sentences) > 1 or (len(sentences) > 1 and advice):
                     advice += '。'
             else:
                 # Fallback if no proper sentence found
