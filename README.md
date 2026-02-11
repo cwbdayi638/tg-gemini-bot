@@ -73,6 +73,7 @@
 | OLLAMA_MODEL | ❌ 否 | Ollama 模型名稱（預設：`gemma3:270m`），用於 AI 對話功能 |
 | CWA_API_KEY | ❌ 否 | 台灣中央氣象署 API 金鑰，用於存取顯著地震資料。從 [CWA 開放資料平台](https://opendata.cwa.gov.tw/) 取得 |
 | MCP_SERVER_URL | ❌ 否 | MCP 伺服器 URL，用於進階地震資料庫搜尋（預設：`https://cwadayi-mcp-2.hf.space`） |
+| HF_SPACE_URL | ❌ 否 | Hugging Face Space URL，機器人啟動時會發送 ping 請求以防止免費 Space 進入睡眠狀態 |
 | ALLOWED_USERS | ❌ 否 | 允許使用的用戶名或 ID（支援正則表達式，多個值用空格或逗號分隔） |
 | ALLOWED_GROUPS | ❌ 否 | 允許使用的群組 ID 或用戶名（多個值用空格或逗號分隔） |
 | ADMIN_ID | ❌ 否 | 管理員的 Telegram ID，用於執行管理員指令 |
