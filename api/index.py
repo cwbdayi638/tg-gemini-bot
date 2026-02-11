@@ -22,7 +22,11 @@ def ping_hf_space():
         try:
             response = requests.get(HF_SPACE_URL, timeout=10)
             response.raise_for_status()  # Raises an exception for 4xx/5xx status codes
-            logger.info(f"HF Space ping successful: {HF_SPACE_URL} (status: {response.status_code})")
+            # Log only the domain to avoid exposing any potential sensitive info in URL
+            from urllib.parse import urlparse
+            parsed_url = urlparse(HF_SPACE_URL)
+            safe_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+            logger.info(f"HF Space ping successful: {safe_url} (status: {response.status_code})")
         except requests.exceptions.RequestException as e:
             logger.warning(f"HF Space ping failed: {e}")
 
