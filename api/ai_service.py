@@ -203,7 +203,7 @@ def generate_disaster_prevention_advice(earthquake_data: dict) -> str:
             
             print(f"--- Ensuring Ollama model {OLLAMA_DISASTER_MODEL} is available ---")
             try:
-                pull_response = requests.post(pull_url, json=pull_payload, timeout=30)
+                pull_response = requests.post(pull_url, json=pull_payload, timeout=120)
                 print(f"Disaster model pull initiated: {pull_response.status_code}")
                 _disaster_model_pulled = True
             except Exception as e:
@@ -243,7 +243,7 @@ def generate_disaster_prevention_advice(earthquake_data: dict) -> str:
                 "temperature": 0.7,
                 "top_p": 0.9,
                 "top_k": 40,
-                "num_predict": 128,  # Shorter since we want just one sentence
+                "num_predict": 256,  # Sufficient for Traditional Chinese sentence
             }
         }
         
@@ -260,7 +260,11 @@ def generate_disaster_prevention_advice(earthquake_data: dict) -> str:
         # If advice is too long, take only the first sentence
         if len(advice) > 200:
             sentences = advice.split('。')
-            advice = sentences[0] + '。' if sentences else advice[:200]
+            if sentences and sentences[0].strip():
+                advice = sentences[0].strip() + '。'
+            else:
+                # Fallback if no proper sentence found
+                advice = advice[:200]
         
         print(f"--- Disaster prevention advice generated successfully ---")
         return advice
