@@ -19,6 +19,9 @@ OLLAMA_DISASTER_MODEL = os.getenv("OLLAMA_DISASTER_MODEL", "gemma3:120m")
 # Timeout settings
 MODEL_PULL_TIMEOUT = 120  # Timeout for model pulling in seconds
 
+# Default disaster prevention advice (fallback)
+DEFAULT_DISASTER_ADVICE = "請保持冷靜，注意餘震，並確保周圍環境安全。"
+
 # Track if model has been pulled
 _ollama_model_pulled = False
 _disaster_model_pulled = False
@@ -262,14 +265,16 @@ def generate_disaster_prevention_advice(earthquake_data: dict) -> str:
         
         # If advice is too long, take only the first sentence
         if len(advice) > 200:
-            has_chinese_period = '。' in advice
+            # Check if original advice ends with Chinese period before any manipulation
+            original_ends_with_period = advice.rstrip().endswith('。')
             sentences = advice.split('。')
             # Filter out empty strings and get the first non-empty sentence
             non_empty_sentences = [s.strip() for s in sentences if s.strip()]
             if non_empty_sentences:
                 advice = non_empty_sentences[0]
-                # Only add period if the original text had it
-                if has_chinese_period:
+                # Add period only if the original first sentence had it
+                # (which means there was content after it in the original text)
+                if len(sentences) > 1 or original_ends_with_period:
                     advice += '。'
             else:
                 # Fallback if no proper sentence found
@@ -280,13 +285,13 @@ def generate_disaster_prevention_advice(earthquake_data: dict) -> str:
         
     except requests.exceptions.Timeout as e:
         print(f"Timeout generating disaster prevention advice: {e}")
-        return "請保持冷靜，注意餘震，並確保周圍環境安全。"  # Fallback advice
+        return DEFAULT_DISASTER_ADVICE
     except requests.exceptions.RequestException as e:
         print(f"Error generating disaster prevention advice: {e}")
-        return "請保持冷靜，注意餘震，並確保周圍環境安全。"  # Fallback advice
+        return DEFAULT_DISASTER_ADVICE
     except Exception as e:
         print(f"Unexpected error generating disaster prevention advice: {e}")
-        return "請保持冷靜，注意餘震，並確保周圍環境安全。"  # Fallback advice
+        return DEFAULT_DISASTER_ADVICE
 
 # Main AI text generation function
 def generate_ai_text(user_prompt: str) -> str:
