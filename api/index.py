@@ -3,11 +3,13 @@ import os
 import requests
 from functools import wraps
 import threading
+import logging
 
 from .handle import handle_message
 from .config import STATIC_DIR, API_ACCESS_TOKEN, HF_SPACE_URL
 
 app = Flask(__name__)
+logger = logging.getLogger(__name__)
 
 
 def ping_hf_space():
@@ -19,13 +21,19 @@ def ping_hf_space():
     if HF_SPACE_URL:
         try:
             response = requests.get(HF_SPACE_URL, timeout=10)
-            print(f"HF Space ping successful: {HF_SPACE_URL} (status: {response.status_code})")
+            response.raise_for_status()  # Raises an exception for 4xx/5xx status codes
+            logger.info(f"HF Space ping successful: {HF_SPACE_URL} (status: {response.status_code})")
+        except requests.exceptions.RequestException as e:
+            logger.warning(f"HF Space ping failed: {e}")
         except Exception as e:
-            print(f"HF Space ping failed: {e}")
+            logger.error(f"HF Space ping unexpected error: {e}")
 
 
-# Ping HF Space on startup to prevent sleeping
-threading.Thread(target=ping_hf_space, daemon=True).start()
+@app.before_first_request
+def initialize():
+    """Initialize the application on first request."""
+    # Ping HF Space on startup to prevent sleeping
+    threading.Thread(target=ping_hf_space, daemon=True).start()
 
 
 def require_token(f):
