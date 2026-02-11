@@ -1,11 +1,31 @@
 from flask import Flask, render_template, request, send_from_directory, jsonify
 import os
+import requests
 from functools import wraps
+import threading
 
 from .handle import handle_message
-from .config import STATIC_DIR, API_ACCESS_TOKEN
+from .config import STATIC_DIR, API_ACCESS_TOKEN, HF_SPACE_URL
 
 app = Flask(__name__)
+
+
+def ping_hf_space():
+    """Ping Hugging Face Space to prevent it from sleeping.
+    
+    This function sends a simple GET request to the configured HF Space URL
+    to keep it awake when using free HF Spaces.
+    """
+    if HF_SPACE_URL:
+        try:
+            response = requests.get(HF_SPACE_URL, timeout=10)
+            print(f"HF Space ping successful: {HF_SPACE_URL} (status: {response.status_code})")
+        except Exception as e:
+            print(f"HF Space ping failed: {e}")
+
+
+# Ping HF Space on startup to prevent sleeping
+threading.Thread(target=ping_hf_space, daemon=True).start()
 
 
 def require_token(f):

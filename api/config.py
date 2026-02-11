@@ -18,6 +18,9 @@ CWA_API_KEY = os.environ.get("CWA_API_KEY", "")
 # MCP Server URL for earthquake search tool
 MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "https://cwadayi-mcp-2.hf.space")
 
+# Hugging Face Space URL for keep-alive ping (optional)
+HF_SPACE_URL = os.getenv("HF_SPACE_URL", "")
+
 # Static directory for temporary files (e.g., generated maps)
 STATIC_DIR = os.getenv("STATIC_DIR", os.path.join(tempfile.gettempdir(), "static"))
 os.makedirs(STATIC_DIR, exist_ok=True)
