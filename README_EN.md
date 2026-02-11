@@ -73,6 +73,7 @@ Integrated real-time earthquake data from Taiwan Central Weather Administration 
 | OLLAMA_MODEL | ❌ No | Ollama model name (default: `gemma3:270m`), used for AI conversation |
 | CWA_API_KEY | ❌ No | Taiwan Central Weather Administration API key for significant earthquake data. Get from [CWA Open Data Platform](https://opendata.cwa.gov.tw/) |
 | MCP_SERVER_URL | ❌ No | MCP server URL for advanced earthquake database search (default: `https://cwadayi-mcp-2.hf.space`) |
+| HF_SPACE_URL | ❌ No | Hugging Face Space URL, the bot will send a ping request on startup to prevent free Spaces from sleeping |
 | ALLOWED_USERS | ❌ No | Allowed usernames or IDs (supports regex, separate multiple values with space or comma) |
 | ALLOWED_GROUPS | ❌ No | Allowed group IDs or usernames (separate multiple values with space or comma) |
 | ADMIN_ID | ❌ No | Telegram ID for admin commands |
