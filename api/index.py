@@ -25,15 +25,11 @@ def ping_hf_space():
             logger.info(f"HF Space ping successful: {HF_SPACE_URL} (status: {response.status_code})")
         except requests.exceptions.RequestException as e:
             logger.warning(f"HF Space ping failed: {e}")
-        except Exception as e:
-            logger.error(f"HF Space ping unexpected error: {e}")
 
 
-@app.before_first_request
-def initialize():
-    """Initialize the application on first request."""
-    # Ping HF Space on startup to prevent sleeping
-    threading.Thread(target=ping_hf_space, daemon=True).start()
+# Ping HF Space on module load to prevent sleeping
+# Using a daemon thread to avoid blocking the application startup
+threading.Thread(target=ping_hf_space, daemon=True).start()
 
 
 def require_token(f):
