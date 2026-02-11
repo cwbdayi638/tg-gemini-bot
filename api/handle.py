@@ -41,7 +41,7 @@ def handle_message(update_data):
     authorized = is_authorized(update.is_group, update.from_id, update.user_name,  update.chat_id, update.group_name)
 
     if update.type == "command":
-        response_text = excute_command(update.from_id, update.text, update.from_type, update.chat_id)
+        response_text = excute_command(update.from_id, update.text, update.from_type, update.chat_id, update.user_name, update.group_name)
         if response_text!= "":
             send_message(update.chat_id, response_text)
             if update.is_group :
