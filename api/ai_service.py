@@ -16,6 +16,9 @@ OLLAMA_PROMPT_TEMPLATE = "Context:\n{context}\n\nQuestion: {prompt}\n\nPlease pr
 # Model for disaster prevention advice
 OLLAMA_DISASTER_MODEL = os.getenv("OLLAMA_DISASTER_MODEL", "gemma3:120m")
 
+# Timeout settings
+MODEL_PULL_TIMEOUT = 120  # Timeout for model pulling in seconds
+
 # Track if model has been pulled
 _ollama_model_pulled = False
 _disaster_model_pulled = False
@@ -203,7 +206,7 @@ def generate_disaster_prevention_advice(earthquake_data: dict) -> str:
             
             print(f"--- Ensuring Ollama model {OLLAMA_DISASTER_MODEL} is available ---")
             try:
-                pull_response = requests.post(pull_url, json=pull_payload, timeout=120)
+                pull_response = requests.post(pull_url, json=pull_payload, timeout=MODEL_PULL_TIMEOUT)
                 print(f"Disaster model pull initiated: {pull_response.status_code}")
                 _disaster_model_pulled = True
             except Exception as e:
@@ -259,9 +262,15 @@ def generate_disaster_prevention_advice(earthquake_data: dict) -> str:
         
         # If advice is too long, take only the first sentence
         if len(advice) > 200:
+            has_chinese_period = '。' in advice
             sentences = advice.split('。')
-            if sentences and sentences[0].strip():
-                advice = sentences[0].strip() + '。'
+            # Filter out empty strings and get the first non-empty sentence
+            non_empty_sentences = [s.strip() for s in sentences if s.strip()]
+            if non_empty_sentences:
+                advice = non_empty_sentences[0]
+                # Only add period if the original text had it
+                if has_chinese_period:
+                    advice += '。'
             else:
                 # Fallback if no proper sentence found
                 advice = advice[:200]
