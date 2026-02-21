@@ -2,7 +2,7 @@ from time import sleep
 import pandas as pd
 import os
 
-from .auth import is_admin
+from .auth import is_admin, is_authorized
 from .config import *
 from .printLog import send_log
 from .telegram import send_message
@@ -378,7 +378,7 @@ def send_message_test(id, command):
     send_log("success")
     return ""
 
-def excute_command(from_id, command, from_type, chat_id):
+def excute_command(from_id, command, from_type, chat_id, user_name="", group_name=""):
     if command.startswith("start") or command.startswith("help"):
         return help()
 
@@ -414,6 +414,10 @@ def excute_command(from_id, command, from_type, chat_id):
         return get_earthquake_map()
     
     elif command.startswith("ai"):
+        # Check authorization for AI command to prevent unauthorized Ollama usage
+        is_group = from_type == "supergroup" or from_type == "group"
+        if not is_authorized(is_group, from_id, user_name, chat_id, group_name):
+            return user_no_permission_info if not is_group else group_no_permission_info
         # 擷取問題
         question = command[2:].strip()  # 移除 "ai" 前綴
         return process_ai_question(question)
